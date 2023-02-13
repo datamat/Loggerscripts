@@ -1,0 +1,1907 @@
+<?xml version="1.0" ?>
+<template>
+	<item msciid="55555" title="TemplateName" value="SCB"/>
+	<devicestatus>
+	<page name="Status">
+		<menu name="Home">
+			<section name="General">
+				<status title="Active WAN IP Address" value="0.0.0.0" />
+				<status title="Network State" value="Network Link Down" />
+				<status title="Network Interface" value="None" />
+				<status title="Customer Device Name" value="SCB" />
+				<status title="Device Uptime" value="0 days, 0 hours, 2 minutes" />
+			</section>
+			<section name="Advanced (DNS)">
+				<status title="DNS Proxy" value="Enabled" />
+				<status title="DNS Cache" value="Enabled" />
+				<status title="DNS Override" value="Disabled" />
+				<status title="DNS Server 1 (IPv4)" value="10.30.1.3" />
+				<status title="DNS Server 2 (IPv4)" value="10.30.1.4" />
+			</section>
+		</menu>
+		<menu name="Cellular">
+			<section name="General">
+				<status title="Phone Number" value="NA" />
+				<status title="Cellular IP Address" value="0.0.0.0" />
+				<status title="Cellular State" value="Not Connected" />
+				<status title="Cellular State Details" value="No SIM or Unexpected SIM Status" />
+				<status title="Cellular End-to-End Connection" value="Not Verified" />
+				<status title="Carrier Availability" value="Not Available" />
+				<status title="Signal Strength (RSSI)" value="&#45;125" />
+				<status title="LTE Signal Strength (RSRP)" value="&#45;140" />
+				<status title="LTE Signal Quality (RSRQ)" value="&#45;20" />
+				<status title="LTE Signal Interference (SINR)" value="0" />
+				<status title="Signal Quality (ECI0)" value="" />
+				<status title="ESN/EID/IMEI" value="356853058414303" />
+				<status title="SIM ID" value="" />
+				<status title="APN Status" value="APN Not Found" />
+				<status title="Number of SIMs present" value="0" />
+				<status title="Primary SIM" value="Slot 1" />
+				<status title="Active SIM" value="Slot 1" />
+				<status title="Network Service Type" value="None" />
+				<status title="Active Frequency Band" value="BC 0" />
+			</section>
+			<section name="Statistics">
+				<status title="Bytes Sent" value="0" />
+				<status title="Bytes Received" value="0" />
+				<status title="Persisted Bytes Sent" value="908026" />
+				<status title="Persisted Bytes Received" value="499826" />
+				<status title="Packets Sent" value="0" />
+				<status title="Packets Received" value="0" />
+			</section>
+			<section name="Monitor">
+				<status title="Test Interval (minutes)" value="15" />
+				<status title="Monitor Type" value="Disable" />
+				<status title="Ping Test IP Address" value="0.0.0.0" />
+				<status title="Cellular Network Watchdog" value="Enabled" />
+				<status title="Current WAN Time in Use (minutes)" value="2" />
+			</section>
+			<section name="Advanced">
+				<status title="IMSI" value=" " />
+				<status title="Cell ID" value="0" />
+				<status title="LAC/TAC" value="0" />
+				<status title="BSIC" value="0" />
+				<status title="Carrier Aggregation Indicator" value="Invalid" />
+				<status title="Secondary Frequency Band" value="NOT DEFINED (0)" />
+				<status title="Secondary Channel" value="0" />
+				<status title="DMNR Status" value="Disabled" />
+				<status title="DMNR Foreign Agent Registration Status" value="Unknown" />
+				<status title="DMNR Reverse Tunnelling Agent Status" value="Down" />
+				<status title="Cell Info" value="CellInfo: RSSI: &#45;125" />
+				<status title="Received Signal Code Power (RSCP)" value="0.0" />
+				<status title="Signal Interference (SINR Level)" value="0" />
+				<status title="Channel" value="0" />
+				<status title="Network Operator Switching" value="OK" />
+			</section>
+		</menu>
+		<menu name="Ethernet">
+			<section name="Ethernet LAN">
+				<status title="DHCP Mode" value="Auto" />
+				<status title="USB Mode" value="Disabled " />
+				<status title="Connected Clients" value="1" />
+				<status title="VRRP Mode" value="Disabled" />
+				<status title="Proxy ARP" value="Enabled" />
+			</section>
+			<section name="Ethernet WAN">
+				<status title="Ethernet State" value="Not Connected" />
+				<status title="Ethernet State Details" value="Disconnected" />
+				<status title="Ethernet End-to-End Connection" value="Not Verified" />
+				<status title="Ethernet IP Address" value="0.0.0.0" />
+			</section>
+			<section name="Statistics">
+				<status title="Gateway IP Packets Sent" value="1196" />
+				<status title="Gateway IP Packets Received" value="1371" />
+			</section>
+			<section name="Monitor">
+				<status title="Test Interval (minutes)" value="5" />
+				<status title="Monitor Type" value="Disable" />
+				<status title="Ping Test IP Address" value="0.0.0.0" />
+				<status title="Time Between Pings (seconds)" value="20" />
+				<status title="Current WAN Time in Use (minutes)" value="2" />
+			</section>
+		</menu>
+		<menu name="VPN">
+			<section name="">
+				<status title="Incoming Out of Band" value="Blocked" />
+				<status title="Outgoing Management Out of Band" value="Allowed" />
+				<status title="Outgoing Host Out of Band" value="Blocked" />
+				<status title="VPN 1 Status" value="Disabled" />
+				<status title="VPN 2 Status" value="Disabled" />
+				<status title="VPN 3 Status" value="Disabled" />
+				<status title="VPN 4 Status" value="Disabled" />
+				<status title="VPN 5 Status " value="Disabled" />
+				<status title="Failover - Primary VPN" value="None" />
+				<status title="Failover - Primary VPN Status " value="Disabled" />
+				<status title="Failover - Secondary VPN" value="None" />
+				<status title="Failover - Secondary VPN Status " value="Disabled" />
+				<status title="Failover - Overall VPN Status " value="Disabled" />
+				<status title="Failover - Number of Primary VPN Failures" value="0" />
+				<status title="Failover - Number of Secondary VPN Failures" value="0" />
+				<status title="Failover - Number of Switches to Primary VPN" value="0" />
+				<status title="Failover - Number of Switches to Secondary VPN" value="0" />
+			</section>
+		</menu>
+		<menu name="Security">
+			<section name="">
+				<status title="DMZ Host" value="Disabled" />
+				<status title="Port Forwarding" value="Enabled" />
+				<status title="Port Filtering Inbound" value="Disabled" />
+				<status title="Port Filtering Outbound" value="Disabled" />
+				<status title="Outbound Firewall Mode" value="Disabled" />
+				<status title="Trusted Hosts (Friends)" value="Disabled" />
+				<status title="MAC Filtering" value="Disabled" />
+				<status title="IP Reject Count" value="0" />
+				<status title="DMZ Host IP in use" value="Disabled" />
+			</section>
+		</menu>
+		<menu name="Services">
+			<section name="">
+				<status title="ALMS Status" value="Disabled" />
+				<status title="Server URL" value="" />
+				<status title="Protocol In Use" value="MSCI" />
+				<status title="Remote Access" value="Both HTTP and HTTPS" />
+				<status title="Local Access" value="Both HTTP and HTTPS" />
+				<status title="Dynamic DNS Service" value="Disabled" />
+				<status title="Full Domain Name" value="" />
+				<status title="Use SNTP to update time" value="Enabled" />
+				<status title="Engine Hours" value="0" />
+				<status title="LDAP authentication" value="Disabled" />
+				<status title="RADIUS authentication" value="Disabled" />
+				<status title="TACACS+ authentication" value="Disabled" />
+			</section>
+		</menu>
+		<menu name="Location">
+			<section name="">
+				<status title="Location Service" value="Disabled" />
+				<status title="Location Fix" value="No Location Fix" />
+				<status title="Satellite Count" value="0" />
+				<status title="GPS Satellites In Fix" value="0" />
+				<status title="GLONASS Satellites In Fix" value="0" />
+				<status title="Latitude" value="0" />
+				<status title="Longitude" value="0" />
+				<status title="Heading" value="0" />
+				<status title="Speed (km/h)" value="0" />
+				<status title="Estimated Position Uncertainty (meters)" value="0.0" />
+			</section>
+		</menu>
+		<menu name="Serial">
+			<section name="Serial Status">
+				<status title="Serial Port" value="Enabled" />
+				<status title="Serial Reserved by External Application" value="Disabled" />
+				<status title="Serial Port Mode" value="Normal (AT command)" />
+				<status title="Autologin Reverse Telnet" value="Enabled" />
+				<status title="TCP Auto Answer" value="Enabled" />
+				<status title="UDP Auto Answer" value="Enabled" />
+				<status title="Serial bytes sent" value="6" />
+				<status title="Serial bytes received" value="0" />
+				<status title="Host signal level" value="DCD: LOW DTR: LOW DSR: LOW CTS: HIGH RTS: LOW " />
+			</section>
+		</menu>
+		<menu name="Applications">
+			<section name="">
+				<status title="Garmin Status" value="Not Enabled" />
+				<status title="Data Service" value="Available (under usage limit)" />
+				<status title="Available RAM (KB)" value="204202" />
+				<status title="Available Flash (KB)" value="64280" />
+				<status title="CPU Load (last 15 minutes)" value="" />
+				<status title="ALEOS Application Framework" value="Disabled" />
+				<status title="Serial Port Reserved" value="Disabled" />
+				<status title="QCOM DM Port Resource Reserve" value="Disabled" />
+			</section>
+		</menu>
+		<menu name="Policy Routing">
+			<section name="">
+				<status title="Policy Route 1 Status" value="Disabled" />
+				<status title="Policy Route 2 Status" value="Disabled" />
+				<status title="Policy Route 3 Status" value="Disabled" />
+				<status title="Policy Route 4 Status" value="Disabled" />
+				<status title="Policy Route 5 Status" value="Disabled" />
+			</section>
+		</menu>
+		<menu name="RSR">
+			<section name="">
+				<status title="Reliable Static Route (RSR)" value="Disabled" />
+				<status title="Tracking Object" value="Disabled" />
+				<status title="RSR Active Route" value="None" />
+				<status title="RSR Test Result" value="Unknown" />
+				<status title="RSR Test TimeStamp" value="" />
+			</section>
+		</menu>
+		<menu name="About">
+			<section name="">
+				<status title="Device Model" value="RV50" />
+				<status title="Radio Module Type" value="MC7304" />
+				<status title="Radio Module Identifier" value="GENEU&#45;4G" />
+				<status title="Radio Firmware Version" value="SWI9X15C_05.05.58.00 r27038 carmd&#45;fwbuild1 2015/03/04 21:30:23" />
+				<status title="Radio Hardware Version" value=" 1.0" />
+				<status title="SKU PRI ID" value="9904481, 05.01" />
+				<status title="Carrier PRI ID" value="9902674, GENEU&#45;4G_005.026_000" />
+				<status title="Serial Number" value="LT84530544021034" />
+				<status title="Location/RAP Device ID" value="" />
+				<status title="Ethernet Mac Address" value="00:14:3E:43:31:83" />
+				<status title="ALEOS Software Version" value="4.9.3" />
+				<status title="ALEOS Build number" value="002" />
+				<status title="Device Hardware Configuration" value="1A210006000700000000000000000000" />
+				<status title="Boot Version" value="3.1.3" />
+				<status title="Recovery Version" value="2.0 &#45; 3f8ae4a4e914859b852" />
+				<status title="MCU Firmware Version" value="01.11" />
+				<status title="MSCI Version" value="32" />
+				<status title="Template Name" value="SCW" />
+			</section>
+		</menu>
+	</page>
+	</devicestatus>
+	<page name="WAN/Cellular">
+		<menu name="General">
+			<section name="Interface Priority">
+				<table name="WAN Interface Priority"> 
+					<row num="1">
+						<item msciid="15590" title="Interface" value="0" />
+						<item msciid="10415" title="Connection Status" value="0" />
+						<item msciid="15600" title="Priority" value="2" />
+					</row>
+					<row num="2">
+						<item msciid="15591" title="Interface" value="1" />
+						<item msciid="10416" title="Connection Status" value="0" />
+						<item msciid="15601" title="Priority" value="0" />
+					</row>
+				</table>
+				<item msciid="1109" title="Network Watchdog Timer" value="60" />
+				<item msciid="45110" title="Accelerated Interface Scan" value="0" />
+			</section>
+			<section name="Bandwidth Throttle">
+				<item msciid="4096" title="Mode" value="0" />
+				<item msciid="4104" title="Downlink Bandwidth (Kbps)" value="25600" />
+				<item msciid="4105" title="Maximum Downlink Burst Size (Kb)" value="51200" />
+				<item msciid="4120" title="Uplink Bandwidth (Kbps)" value="12288" />
+				<item msciid="4121" title="Maximum Uplink Burst Size (Kb)" value="24576" />
+			</section>
+			<section name="Ping Response">
+				<item msciid="2725" title="Response to Incoming Ping" value="1" />
+			</section>
+		</menu>
+		<menu name="Cellular">
+			<section name="General">
+				<item msciid="10702" title="Primary SIM" value="0" />
+				<item msciid="10890" title="Active SIM Based Firmware Switching" value="0" />
+				<item msciid="10706" title="Service Loss Timeout (minutes)" value="0" />
+				<item msciid="10707" title="Roaming Timeout (minutes)" value="0" />
+				<item msciid="10708" title="Secondary Network Timeout (minutes)" value="0" />
+				<item msciid="10892" title="Secondary Network Timeout (hours)" value="1" />
+				<item msciid="10709" title="Scan Timeout (minutes)" value="0" />
+				<item msciid="2152" title="RX Diversity" value="0" />
+				<item msciid="12003" title="IP Address Preference" value="0" />
+				<item msciid="2057" title="Setting for Band" value="00" />
+				<item msciid="10230" title="Cellular Network Watchdog" value="1" />
+				<item msciid="2051" title="Set Carrier [Operator] Selection" value="0" />
+				<item msciid="10204" title="LTE Active Reselection Interval" value="0" />
+				<item msciid="10213" title="LTE Reselection Time" value="20" />
+				<item msciid="10448" title="Always on connection" value="2" />
+				<item msciid="45113" title="Cellular Debounce Timer (seconds)" value="4" />
+				<item msciid="10446" title="Connection timeout (minutes)" value="2" />
+			</section>
+			<section name="SIM Slot 1 Configuration">
+				<item msciid="10710" title="User Entered APN" value="wsl.swisscom.ch" />
+				<item msciid="10803" title="Network Authentication Mode" value="2" />
+				<item msciid="10716" title="Network User ID" value="41797568858" />
+				<item msciid="10715" title="Network Password" value="L4VygkU/" />
+				<item msciid="10791" title="APN" value="" />
+				<item msciid="10805" title="Network Authentication Mode" value="0" />
+				<item msciid="10794" title="Network User ID" value="" />
+				<item msciid="10793" title="Network Password" value="" />
+			</section>
+			<section name="SIM Slot 2 Configuration">
+				<item msciid="10750" title="User Entered APN" value="" />
+				<item msciid="10804" title="Network Authentication Mode" value="0" />
+				<item msciid="10756" title="Network User ID" value="" />
+				<item msciid="10755" title="Network Password" value="" />
+				<item msciid="10795" title="APN" value="" />
+				<item msciid="10806" title="Network Authentication Mode" value="0" />
+				<item msciid="10798" title="Network User ID" value="" />
+				<item msciid="10797" title="Network Password" value="" />
+			</section>
+			<section name="Monitor">
+				<item msciid="45103" title="Test Interval (minutes)" value="15" />
+				<item msciid="45104" title="Monitor Type" value="0" />
+				<item msciid="45100" title="Ping Test IP Address" value="0.0.0.0" />
+				<item msciid="45102" title="Time Between Pings (seconds)" value="20" />
+			</section>
+		</menu>
+		<menu name="Ethernet">
+			<section name="Static Configuration">
+				<item msciid="2815" title="Ethernet WAN Mode" value="0" />
+				<item msciid="2818" title="Static WAN IP" value="0.0.0.0" />
+				<item msciid="2821" title="Static WAN Netmask" value="0.0.0.0" />
+				<item msciid="2824" title="Static WAN Gateway" value="0.0.0.0" />
+				<item msciid="2827" title="Static WAN DNS1" value="0.0.0.0" />
+				<item msciid="2830" title="Static WAN DNS2" value="0.0.0.0" />
+			</section>
+			<section name="Monitor">
+				<item msciid="45003" title="Test Interval (minutes)" value="5" />
+				<item msciid="45004" title="Monitor Type" value="0" />
+				<item msciid="45000" title="Ping Test IP Address" value="0.0.0.0" />
+				<item msciid="45002" title="Time Between Pings (seconds)" value="20" />
+			</section>
+		</menu>
+		<menu name="Reliable Static Route (RSR)">
+			<section name="Reliable Static Route (RSR)">
+				<item msciid="51000-d0" title="Reliable Static Routing" value="0" />
+				<item msciid="51001" title="Primary Interface" value="0" />
+				<item msciid="51007" title="Gateway for Primary Interface" value="0.0.0.0" />
+				<item msciid="51002" title="Backup Interface" value="5" />
+				<item msciid="51008" title="Gateway for Backup Interface" value="0.0.0.0" />
+				<item msciid="51003" title="Destination IP/Network" value="0.0.0.0" />
+				<item msciid="51004" title="Destination Subnet Mask" value="0.0.0.0" />
+				<item msciid="51005" title="Tracking Object" value="0" />
+			</section>
+			<section name="Reliable Static Route (RSR) ">
+				<item msciid="51000" title="Reliable Static Routing" value="0" />
+			</section>
+			<section name="Tracking Object">
+				<item msciid="52000-d0" title="Tracking Object" value="" />
+				<item msciid="52001" title="Test IP Address" value="0.0.0.0" />
+				<item msciid="52003" title="Test Interface" value="0" />
+				<item msciid="52004" title="Test Interval (seconds)" value="300" />
+				<item msciid="52005" title="Test Timeout (seconds)" value="5" />
+				<item msciid="52006" title="Maximum number of Test Retries" value="3" />
+			</section>
+			<section name="Tracking Object ">
+				<item msciid="52000" title="Tracking Object" value="0" />
+			</section>
+		</menu>
+		<menu name="Policy Routing">
+			<section name="Policy Route 1">
+				<item msciid="58000-d0" title="Policy Route 1" value="0" />
+				<item msciid="58011" title="Network Interface" value="0" />
+				<item msciid="58012" title="Gateway IP Address" value="0.0.0.0" />
+				<item msciid="58005" title="Destination IP Address" value="0.0.0.0" />
+				<item msciid="58006" title="Destination Subnet Mask" value="0.0.0.0" />
+				<item msciid="58007" title="Destination Port" value="0" />
+				<item msciid="58002" title="Source IP Address" value="0.0.0.0" />
+				<item msciid="58003" title="Source Subnet Mask" value="0.0.0.0" />
+				<item msciid="58004" title="Source Port" value="0" />
+				<item msciid="58010" title="Metric" value="0" />
+				<item msciid="58009" title="Failover" value="0" />
+			</section>
+			<section name="Policy Route 1 ">
+				<item msciid="58000" title="Policy Route 1" value="0" />
+			</section>
+			<section name="Policy Route 2">
+				<item msciid="58100-d0" title="Policy Route 2" value="0" />
+				<item msciid="58111" title="Network Interface" value="0" />
+				<item msciid="58112" title="Gateway IP Address" value="0.0.0.0" />
+				<item msciid="58105" title="Destination IP Address" value="0.0.0.0" />
+				<item msciid="58106" title="Destination Subnet Mask" value="0.0.0.0" />
+				<item msciid="58107" title="Destination Port" value="0" />
+				<item msciid="58102" title="Source IP Address" value="0.0.0.0" />
+				<item msciid="58103" title="Source Subnet Mask" value="0.0.0.0" />
+				<item msciid="58104" title="Source Port" value="0" />
+				<item msciid="58110" title="Metric" value="0" />
+				<item msciid="58109" title="Failover" value="0" />
+			</section>
+			<section name="Policy Route 2 ">
+				<item msciid="58100" title="Policy Route 2" value="0" />
+			</section>
+			<section name="Policy Route 3">
+				<item msciid="58200-d0" title="Policy Route 3" value="0" />
+				<item msciid="58211" title="Network Interface" value="0" />
+				<item msciid="58212" title="Gateway IP Address" value="0.0.0.0" />
+				<item msciid="58205" title="Destination IP Address" value="0.0.0.0" />
+				<item msciid="58206" title="Destination Subnet Mask" value="0.0.0.0" />
+				<item msciid="58207" title="Destination Port" value="0" />
+				<item msciid="58202" title="Source IP Address" value="0.0.0.0" />
+				<item msciid="58203" title="Source Subnet Mask" value="0.0.0.0" />
+				<item msciid="58204" title="Source Port" value="0" />
+				<item msciid="58210" title="Metric" value="0" />
+				<item msciid="58209" title="Failover" value="0" />
+			</section>
+			<section name="Policy Route 3 ">
+				<item msciid="58200" title="Policy Route 3" value="0" />
+			</section>
+			<section name="Policy Route 4">
+				<item msciid="58300-d0" title="Policy Route 4" value="0" />
+				<item msciid="58311" title="Network Interface" value="0" />
+				<item msciid="58312" title="Gateway IP Address" value="0.0.0.0" />
+				<item msciid="58305" title="Destination IP Address" value="0.0.0.0" />
+				<item msciid="58306" title="Destination Subnet Mask" value="0.0.0.0" />
+				<item msciid="58307" title="Destination Port" value="0" />
+				<item msciid="58302" title="Source IP Address" value="0.0.0.0" />
+				<item msciid="58303" title="Source Subnet Mask" value="0.0.0.0" />
+				<item msciid="58304" title="Source Port" value="0" />
+				<item msciid="58310" title="Metric" value="0" />
+				<item msciid="58309" title="Failover" value="0" />
+			</section>
+			<section name="Policy Route 4 ">
+				<item msciid="58300" title="Policy Route 4" value="0" />
+			</section>
+			<section name="Policy Route 5">
+				<item msciid="58400-d0" title="Policy Route 5" value="0" />
+				<item msciid="58411" title="Network Interface" value="0" />
+				<item msciid="58412" title="Gateway IP Address" value="0.0.0.0" />
+				<item msciid="58405" title="Destination IP Address" value="0.0.0.0" />
+				<item msciid="58406" title="Destination Subnet Mask" value="0.0.0.0" />
+				<item msciid="58407" title="Destination Port" value="0" />
+				<item msciid="58402" title="Source IP Address" value="0.0.0.0" />
+				<item msciid="58403" title="Source Subnet Mask" value="0.0.0.0" />
+				<item msciid="58404" title="Source Port" value="0" />
+				<item msciid="58410" title="Metric" value="0" />
+				<item msciid="58409" title="Failover" value="0" />
+			</section>
+			<section name="Policy Route 5 ">
+				<item msciid="58400" title="Policy Route 5" value="0" />
+			</section>
+		</menu>
+		<menu name="DMNR Configuration">
+			<section name="Dynamic Mobile Network Routing">
+				<item msciid="53000" title="DMNR Enable" value="0" />
+				<item msciid="53001" title="Home Address" value="0.0.0.0" />
+				<item msciid="53002" title="Home Agent Address" value="0.0.0.0" />
+				<item msciid="53027" title="N-MHAE-SPI" value="" />
+				<item msciid="53028" title="N-MHAE-KEY" value="" />
+				<item msciid="53003" title="Subnet 1" value="0.0.0.0" />
+				<item msciid="53004" title="Subnet 2" value="0.0.0.0" />
+				<item msciid="53005" title="Subnet 3" value="0.0.0.0" />
+				<item msciid="53006" title="Subnet 4" value="0.0.0.0" />
+				<item msciid="53007" title="Subnet 5" value="0.0.0.0" />
+				<item msciid="53008" title="Subnet 6" value="0.0.0.0" />
+				<item msciid="53009" title="Subnet 7" value="0.0.0.0" />
+				<item msciid="53010" title="Subnet 8" value="0.0.0.0" />
+				<item msciid="53011" title="Subnet 1 NetMask" value="0.0.0.0" />
+				<item msciid="53012" title="Subnet 2 NetMask" value="0.0.0.0" />
+				<item msciid="53013" title="Subnet 3 NetMask" value="0.0.0.0" />
+				<item msciid="53014" title="Subnet 4 NetMask" value="0.0.0.0" />
+				<item msciid="53015" title="Subnet 5 NetMask" value="0.0.0.0" />
+				<item msciid="53016" title="Subnet 6 NetMask" value="0.0.0.0" />
+				<item msciid="53017" title="Subnet 7 NetMask" value="0.0.0.0" />
+				<item msciid="53018" title="Subnet 8 NetMask" value="0.0.0.0" />
+			</section>
+			<section name="Foreign Agent">
+				<item msciid="53102" title="Re-registration Timer (seconds)" value="60" />
+				<item msciid="53103" title="Retry Time Interval (seconds)" value="3" />
+				<item msciid="53104" title="Maximum Retry Count" value="5" />
+				<item msciid="53105" title="Registration Request Lifetime (seconds)" value="65534" />
+			</section>
+			<section name="Reverse Tunnelling Agent">
+				<item msciid="53201" title="Maximum Transmission Unit - MTU (bytes)" value="1476" />
+				<item msciid="53204" title="Maximum Segment Size - MSS (bytes)" value="1436" />
+				<item msciid="53205" title="Force Fragmentation" value="0" />
+			</section>
+		</menu>
+		<menu name="PNTM Configuration">
+			<section name="PNTM Configuration 1">
+				<item msciid="41061" title="Status" value="0" />
+				<item msciid="41001" title="Destination IP 1" value="0.0.0.0" />
+				<item msciid="41021" title="Subnet Mask 1" value="255.255.255.0" />
+				<item msciid="41041" title="DSCP 1" value="0" />
+			</section>
+			<section name="PNTM Configuration 2">
+				<item msciid="41062" title="Status" value="0" />
+				<item msciid="41002" title="Destination IP 2" value="0.0.0.0" />
+				<item msciid="41022" title="Subnet Mask 2" value="255.255.255.0" />
+				<item msciid="41042" title="DSCP 2" value="0" />
+			</section>
+			<section name="PNTM Configuration 3">
+				<item msciid="41063" title="Status" value="0" />
+				<item msciid="41003" title="Destination IP 3" value="0.0.0.0" />
+				<item msciid="41023" title="Subnet Mask 3" value="255.255.255.0" />
+				<item msciid="41043" title="DSCP 3" value="0" />
+			</section>
+			<section name="PNTM Configuration 4">
+				<item msciid="41064" title="Status" value="0" />
+				<item msciid="41004" title="Destination IP 4" value="0.0.0.0" />
+				<item msciid="41024" title="Subnet Mask 4" value="255.255.255.0" />
+				<item msciid="41044" title="DSCP 4" value="0" />
+			</section>
+			<section name="PNTM Configuration 5">
+				<item msciid="41065" title="Status" value="0" />
+				<item msciid="41005" title="Destination IP 5" value="0.0.0.0" />
+				<item msciid="41025" title="Subnet Mask 5" value="255.255.255.0" />
+				<item msciid="41045" title="DSCP 5" value="0" />
+			</section>
+			<section name="PNTM Configuration 6">
+				<item msciid="41066" title="Status" value="0" />
+				<item msciid="41006" title="Destination IP 6" value="0.0.0.0" />
+				<item msciid="41026" title="Subnet Mask 6" value="255.255.255.0" />
+				<item msciid="41046" title="DSCP 6" value="0" />
+			</section>
+			<section name="PNTM Configuration 7">
+				<item msciid="41067" title="Status" value="0" />
+				<item msciid="41007" title="Destination IP 7" value="0.0.0.0" />
+				<item msciid="41027" title="Subnet Mask 7" value="255.255.255.0" />
+				<item msciid="41047" title="DSCP 7" value="0" />
+			</section>
+			<section name="PNTM Configuration 8">
+				<item msciid="41068" title="Status" value="0" />
+				<item msciid="41008" title="Destination IP 8" value="0.0.0.0" />
+				<item msciid="41028" title="Subnet Mask 8" value="255.255.255.0" />
+				<item msciid="41048" title="DSCP 8" value="0" />
+			</section>
+			<section name="PNTM Configuration 9">
+				<item msciid="41069" title="Status" value="0" />
+				<item msciid="41009" title="Destination IP 9" value="0.0.0.0" />
+				<item msciid="41029" title="Subnet Mask 9" value="255.255.255.0" />
+				<item msciid="41049" title="DSCP 9" value="0" />
+			</section>
+			<section name="PNTM Configuration 10">
+				<item msciid="41070" title="Status" value="0" />
+				<item msciid="41010" title="Destination IP 10" value="0.0.0.0" />
+				<item msciid="41030" title="Subnet Mask 10" value="255.255.255.0" />
+				<item msciid="41050" title="DSCP 10" value="0" />
+			</section>
+			<section name="PNTM Configuration 11">
+				<item msciid="41071" title="Status" value="0" />
+				<item msciid="41011" title="Destination IP 11" value="0.0.0.0" />
+				<item msciid="41031" title="Subnet Mask 11" value="255.255.255.0" />
+				<item msciid="41051" title="DSCP 11" value="0" />
+			</section>
+			<section name="PNTM Configuration 12">
+				<item msciid="41072" title="Status" value="0" />
+				<item msciid="41012" title="Destination IP 12" value="0.0.0.0" />
+				<item msciid="41032" title="Subnet Mask 12" value="255.255.255.0" />
+				<item msciid="41052" title="DSCP 12" value="0" />
+			</section>
+			<section name="PNTM Configuration 13">
+				<item msciid="41073" title="Status" value="0" />
+				<item msciid="41013" title="Destination IP 13" value="0.0.0.0" />
+				<item msciid="41033" title="Subnet Mask 13" value="255.255.255.0" />
+				<item msciid="41053" title="DSCP 13" value="0" />
+			</section>
+			<section name="PNTM Configuration 14">
+				<item msciid="41074" title="Status" value="0" />
+				<item msciid="41014" title="Destination IP 14" value="0.0.0.0" />
+				<item msciid="41034" title="Subnet Mask 14" value="255.255.255.0" />
+				<item msciid="41054" title="DSCP 14" value="0" />
+			</section>
+			<section name="PNTM Configuration 15">
+				<item msciid="41075" title="Status" value="0" />
+				<item msciid="41015" title="Destination IP 15" value="0.0.0.0" />
+				<item msciid="41035" title="Subnet Mask 15" value="255.255.255.0" />
+				<item msciid="41055" title="DSCP 15" value="0" />
+			</section>
+		</menu>
+	</page>
+	<page name="LAN">
+		<menu name="DHCP/Addressing">
+			<section name="General">
+				<item msciid="5018" title="Lease Timer (seconds)" value="3600" />
+			</section>
+			<section name="IP Passthrough">
+				<item msciid="1139" title="IP Passthrough" value="1" />
+				<item msciid="11400" title="IP Passthrough Mode" value="0" />
+				<item msciid="10106" title="IP Passthrough Subnet Mask" value="255.255.255.0" />
+				<item msciid="11401" title="Reset Host Interface" value="1" />
+				<item msciid="11402" title="MAC Address" value="00:00:00:00:00:00" />
+			</section>
+			<section name="DHCP Reservation List">
+				<table name="Reservation List"> 
+					<row num="1">
+						<item msciid="18001" title="MAC Address" value="00:d0:2c:06:1b:c6" />
+						<item msciid="18101" title="IP Address" value="192.168.13.100" />
+					</row>
+				</table>
+			</section>
+			<section name="DHCP Options">
+				<item msciid="55104" title="MTU Source" value="0" />
+				<table name="Options"> 
+					<row num="1">
+						<item msciid="9100" title="Interface" value="0" />
+						<item msciid="9150" title="Option Code" value="26" />
+						<item msciid="9200" title="Option Value" value="1500" />
+					</row>
+					<row num="2">
+						<item msciid="9101" title="Interface" value="0" />
+						<item msciid="9151" title="Option Code" value="0" />
+						<item msciid="9201" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="3">
+						<item msciid="9102" title="Interface" value="0" />
+						<item msciid="9152" title="Option Code" value="0" />
+						<item msciid="9202" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="4">
+						<item msciid="9103" title="Interface" value="0" />
+						<item msciid="9153" title="Option Code" value="0" />
+						<item msciid="9203" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="5">
+						<item msciid="9104" title="Interface" value="0" />
+						<item msciid="9154" title="Option Code" value="0" />
+						<item msciid="9204" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="6">
+						<item msciid="9105" title="Interface" value="0" />
+						<item msciid="9155" title="Option Code" value="0" />
+						<item msciid="9205" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="7">
+						<item msciid="9106" title="Interface" value="0" />
+						<item msciid="9156" title="Option Code" value="0" />
+						<item msciid="9206" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="8">
+						<item msciid="9107" title="Interface" value="0" />
+						<item msciid="9157" title="Option Code" value="0" />
+						<item msciid="9207" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="9">
+						<item msciid="9108" title="Interface" value="0" />
+						<item msciid="9158" title="Option Code" value="0" />
+						<item msciid="9208" title="Option Value" value="NOTSET" />
+					</row>
+					<row num="10">
+						<item msciid="9109" title="Interface" value="0" />
+						<item msciid="9159" title="Option Code" value="0" />
+						<item msciid="9209" title="Option Value" value="NOTSET" />
+					</row>
+				</table>
+			</section>
+			<section name="DHCP Vendor Specific Options">
+				<table name="Vendor Specific Options"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="Ethernet">
+			<section name="General">
+				<item msciid="1084" title="Device IP" value="192.168.13.31" />
+				<item msciid="1137" title="Starting IP" value="192.168.13.100" />
+				<item msciid="1138" title="Ending IP" value="192.168.13.150" />
+				<item msciid="1135" title="DHCP network mask" value="255.255.255.0" />
+				<item msciid="2722" title="DHCP Mode" value="2" />
+				<table name="Ethernet Port Configuration"> 
+					<row num="1">
+						<item msciid="2764" title="Port Number" value="0" />
+						<item msciid="2803" title="State" value="1" />
+						<item msciid="2800" title="Port Mode" value="0" />
+						<item msciid="2760" title="Link Setting" value="3" />
+					</row>
+				</table>
+			</section>
+			<section name="Advanced">
+				<item msciid="1179" title="Turn Off NAT" value="0" />
+				<item msciid="1209" title="Accept Unsolicited Traffic" value="0" />
+				<item msciid="10271" title="Ephemeral Port" value="0" />
+				<item msciid="10270" title="Starting Ephemeral Port" value="1024" />
+			</section>
+		</menu>
+		<menu name="USB">
+			<section name="General">
+				<item msciid="1130" title="USB Device Mode" value="2" />
+				<item msciid="10197" title="USB Serial Mode" value="0" />
+				<item msciid="10199" title="DNS Passing" value="0" />
+				<item msciid="1140" title="Device USB IP" value="192.168.14.31" />
+				<item msciid="1141" title="Host USB IP" value="192.168.14.100" />
+				<item msciid="10421" title="USB Network Mask" value="255.255.255.0" />
+				<item msciid="1126" title="USB Serial Echo" value="1" />
+				<item msciid="10201" title="USBNET Host WAN Connectivity" value="0" />
+			</section>
+		</menu>
+		<menu name="Link WAN Coverage">
+			<section name="General">
+				<item msciid="2723" title="Link WAN Coverage to Interface" value="0" />
+				<item msciid="2763" title="Interface Disabled Duration" value="0" />
+			</section>
+		</menu>
+		<menu name="Host Port Routing">
+			<section name="">
+				<item msciid="3510" title="Proxy ARP (Primary Gateway)" value="1" />
+				<item msciid="1131" title="Host Network 2" value="0.0.0.0" />
+				<item msciid="1132" title="Host Network Subnet Mask 2" value="0.0.0.0" />
+				<item msciid="2726" title="Host Network 2 Route" value="0" />
+				<item msciid="2727" title="Host Network 2 Gateway" value="0.0.0.0" />
+				<item msciid="1133" title="Host Network 3" value="0.0.0.0" />
+				<item msciid="1134" title="Host Network Subnet Mask 3" value="0.0.0.0" />
+				<item msciid="2728" title="Host Network 3 Route" value="0" />
+				<item msciid="2729" title="Host Network 3 Gateway" value="0.0.0.0" />
+			</section>
+		</menu>
+		<menu name="Global DNS">
+			<section name="Global DNS - IPv4">
+				<item msciid="10298" title="DNS Proxy" value="1" />
+				<item msciid="5030" title="DNS Override" value="0" />
+				<item msciid="5031" title="DNS Local Cache" value="1" />
+				<item msciid="1091" title="Alternate Primary DNS" value="0.0.0.0" />
+				<item msciid="1136" title="Alternate Secondary DNS" value="0.0.0.0" />
+				<item msciid="2753" title="Alternate DNS Port" value="53" />
+			</section>
+		</menu>
+		<menu name="PPPoE">
+			<section name="">
+				<item msciid="1120" title="Host Authentication Mode" value="0" />
+				<item msciid="1121" title="Host User ID" value="" />
+				<item msciid="1122" title="Host Password" value="" />
+			</section>
+		</menu>
+		<menu name="VLAN">
+			<section name="">
+				<table name="VLAN"> 
+					<row num="1">
+						<item msciid="9063" title="Interface" value="3" />
+						<item msciid="8021" title="VLAN ID" value="0" />
+						<item msciid="8031" title="Device IP" value="0.0.0.0" />
+						<item msciid="8041" title="Subnet Mask" value="0.0.0.0" />
+						<item msciid="8051" title="Access WAN" value="0" />
+						<item msciid="8061" title="DHCP Server Mode" value="0" />
+						<item msciid="8071" title="Starting IP" value="0.0.0.0" />
+						<item msciid="8081" title="Ending IP" value="0.0.0.0" />
+					</row>
+					<row num="2">
+						<item msciid="9064" title="Interface" value="4" />
+						<item msciid="8022" title="VLAN ID" value="0" />
+						<item msciid="8032" title="Device IP" value="0.0.0.0" />
+						<item msciid="8042" title="Subnet Mask" value="0.0.0.0" />
+						<item msciid="8052" title="Access WAN" value="0" />
+						<item msciid="8062" title="DHCP Server Mode" value="0" />
+						<item msciid="8072" title="Starting IP" value="0.0.0.0" />
+						<item msciid="8082" title="Ending IP" value="0.0.0.0" />
+					</row>
+					<row num="3">
+						<item msciid="9065" title="Interface" value="5" />
+						<item msciid="8023" title="VLAN ID" value="0" />
+						<item msciid="8033" title="Device IP" value="0.0.0.0" />
+						<item msciid="8043" title="Subnet Mask" value="0.0.0.0" />
+						<item msciid="8053" title="Access WAN" value="0" />
+						<item msciid="8063" title="DHCP Server Mode" value="0" />
+						<item msciid="8073" title="Starting IP" value="0.0.0.0" />
+						<item msciid="8083" title="Ending IP" value="0.0.0.0" />
+					</row>
+				</table>
+			</section>
+		</menu>
+		<menu name="VRRP">
+			<section name="">
+				<item msciid="9001" title="VRRP Mode" value="0" />
+				<table name="VRRP"> 
+					<row num="1">
+						<item msciid="9060" title="Interface" value="0" />
+						<item msciid="8020" title="VLAN ID" value="0" />
+						<item msciid="9020" title="Group ID" value="0" />
+						<item msciid="9030" title="Priority" value="100" />
+						<item msciid="9050" title="Virtual IP" value="0.0.0.0" />
+						<item msciid="9010" title="Mode" value="BACKUP" />
+						<item msciid="9040" title="Interval" value="1" />
+					</row>
+					<row num="2">
+						<item msciid="9061" title="Interface" value="1" />
+						<item msciid="8021" title="VLAN ID" value="0" />
+						<item msciid="9021" title="Group ID" value="0" />
+						<item msciid="9031" title="Priority" value="100" />
+						<item msciid="9051" title="Virtual IP" value="0.0.0.0" />
+						<item msciid="9011" title="Mode" value="BACKUP" />
+						<item msciid="9041" title="Interval" value="1" />
+					</row>
+					<row num="3">
+						<item msciid="9062" title="Interface" value="2" />
+						<item msciid="8022" title="VLAN ID" value="0" />
+						<item msciid="9022" title="Group ID" value="0" />
+						<item msciid="9032" title="Priority" value="100" />
+						<item msciid="9052" title="Virtual IP" value="0.0.0.0" />
+						<item msciid="9012" title="Mode" value="BACKUP" />
+						<item msciid="9042" title="Interval" value="1" />
+					</row>
+					<row num="4">
+						<item msciid="9063" title="Interface" value="3" />
+						<item msciid="8023" title="VLAN ID" value="0" />
+						<item msciid="9023" title="Group ID" value="0" />
+						<item msciid="9033" title="Priority" value="100" />
+						<item msciid="9053" title="Virtual IP" value="0.0.0.0" />
+						<item msciid="9013" title="Mode" value="BACKUP" />
+						<item msciid="9043" title="Interval" value="1" />
+					</row>
+				</table>
+			</section>
+		</menu>
+		<menu name="Host Interface Watchdog">
+			<section name="">
+				<item msciid="1177" title="LAN Keepalive IP Address" value="0.0.0.0" />
+				<item msciid="1178" title="LAN Keepalive Interval (minutes)" value="0" />
+				<item msciid="10067" title="Force LAN Keepalive" value="1" />
+			</section>
+		</menu>
+	</page>
+	<page name="VPN">
+		<menu name="Split Tunnel">
+			<section name="">
+				<item msciid="3177" title="Incoming Out of Band" value="0" />
+				<item msciid="3178" title="Outgoing Management Out of Band" value="1" />
+				<item msciid="3179" title="Outgoing Host Out of Band" value="0" />
+			</section>
+		</menu>
+		<menu name="VPN 1">
+			<section name="General">
+				<item msciid="3151" title="VPN 1 Type" value="0" />
+				<item msciid="3153" title="VPN Gateway Address" value="208.81.123.21" />
+				<item msciid="3155" title="Pre-shared Key 1" value="SierraWireless" />
+				<item msciid="3157" title="My Identity Type" value="1" />
+				<item msciid="3305" title="My Identity - FQDN" value="" />
+				<item msciid="3159" title="Peer Identity Type" value="1" />
+				<item msciid="3306" title="Peer Identity - FQDN" value="" />
+				<item msciid="3161" title="Negotiation Mode" value="1" />
+				<item msciid="3162" title="IKE Encryption Algorithm" value="7" />
+				<item msciid="3163" title="IKE Authentication Algorithm" value="2" />
+				<item msciid="3164" title="IKE Key Group" value="2" />
+				<item msciid="3165" title="IKE SA Life Time" value="7200" />
+				<item msciid="33400" title="IKE DPD" value="0" />
+				<item msciid="33401" title="IKE DPD Interval (seconds)" value="0" />
+				<item msciid="3166" title="Local Address Type" value="17" />
+				<item msciid="3167" title="Local Address" value="192.168.13.0" />
+				<item msciid="3168" title="Local Address - Netmask" value="255.255.255.0" />
+				<item msciid="3169" title="Remote Address Type" value="17" />
+				<item msciid="3170" title="Remote Address" value="10.11.12.0" />
+				<item msciid="3171" title="Remote Address - Netmask" value="255.255.255.0" />
+				<item msciid="3289" title="Perfect Forward Secrecy" value="0" />
+				<item msciid="3172" title="IPSec Encryption Algorithm" value="3" />
+				<item msciid="3173" title="IPSec Authentication Algorithm" value="2" />
+				<item msciid="3174" title="IPSec Key Group" value="2" />
+				<item msciid="3175" title="IPSec SA Life Time" value="7200" />
+				<item msciid="5201" title="GRE TTL" value="255" />
+				<item msciid="10004" title="Peer Port" value="9300" />
+				<item msciid="10005" title="Peer Identify" value="0.0.0.0" />
+				<item msciid="10008" title="Encryption Algorithm" value="3" />
+				<item msciid="10009" title="Authentication Algorithm" value="2" />
+				<item msciid="10024" title="Compression" value="1" />
+				<item msciid="10014" title="Client Certificate" value="0" />
+				<item msciid="10010" title="User Name" value="" />
+				<item msciid="10011" title="User Password" value="" />
+				<item msciid="10017" title="User Name/Password Retry" value="0" />
+				<item msciid="10016" title="Additional TLS Authentication" value="0" />
+				<item msciid="10018" title="Server Certificate Verification" value="0" />
+			</section>
+			<section name="Advanced">
+				<item msciid="10020" title="Tunnel-MTU" value="1500" />
+				<item msciid="10025" title="MSS Fix" value="1400" />
+				<item msciid="10021" title="Fragment" value="1300" />
+				<item msciid="10026" title="Allow Peer Dynamic IP" value="1" />
+				<item msciid="10022" title="Re-negotiation (seconds)" value="86400" />
+				<item msciid="10027" title="Ping Interval (seconds)" value="10" />
+				<item msciid="10028" title="Tunnel Restart (seconds)" value="60" />
+				<item msciid="10023" title="NAT" value="1" />
+			</section>
+			<section name="Additional Remote Subnets">
+				<item msciid="3328" title="Remote Subnet 2 Address Type" value="17" />
+				<item msciid="3329" title="Remote Subnet 2 Address" value="0.0.0.0" />
+				<item msciid="3330" title="Remote Subnet 2 Address - Netmask" value="255.255.255.0" />
+				<item msciid="3336" title="Remote Subnet 3 Address Type" value="17" />
+				<item msciid="3337" title="Remote Subnet 3 Address" value="0.0.0.0" />
+				<item msciid="3338" title="Remote Subnet 3 Address - Netmask" value="255.255.255.0" />
+			</section>
+		</menu>
+		<menu name="VPN 2">
+			<section name="General">
+				<item msciid="3180" title="VPN 2 Type" value="0" />
+				<item msciid="3182" title="VPN Gateway Address" value="208.81.123.22" />
+				<item msciid="3184" title="Pre-shared Key 1" value="SierraWireless" />
+				<item msciid="3186" title="My Identity Type" value="1" />
+				<item msciid="3307" title="My Identity - FQDN" value="" />
+				<item msciid="3188" title="Peer Identity Type" value="1" />
+				<item msciid="3308" title="Peer Identity - FQDN" value="" />
+				<item msciid="3190" title="Negotiation Mode" value="1" />
+				<item msciid="3191" title="IKE Encryption Algorithm" value="7" />
+				<item msciid="3192" title="IKE Authentication Algorithm" value="1" />
+				<item msciid="3193" title="IKE Key Group" value="2" />
+				<item msciid="3194" title="IKE SA Life Time" value="7200" />
+				<item msciid="33404" title="IKE DPD" value="0" />
+				<item msciid="33405" title="IKE DPD Interval (seconds)" value="0" />
+				<item msciid="3195" title="Local Address Type" value="17" />
+				<item msciid="3196" title="Local Address" value="192.168.13.0" />
+				<item msciid="3197" title="Local Address - Netmask" value="255.255.255.0" />
+				<item msciid="3198" title="Remote Address Type" value="17" />
+				<item msciid="3199" title="Remote Address" value="10.11.13.0" />
+				<item msciid="3200" title="Remote Address - Netmask" value="255.255.255.0" />
+				<item msciid="3290" title="Perfect Forward Secrecy" value="0" />
+				<item msciid="3201" title="IPSec Encryption Algorithm" value="3" />
+				<item msciid="3202" title="IPSec Authentication Algorithm" value="1" />
+				<item msciid="3203" title="IPSec Key Group" value="2" />
+				<item msciid="3204" title="IPSec SA Life Time" value="7200" />
+				<item msciid="5202" title="GRE TTL" value="255" />
+			</section>
+			<section name="Additional Remote Subnets">
+				<item msciid="3360" title="Remote Subnet 2 Address Type" value="17" />
+				<item msciid="3361" title="Remote Subnet 2 Address" value="0.0.0.0" />
+				<item msciid="3362" title="Remote Subnet 2 Address - Netmask" value="255.255.255.0" />
+				<item msciid="3368" title="Remote Subnet 3 Address Type" value="17" />
+				<item msciid="3369" title="Remote Subnet 3 Address" value="0.0.0.0" />
+				<item msciid="3370" title="Remote Subnet 3 Address - Netmask" value="255.255.255.0" />
+			</section>
+		</menu>
+		<menu name="VPN 3">
+			<section name="General">
+				<item msciid="3206" title="VPN 3 Type" value="0" />
+				<item msciid="3208" title="VPN Gateway Address" value="208.81.123.26" />
+				<item msciid="3210" title="Pre-shared Key 1" value="SierraWireless" />
+				<item msciid="3212" title="My Identity Type" value="1" />
+				<item msciid="3309" title="My Identity - FQDN" value="" />
+				<item msciid="3214" title="Peer Identity Type" value="1" />
+				<item msciid="3310" title="Peer Identity - FQDN" value="" />
+				<item msciid="3216" title="Negotiation Mode" value="1" />
+				<item msciid="3217" title="IKE Encryption Algorithm" value="5" />
+				<item msciid="3218" title="IKE Authentication Algorithm" value="2" />
+				<item msciid="3219" title="IKE Key Group" value="2" />
+				<item msciid="3220" title="IKE SA Life Time" value="7200" />
+				<item msciid="33408" title="IKE DPD" value="0" />
+				<item msciid="33409" title="IKE DPD Interval (seconds)" value="0" />
+				<item msciid="3221" title="Local Address Type" value="17" />
+				<item msciid="3222" title="Local Address" value="192.168.13.0" />
+				<item msciid="3223" title="Local Address - Netmask" value="255.255.255.0" />
+				<item msciid="3224" title="Remote Address Type" value="17" />
+				<item msciid="3225" title="Remote Address" value="10.11.14.0" />
+				<item msciid="3226" title="Remote Address - Netmask" value="255.255.255.0" />
+				<item msciid="3291" title="Perfect Forward Secrecy" value="0" />
+				<item msciid="3227" title="IPSec Encryption Algorithm" value="2" />
+				<item msciid="3228" title="IPSec Authentication Algorithm" value="2" />
+				<item msciid="3229" title="IPSec Key Group" value="2" />
+				<item msciid="3230" title="IPSec SA Life Time" value="7200" />
+				<item msciid="5203" title="GRE TTL" value="255" />
+			</section>
+			<section name="Additional Remote Subnets">
+				<item msciid="3392" title="Remote Subnet 2 Address Type" value="17" />
+				<item msciid="3393" title="Remote Subnet 2 Address" value="0.0.0.0" />
+				<item msciid="3394" title="Remote Subnet 2 Address - Netmask" value="255.255.255.0" />
+				<item msciid="3400" title="Remote Subnet 3 Address Type" value="17" />
+				<item msciid="3401" title="Remote Subnet 3 Address" value="0.0.0.0" />
+				<item msciid="3402" title="Remote Subnet 3 Address - Netmask" value="255.255.255.0" />
+			</section>
+		</menu>
+		<menu name="VPN 4">
+			<section name="General">
+				<item msciid="3232" title="VPN 4 Type" value="0" />
+				<item msciid="3234" title="VPN Gateway Address" value="208.81.123.23" />
+				<item msciid="3236" title="Pre-shared Key 1" value="SierraWireless" />
+				<item msciid="3238" title="My Identity Type" value="1" />
+				<item msciid="3311" title="My Identity - FQDN" value="" />
+				<item msciid="3240" title="Peer Identity Type" value="1" />
+				<item msciid="3312" title="Peer Identity - FQDN" value="" />
+				<item msciid="3242" title="Negotiation Mode" value="1" />
+				<item msciid="3243" title="IKE Encryption Algorithm" value="5" />
+				<item msciid="3244" title="IKE Authentication Algorithm" value="1" />
+				<item msciid="3245" title="IKE Key Group" value="2" />
+				<item msciid="3246" title="IKE SA Life Time" value="7200" />
+				<item msciid="33412" title="IKE DPD" value="0" />
+				<item msciid="33413" title="IKE DPD Interval (seconds)" value="0" />
+				<item msciid="3247" title="Local Address Type" value="17" />
+				<item msciid="3248" title="Local Address" value="192.168.13.0" />
+				<item msciid="3249" title="Local Address - Netmask" value="255.255.255.0" />
+				<item msciid="3250" title="Remote Address Type" value="17" />
+				<item msciid="3251" title="Remote Address" value="10.11.15.0" />
+				<item msciid="3252" title="Remote Address - Netmask" value="255.255.255.0" />
+				<item msciid="3292" title="Perfect Forward Secrecy" value="0" />
+				<item msciid="3253" title="IPSec Encryption Algorithm" value="2" />
+				<item msciid="3254" title="IPSec Authentication Algorithm" value="1" />
+				<item msciid="3255" title="IPSec Key Group" value="2" />
+				<item msciid="3256" title="IPSec SA Life Time" value="7200" />
+				<item msciid="5204" title="GRE TTL" value="255" />
+			</section>
+			<section name="Additional Remote Subnets">
+				<item msciid="3424" title="Remote Subnet 2 Address Type" value="17" />
+				<item msciid="3425" title="Remote Subnet 2 Address" value="0.0.0.0" />
+				<item msciid="3426" title="Remote Subnet 2 Address - Netmask" value="255.255.255.0" />
+				<item msciid="3432" title="Remote Subnet 3 Address Type" value="17" />
+				<item msciid="3433" title="Remote Subnet 3 Address" value="0.0.0.0" />
+				<item msciid="3434" title="Remote Subnet 3 Address - Netmask" value="255.255.255.0" />
+			</section>
+		</menu>
+		<menu name="VPN 5">
+			<section name="General">
+				<item msciid="3258" title="VPN 5 Type" value="0" />
+				<item msciid="3260" title="VPN Gateway Address" value="208.81.123.24" />
+				<item msciid="3262" title="Pre-shared Key 1" value="SierraWireless" />
+				<item msciid="3264" title="Local ID Type" value="1" />
+				<item msciid="3313" title="My Identity - FQDN" value="" />
+				<item msciid="3266" title="Peer Identity Type" value="1" />
+				<item msciid="3314" title="Peer Identity - FQDN" value="" />
+				<item msciid="3268" title="Negotiation Mode" value="1" />
+				<item msciid="3269" title="IKE Encryption Algorithm" value="9" />
+				<item msciid="3270" title="IKE Authentication Algorithm" value="2" />
+				<item msciid="3271" title="IKE Key Group" value="2" />
+				<item msciid="3272" title="IKE SA Life Time" value="7200" />
+				<item msciid="33416" title="IKE DPD" value="0" />
+				<item msciid="33417" title="IKE DPD Interval (seconds)" value="0" />
+				<item msciid="3273" title="Local Address Type" value="17" />
+				<item msciid="3274" title="Local Address" value="192.168.13.0" />
+				<item msciid="3275" title="Local Address - Netmask" value="255.255.255.0" />
+				<item msciid="3276" title="Remote Address Type" value="17" />
+				<item msciid="3277" title="Remote Address" value="10.11.16.0" />
+				<item msciid="3278" title="Remote Address - Netmask" value="255.255.255.0" />
+				<item msciid="3293" title="Perfect Forward Secrecy" value="0" />
+				<item msciid="3279" title="IPSec Encryption Algorithm" value="7" />
+				<item msciid="3280" title="IPSec Authentication Algorithm" value="2" />
+				<item msciid="3281" title="IPSec Key Group" value="2" />
+				<item msciid="3282" title="IPSec SA Life Time" value="7200" />
+				<item msciid="5205" title="GRE TTL" value="255" />
+			</section>
+			<section name="Additional Remote Subnets">
+				<item msciid="3456" title="Remote Subnet 2 Address Type" value="17" />
+				<item msciid="3457" title="Remote Subnet 2 Address" value="0.0.0.0" />
+				<item msciid="3458" title="Remote Subnet 2 Address - Netmask" value="255.255.255.0" />
+				<item msciid="3464" title="Remote Subnet 3 Address Type" value="17" />
+				<item msciid="3465" title="Remote Subnet 3 Address" value="0.0.0.0" />
+				<item msciid="3466" title="Remote Subnet 3 Address - Netmask" value="255.255.255.0" />
+			</section>
+		</menu>
+		<menu name="Failover">
+			<section name="">
+				<item msciid="4288" title="Primary VPN" value="None" />
+				<item msciid="4289" title="Secondary VPN" value="None" />
+				<item msciid="4290" title="Revertive" value="1" />
+			</section>
+		</menu>
+	</page>
+	<page name="Security">
+		<menu name="Port Forwarding">
+			<section name="">
+				<item msciid="5113" title="DMZ Host Enabled" value="0" />
+				<item msciid="3504" title="DMZ Host IP" value="0.0.0.0" />
+				<item msciid="5112" title="Port Forwarding" value="1" />
+				<table name="Port Forwarding"> 
+					<row num="1">
+						<item msciid="3621" title="Public Start Port" value="6785" />
+						<item msciid="3801" title="Public End Port" value="0" />
+						<item msciid="3641" title="Protocol" value="0" />
+						<item msciid="3661" title="Host IP" value="192.168.15.100" />
+						<item msciid="3681" title="Private Start Port" value="6785" />
+					</row>
+					<row num="2">
+						<item msciid="3622" title="Public Start Port" value="6786" />
+						<item msciid="3802" title="Public End Port" value="0" />
+						<item msciid="3642" title="Protocol" value="0" />
+						<item msciid="3662" title="Host IP" value="192.168.13.100" />
+						<item msciid="3682" title="Private Start Port" value="6785" />
+					</row>
+					<row num="3">
+						<item msciid="3623" title="Public Start Port" value="6787" />
+						<item msciid="3803" title="Public End Port" value="0" />
+						<item msciid="3643" title="Protocol" value="0" />
+						<item msciid="3663" title="Host IP" value="192.168.13.101" />
+						<item msciid="3683" title="Private Start Port" value="6785" />
+					</row>
+					<row num="4">
+						<item msciid="3624" title="Public Start Port" value="3001" />
+						<item msciid="3804" title="Public End Port" value="0" />
+						<item msciid="3644" title="Protocol" value="3" />
+						<item msciid="3664" title="Host IP" value="192.168.15.100" />
+						<item msciid="3684" title="Private Start Port" value="3001" />
+					</row>
+					<row num="5">
+						<item msciid="3625" title="Public Start Port" value="21" />
+						<item msciid="3805" title="Public End Port" value="0" />
+						<item msciid="3645" title="Protocol" value="0" />
+						<item msciid="3665" title="Host IP" value="192.168.15.100" />
+						<item msciid="3685" title="Private Start Port" value="21" />
+					</row>
+					<row num="6">
+						<item msciid="3626" title="Public Start Port" value="9192" />
+						<item msciid="3806" title="Public End Port" value="0" />
+						<item msciid="3646" title="Protocol" value="0" />
+						<item msciid="3666" title="Host IP" value="192.168.15.100" />
+						<item msciid="3686" title="Private Start Port" value="80" />
+					</row>
+					<row num="7">
+						<item msciid="3627" title="Public Start Port" value="9193" />
+						<item msciid="3807" title="Public End Port" value="0" />
+						<item msciid="3647" title="Protocol" value="0" />
+						<item msciid="3667" title="Host IP" value="192.168.13.100" />
+						<item msciid="3687" title="Private Start Port" value="80" />
+					</row>
+					<row num="8">
+						<item msciid="3628" title="Public Start Port" value="9194" />
+						<item msciid="3808" title="Public End Port" value="0" />
+						<item msciid="3648" title="Protocol" value="0" />
+						<item msciid="3668" title="Host IP" value="192.168.13.101" />
+						<item msciid="3688" title="Private Start Port" value="80" />
+					</row>
+				</table>
+			</section>
+		</menu>
+		<menu name="Extended Port Forwarding">
+			<section name="">
+				<table name="Extended Port Forwarding"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="Port Filtering - Inbound">
+			<section name="">
+				<item msciid="3505" title="Inbound Port Filtering Mode" value="0" />
+				<table name="Filtered Ports"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="Port Filtering - Outbound">
+			<section name="">
+				<item msciid="3506" title="Outbound Port Filtering Mode" value="0" />
+				<table name="Filtered Ports"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="Trusted IPs - Inbound (Friends)">
+			<section name="">
+				<item msciid="1062" title="Inbound Trusted IP (Friends List) Mode" value="0" />
+				<table name="Inbound Trusted IP List"> 
+				</table>
+				<table name="Inbound Trusted IP Range"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="Trusted IPs - Outbound">
+			<section name="">
+				<item msciid="3507" title="Outbound Firewall Mode" value="0" />
+				<table name="Outbound Trusted IP List"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="MAC Filtering">
+			<section name="">
+				<item msciid="3509" title="MAC Filtering" value="0" />
+				<table name="MAC Address allowed List"> 
+				</table>
+			</section>
+		</menu>
+	</page>
+	<page name="Services">
+		<menu name="ALMS">
+			<section name="AirLink Management Service">
+				<item msciid="5022" title="ALMS Protocol" value="1" />
+				<item msciid="5024" title="Device Initiated Interval (minutes)" value="1440" />
+				<item msciid="5023" title="ALMS Name" value="" />
+			</section>
+			<section name="MSCI">
+				<item msciid="5027" title="Server URL" value="http://na.m2mop.net/device/msci/com" />
+				<item msciid="10258" title="Auto Synchronize Configuration" value="1" />
+				<item msciid="10241" title="TLS Verify Peer Certificate" value="1" />
+				<item msciid="15500" title="HTTP Server And ACEview Services" value="0" />
+			</section>
+			<section name="LWM2M">
+				<item msciid="15301" title="Keep Alive Interval (seconds)" value="0" />
+				<item msciid="15304" title="Always Register On Startup" value="0" />
+			</section>
+		</menu>
+		<menu name="ACEmanager">
+			<section name="General">
+				<item msciid="1173" title="Remote Access" value="2" />
+				<item msciid="1174" title="Local Access" value="2" />
+				<item msciid="1150" title="HTTP Port" value="9191" />
+				<item msciid="1172" title="HTTPS Port" value="9443" />
+				<item msciid="10032" title="Session Idle Timeout (minutes)" value="15" />
+				<item msciid="9801" title="Maximum Login Attempts" value="0" />
+				<item msciid="9802" title="Unlock Time (seconds)" value="120" />
+			</section>
+			<section name="Advanced">
+				<item msciid="10031" title="Custom Certificate" value="0" />
+			</section>
+		</menu>
+		<menu name="Power Management">
+			<section name="Ignition Shutdown Delay">
+				<item msciid="11131" title="Shutdown Delay after Ignition off (seconds)" value="30" />
+			</section>
+			<section name="Low Voltage">
+				<item msciid="11132" title="Low Voltage Standby Mode" value="1" />
+				<item msciid="11134" title="Standby Voltage (100 milliVolts)" value="100" />
+				<item msciid="11133" title="Standby Qualification Period (seconds)" value="60" />
+				<item msciid="11135" title="Resume Immediately at Voltage (100 millivolts)" value="110" />
+			</section>
+			<section name="Standby">
+				<item msciid="11136" title="Use Standby Mode" value="0" />
+				<item msciid="11137" title="Mode" value="0" />
+				<item msciid="11139" title="Wake Time (HH:MM offset from start of period)" value="0:10" />
+				<item msciid="11140" title="Return to Standby (HH:MM offset from start of period)" value="0:50" />
+				<item msciid="11141" title="Repeat Period" value="1" />
+				<item msciid="11144" title="Wake when I/O is " value="1" />
+				<item msciid="11143" title="Delay return to Standby (seconds)" value="1" />
+			</section>
+			<section name="Engine Hours">
+				<item msciid="1312" title="Engine Hours On Voltage Level (100 millivolts)" value="0" />
+				<item msciid="1313" title="Engine Hours Ignition Enable" value="0" />
+				<item msciid="906" title="Engine Hours Value (hours)" value="0" />
+			</section>
+			<section name="Power Saving Modes">
+				<item msciid="56400" title="LED Power Saving Mode" value="1" />
+				<item msciid="55102" title="Processor Power Saving Mode" value="0" />
+			</section>
+		</menu>
+		<menu name="Dynamic DNS">
+			<section name="Dynamic DNS">
+				<item msciid="5011" title="Dynamic DNS Service" value="0" />
+				<item msciid="33213" title="Dynamic DNS Update" value="1" />
+				<item msciid="5007" title="Full Domain Name" value="" />
+				<item msciid="5009" title="Login" value="" />
+				<item msciid="5010" title="Password" value="" />
+				<item msciid="5008" title="Update Interval (hours)" value="0" />
+			</section>
+			<section name="Dynamic IP">
+				<item msciid="1154" title="Device Name" value="SCB" />
+				<item msciid="1155" title="Domain" value="eairlink.com" />
+				<item msciid="1156" title="IP Manager Server 1" value="edns1.eairlink.com" />
+				<item msciid="11169" title="IP Manager Server 1 Update" value="1" />
+				<item msciid="1097" title="IP Manager Server 1 Update (minutes)" value="255" />
+				<item msciid="1095" title="IP Manager Server 1 Key" value="00000000000000000000000000000000" />
+				<item msciid="1157" title="IP Manager Server 2" value="edns2.eairlink.com" />
+				<item msciid="11170" title="IP Manager Server 2 Update" value="1" />
+				<item msciid="1098" title="IP Manager Server 2 Update (minutes)" value="255" />
+				<item msciid="1096" title="IP Manager Server 2 Key" value="00000000000000000000000000000000" />
+			</section>
+		</menu>
+		<menu name="SMS">
+			<section name="SMS Mode">
+				<item msciid="6019" title="SMS Mode" value="0" />
+				<item msciid="6020" title="ALEOS Command Prefix" value="&amp;&amp;&amp;" />
+				<item msciid="6007" title="SMS Destination" value="0" />
+				<item msciid="6005" title="Include Phone Number On Serial" value="1" />
+			</section>
+			<section name="Local Host Interface Configuration">
+				<item msciid="6008" title="Local Host IP" value="" />
+				<item msciid="6009" title="Local Host Port" value="0" />
+				<item msciid="6012" title="ALEOS Port" value="0" />
+			</section>
+			<section name="Message Format Configuration">
+				<item msciid="6013" title="Start Field" value="&lt;&lt;&lt;" />
+				<item msciid="6014" title="Field Delimiter" value="," />
+				<item msciid="6015" title="End Field" value="&gt;&gt;&gt;" />
+				<item msciid="6016" title="ACK Field" value="ACK" />
+				<item msciid="6017" title="Message Body Format" value="0" />
+			</section>
+			<section name="SMS Wakeup">
+				<item msciid="6022" title="SMS Wakeup Trigger" value="0" />
+				<item msciid="10445" title="Connection timeout (minutes)" value="2" />
+				<item msciid="6024" title="Wake Command" value="WAKEUP" />
+			</section>
+			<section name="SMS Security - Inbound SMS Messages">
+				<item msciid="6021" title="Trusted Phone Number" value="0" />
+				<table name="Trusted Phone Number List"> 
+				</table>
+			</section>
+			<section name="Advanced">
+				<item msciid="6025" title="SMS Address Type" value="1" />
+				<item msciid="6026" title="SMS Address Numbering Plan" value="1" />
+				<item msciid="50043" title="AT+CGSMS" value="99" />
+				<item msciid="11314" title="Quick Test Destination" value="" />
+			</section>
+		</menu>
+		<menu name="Telnet/SSH">
+			<section name="">
+				<item msciid="3029" title="Remote Login Server Mode" value="1" />
+				<item msciid="3035" title="Default Telnet User" value="user" />
+				<item msciid="1034" title="Remote Login Server Telnet/SSH Port" value="22" />
+				<item msciid="1000" title="Telnet/SSH Access Policy" value="2" />
+				<item msciid="1035" title="Remote Login Server Telnet/SSH Port Timeout (minutes)" value="2" />
+				<item msciid="1127" title="Telnet/SSH Echo" value="1" />
+			</section>
+		</menu>
+		<menu name="Email (SMTP)">
+			<section name="General">
+				<item msciid="1110" title="SMTP Server" value="mail.wsl.ch" />
+				<item msciid="9430" title="Port" value="465" />
+				<item msciid="1111" title="From Email Address" value="modemmailer@wsl.ch" />
+				<item msciid="1112" title="User Name (optional)" value="" />
+				<item msciid="1113" title="Password (optional)" value="" />
+				<item msciid="1114" title="Message Subject" value="SCW" />
+				<item msciid="11311" title="Quick Test Destination" value="" />
+			</section>
+			<section name="SSL/TLS">
+				<item msciid="9431" title="Encryption" value="1" />
+				<item msciid="9432" title="Verify Peer Certificate" value="0" />
+			</section>
+		</menu>
+		<menu name="Management (SNMP)">
+			<section name="SNMP Configuration">
+				<item msciid="10040" title="SNMP Agent" value="0" />
+				<item msciid="10041" title="SNMP Version" value="2" />
+				<item msciid="10042" title="SNMP Port" value="161" />
+				<item msciid="2730" title="SNMP Contact" value="" />
+				<item msciid="2731" title="SNMP Name" value="" />
+				<item msciid="2732" title="SNMP Location" value="" />
+				<item msciid="10071" title="SNMP System Description" value="" />
+			</section>
+			<section name="Read Only SNMP User">
+				<item msciid="10063" title="Community Name" value="public" />
+				<item msciid="10045" title="User Name" value="" />
+				<item msciid="10046" title="Security Level" value="0" />
+				<item msciid="10047" title="Authentication Type" value="0" />
+				<item msciid="10048" title="Authentication Key" value="" />
+				<item msciid="10049" title="Privacy Type" value="1" />
+				<item msciid="10050" title="Privacy Key" value="" />
+			</section>
+			<section name="Read/Write SNMP User">
+				<item msciid="10064" title="Community Name" value="private" />
+				<item msciid="10051" title="User Name" value="" />
+				<item msciid="10052" title="Security Level" value="0" />
+				<item msciid="10053" title="Authentication Type" value="0" />
+				<item msciid="10054" title="Authentication Key" value="" />
+				<item msciid="10055" title="Privacy Type" value="1" />
+				<item msciid="10056" title="Privacy Key" value="" />
+			</section>
+			<section name="TRAP Server User">
+				<item msciid="1166" title="TRAP Server IP/FQDN" value="0.0.0.0" />
+				<item msciid="10043" title="TRAP Server Port" value="162" />
+				<item msciid="10044" title="Engine ID" value="" />
+				<item msciid="10065" title="Community Name" value="" />
+				<item msciid="10057" title="User Name" value="" />
+				<item msciid="10058" title="Security Level" value="0" />
+				<item msciid="10059" title="Authentication Type" value="0" />
+				<item msciid="10060" title="Authentication Key" value="" />
+				<item msciid="10061" title="Privacy Type" value="1" />
+				<item msciid="10062" title="Privacy Key" value="" />
+			</section>
+		</menu>
+		<menu name="Time (SNTP)">
+			<section name="">
+				<item msciid="1107" title="Use SNTP to update time" value="1" />
+				<item msciid="1108" title="SNTP Server Address" value="0.ch.pool.ntp.org" />
+			</section>
+		</menu>
+		<menu name="Authentication">
+			<section name="LDAP">
+				<item msciid="9501" title="LDAP Client" value="0" />
+				<item msciid="9502" title="LDAP Server" value="" />
+				<item msciid="9503" title="Port" value="389" />
+				<item msciid="9504" title="Timeout (seconds)" value="30" />
+				<item msciid="9505" title="Encryption" value="2" />
+				<item msciid="9506" title="Base DN" value="" />
+				<item msciid="9507" title="Bind DN" value="0" />
+				<item msciid="9508" title="Bind DN User" value="" />
+				<item msciid="9509" title="Bind DN Password" value="" />
+			</section>
+			<section name="RADIUS">
+				<item msciid="9601" title="RADIUS Client" value="0" />
+				<item msciid="9602" title="RADIUS Server" value="" />
+				<item msciid="9603" title="Port" value="1812" />
+				<item msciid="9604" title="Timeout (seconds)" value="30" />
+				<item msciid="9605" title="Secret" value="" />
+			</section>
+			<section name="TACACS+">
+				<item msciid="9701" title="TACACS+ Client" value="0" />
+				<item msciid="9702" title="TACACS+ Server" value="" />
+				<item msciid="9703" title="Port" value="49" />
+				<item msciid="9704" title="Timeout (seconds)" value="30" />
+				<item msciid="9705" title="Authentication service" value="0" />
+				<item msciid="9706" title="Secret" value="" />
+			</section>
+		</menu>
+		<menu name="Device Status Screen">
+			<section name="">
+				<item msciid="55052" title="Display Device Status on Login Screen" value="0" />
+				<item msciid="55053" title="Status to display" value="NOTSET" />
+			</section>
+		</menu>
+	</page>
+	<page name="Location">
+		<menu name="Global Settings">
+			<section name="Location Settings">
+				<item msciid="10929" title="Location Service" value="0" />
+			</section>
+			<section name="General">
+				<item msciid="1412" title="Odometer Value (meters)" value="0" />
+				<item msciid="1300" title="TAIP ID" value="" />
+				<item msciid="1304" title="Send SnF Buffer immediately on input" value="0" />
+				<item msciid="1409" title="Use Device ID in Location Reports" value="0" />
+			</section>
+			<section name="Advanced">
+				<item msciid="1310" title="TCP Location Port" value="9494" />
+				<item msciid="1418" title="Location Fix Mode" value="1" />
+				<item msciid="10070" title="Heading Sensitivity" value="0" />
+				<item msciid="10930" title="GNSS Antenna Bias" value="1" />
+				<item msciid="10072" title="GPS No Signal Watchdog (minutes)" value="0" />
+			</section>
+		</menu>
+		<menu name="Server 1">
+			<section name="Events">
+				<item msciid="1290" title="Report Interval Time (seconds)" value="0" />
+				<item msciid="15001" title="Report Interval Distance (meters)" value="0" />
+				<item msciid="1297" title="Stationary Vehicle Interval Time (minutes)" value="0" />
+				<item msciid="1324" title="Maximum Speed Event Report threshold (km/h)" value="0" />
+				<item msciid="1325" title="Stationary Vehicle Event threshold (seconds)" value="0" />
+				<item msciid="1303" title="Digital Input Event" value="0" />
+			</section>
+			<section name="Report Type">
+				<item msciid="1634" title="Location Report Format" value="0" />
+				<item msciid="1635" title="GGA" value="0" />
+				<item msciid="1636" title="RMC" value="0" />
+				<item msciid="1637" title="VTG" value="0" />
+				<item msciid="1638" title="GSA" value="0" />
+				<item msciid="1639" title="GSV" value="0" />
+				<item msciid="1410" title="Location Report Type" value="12" />
+			</section>
+			<section name="Servers">
+				<item msciid="1307" title="Report Server 1 IP Address" value="" />
+				<item msciid="1289" title="Report Server 1 Port Number" value="22335" />
+				<item msciid="1316" title="Redundant Server 1 IP Address" value="" />
+				<item msciid="1322" title="Redundant Server 1 Port Number" value="0" />
+				<item msciid="1317" title="Redundant Server 2 IP Address" value="" />
+				<item msciid="1323" title="Redundant Server 2 Port Number" value="0" />
+				<item msciid="1413" title="Minimum Report Time (seconds)" value="0" />
+			</section>
+			<section name="Transport - Store and Forward">
+				<item msciid="1287" title="SNF for Unreliable Mode" value="0" />
+				<item msciid="1296" title="SNF Reliable Mode" value="0" />
+				<item msciid="1308" title="SNF Simple Reliable Maximum Retries" value="10" />
+				<item msciid="1309" title="SNF Simple Reliable Backoff Time (seconds)" value="10" />
+			</section>
+			<section name="Addtional Data">
+				<item msciid="1285" title="Report Odometer" value="0" />
+				<item msciid="1311" title="Report Digital Inputs" value="0" />
+			</section>
+		</menu>
+		<menu name="Server 2">
+			<section name="Events">
+				<item msciid="1651" title="Report Interval Time (seconds)" value="0" />
+				<item msciid="15002" title="Report Interval Distance (meters)" value="0" />
+				<item msciid="1653" title="Stationary Vehicle Interval Time (minutes)" value="0" />
+				<item msciid="11656" title="Maximum Speed Event Report Threshold (km/h)" value="0" />
+				<item msciid="11657" title="Stationary Vehicle Event threshold (seconds)" value="0" />
+				<item msciid="11654" title="Digital Input Event" value="0" />
+			</section>
+			<section name="Report Type">
+				<item msciid="1654" title="Location Report Format" value="0" />
+				<item msciid="1655" title="GGA" value="0" />
+				<item msciid="1656" title="RMC" value="0" />
+				<item msciid="1657" title="VTG" value="0" />
+				<item msciid="1658" title="GSA" value="0" />
+				<item msciid="1659" title="GSV" value="0" />
+				<item msciid="1642" title="Location Report Type" value="12" />
+			</section>
+			<section name="Server">
+				<item msciid="1643" title="Report Server 2 IP Address" value="" />
+				<item msciid="1644" title="Report Server 2 Port Number" value="22336" />
+				<item msciid="11658" title="Minimum Report Time (seconds)" value="0" />
+			</section>
+			<section name="Transport - Store and Forward">
+				<item msciid="1645" title="SNF for Unreliable Mode" value="0" />
+				<item msciid="1648" title="SNF Reliable Mode" value="0" />
+				<item msciid="1649" title="SNF Simple Reliable Maximum Retries" value="10" />
+				<item msciid="11641" title="SNF Simple Reliable Backoff Time (seconds)" value="10" />
+			</section>
+			<section name="Addtional Data">
+				<item msciid="11659" title="Report Odometer" value="0" />
+				<item msciid="11655" title="Report Digital Inputs" value="0" />
+			</section>
+		</menu>
+		<menu name="Server 3">
+			<section name="Events">
+				<item msciid="1671" title="Report Interval Time (seconds)" value="0" />
+				<item msciid="15003" title="Report Interval Distance (meters)" value="0" />
+				<item msciid="1673" title="Stationary Vehicle Interval Time (minutes)" value="0" />
+				<item msciid="11676" title="Maximum Speed Event Report threshold (km/h)" value="0" />
+				<item msciid="11677" title="Stationary Vehicle Event threshold (seconds)" value="0" />
+				<item msciid="11674" title="Digital Input Event" value="0" />
+			</section>
+			<section name="Report Type">
+				<item msciid="1674" title="Location Report Format" value="0" />
+				<item msciid="1675" title="GGA" value="0" />
+				<item msciid="1676" title="RMC" value="0" />
+				<item msciid="1677" title="VTG" value="0" />
+				<item msciid="1678" title="GSA" value="0" />
+				<item msciid="1679" title="GSV" value="0" />
+				<item msciid="1662" title="Location Report Type" value="12" />
+			</section>
+			<section name="Server">
+				<item msciid="1663" title="Report Server 3 IP Address" value="" />
+				<item msciid="1664" title="Report Server 3 Port Number" value="22337" />
+				<item msciid="11678" title="Minimum Report Time (seconds)" value="0" />
+			</section>
+			<section name="Transport - Store and Forward">
+				<item msciid="1665" title="SNF for Unreliable Mode" value="0" />
+				<item msciid="1668" title="SNF Reliable Mode" value="0" />
+				<item msciid="1669" title="SNF Simple Reliable Maximum Retries" value="10" />
+				<item msciid="11661" title="SNF Simple Reliable Backoff Time (seconds)" value="10" />
+			</section>
+			<section name="Addtional Data">
+				<item msciid="11679" title="Report Odometer" value="0" />
+				<item msciid="11675" title="Report Digital Inputs" value="0" />
+			</section>
+		</menu>
+		<menu name="Server 4">
+			<section name="Events">
+				<item msciid="1691" title="Report Interval Time (seconds)" value="0" />
+				<item msciid="15004" title="Report Interval Distance (meters)" value="0" />
+				<item msciid="1693" title="Stationary Vehicle Interval Time (minutes)" value="0" />
+				<item msciid="11696" title="Maximum Speed Event Report threshold (km/h)" value="0" />
+				<item msciid="11697" title="Stationary Vehicle Event threshold (seconds)" value="0" />
+				<item msciid="11694" title="Digital Input Event" value="0" />
+			</section>
+			<section name="Report Type">
+				<item msciid="1694" title="Location Report Format" value="0" />
+				<item msciid="1695" title="GGA" value="0" />
+				<item msciid="1696" title="RMC" value="0" />
+				<item msciid="1697" title="VTG" value="0" />
+				<item msciid="1698" title="GSA" value="0" />
+				<item msciid="1699" title="GSV" value="0" />
+				<item msciid="1682" title="Location Report Type" value="12" />
+			</section>
+			<section name="Server">
+				<item msciid="1683" title="Report Server 4 IP Address" value="" />
+				<item msciid="1684" title="Report Server 4 Port Number" value="22338" />
+				<item msciid="11698" title="Minimum Report Time (seconds)" value="0" />
+			</section>
+			<section name="Transport - Store and Forward">
+				<item msciid="1685" title="SNF for Unreliable Mode" value="0" />
+				<item msciid="1688" title="SNF Reliable Mode" value="0" />
+				<item msciid="1689" title="SNF Simple Reliable Maximum Retries" value="10" />
+				<item msciid="11681" title="SNF Simple Reliable Backoff Time (seconds)" value="10" />
+			</section>
+			<section name="Addtional Data">
+				<item msciid="11699" title="Report Odometer" value="0" />
+				<item msciid="11695" title="Report Digital Inputs" value="0" />
+			</section>
+		</menu>
+		<menu name="Local/Streaming">
+			<section name="Serial">
+				<item msciid="1414" title="Location Reports port" value="0" />
+				<item msciid="1500" title="Location Reports Format" value="0" />
+				<item msciid="1501" title="GGA" value="0" />
+				<item msciid="1502" title="RMC" value="0" />
+				<item msciid="1503" title="VTG" value="0" />
+				<item msciid="1504" title="GSA" value="0" />
+				<item msciid="1505" title="GSV" value="0" />
+				<item msciid="1417" title="Location Reports Type" value="E1" />
+				<item msciid="1318" title="Location Reports Frequency (seconds)" value="0" />
+				<item msciid="1319" title="Location Coverage" value="0" />
+				<item msciid="1320" title="Location Reports Delay (seconds)" value="0" />
+			</section>
+			<section name="Local IP Report">
+				<item msciid="1299" title="Local Reporting Time Interval (seconds)" value="0" />
+				<item msciid="1510" title="Location Reports Format" value="0" />
+				<item msciid="1511" title="GGA" value="0" />
+				<item msciid="1512" title="RMC" value="0" />
+				<item msciid="1513" title="VTG" value="0" />
+				<item msciid="1514" title="GSA" value="0" />
+				<item msciid="1515" title="GSV" value="0" />
+				<item msciid="1411" title="Local Report Type" value="12" />
+				<item msciid="11326" title="Starting Destination Port" value="0" />
+				<item msciid="1306" title="Number of Extra Destination Ports" value="0" />
+				<item msciid="1321" title="Device ID in Local Reports" value="0" />
+				<item msciid="11328" title="Report Odometer" value="0" />
+				<item msciid="11329" title="Report Digital Inputs" value="0" />
+			</section>
+		</menu>
+	</page>
+	<page name="Events Reporting">
+		<menu name="Events">
+			<section name="Event 1">
+				<item msciid="20901" title="Event Name" value="ConnectSuccess" />
+				<item msciid="20101" title="Event Type" value="268" />
+				<item msciid="21001" title="Event SIM" value="0" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20201" title="Event Operator" value="12" />
+				<item msciid="20301" title="Value to Compare" value="" />
+				<item msciid="25601" title="Value To Compare (% of Limit)" value="80" />
+				<item msciid="25701" title="Value To Compare (Network Service)" value="2" />
+				<item msciid="20401" title="Extra Value to Compare" value="" />
+				<item msciid="20501" title="Action Description" value="1" />
+			</section>
+		</menu>
+		<menu name="Actions">
+			<section name="Action 1">
+				<item msciid="21901" title="Action Name" value="Mail_ConnectSuccess" />
+				<item msciid="21201" title="Action Type" value="1" />
+				<item msciid="21301" title="Email To" value="lwfmeteo@gmail.com" />
+				<item msciid="21401" title="Email Subject" value="MOD_RV50:SCB&#45;Connected" />
+				<item msciid="21501" title="Email Message" value="Connected to Cellular Network" />
+				<item msciid="21801" title="Body Type" value="XML" />
+				<item msciid="25301" title="Phone Number" value="" />
+				<item msciid="25501" title="SMS Message" value="" />
+				<item msciid="25201" title="Relay Type" value="1" />
+				<item msciid="11703" title="Report Server IP Address" value="" />
+				<item msciid="11704" title="Server Port" value="22339" />
+				<item msciid="11718" title="Minimum Report Time(seconds)" value="0" />
+				<item msciid="11705" title="SNF for Unreliable Mode" value="0" />
+				<item msciid="11708" title="SNF Reliable Mode" value="0" />
+				<item msciid="11709" title="SNF Simple Reliable Maximum Retries" value="10" />
+				<item msciid="11701" title="SNF Simple Reliable Backoff Time(seconds)" value="10" />
+				<item msciid="11719" title="Report Odometer" value="0" />
+				<item msciid="11714" title="Report Digital Inputs" value="0" />
+				<item msciid="21601" title="Data Group" value="25,259,17,260,267,11,261,66,264,641,771,305,785,301,770,1153,801," />
+			</section>
+		</menu>
+	</page>
+	<page name="Serial">
+		<menu name="Port Configuration">
+			<section name="Port Configuration">
+				<item msciid="10114" title="Serial Port" value="1" />
+				<item msciid="1043" title="Startup Mode Default" value="00" />
+				<item msciid="10293" title="Autologin Reverse Telnet" value="1" />
+				<item msciid="1159" title="Configure Serial Port" value="115200,8N1" />
+				<item msciid="1160" title="Flow Control" value="0" />
+				<item msciid="1125" title="DB9 Serial Echo" value="1" />
+				<item msciid="1046" title="Data Forwarding Timeout (.1 second)" value="1" />
+				<item msciid="1047" title="Data Forwarding Character" value="0" />
+				<item msciid="1081" title="Device Port" value="3001" />
+				<item msciid="11500" title="Serial MTU" value="1304" />
+				<item msciid="1045" title="Destination Port" value="0" />
+				<item msciid="1044" title="Destination Address" value="0.0.0.0" />
+				<item msciid="1201" title="Default Dial Mode" value="P" />
+			</section>
+			<section name="Advanced">
+				<item msciid="1089" title="Assert DSR" value="1" />
+				<item msciid="1090" title="Assert DCD" value="1" />
+				<item msciid="1165" title="DTR Mode" value="0" />
+				<item msciid="1028" title="Quiet Mode" value="0" />
+				<item msciid="1027" title="AT Verbose Mode" value="1" />
+				<item msciid="1033" title="Call Progress Result Mode" value="0" />
+				<item msciid="1100" title="Convert 12 digit Number to IP Address" value="0" />
+				<item msciid="1031" title="Disable ATZ Reset" value="0" />
+				<item msciid="1799" title="IP List Dial" value="0" />
+				<item msciid="10295" title="Keep Alive Mode" value="0" />
+				<item msciid="10296" title="Keep Alive Delay (minutes)" value="10" />
+			</section>
+			<section name="TCP">
+				<item msciid="1048" title="TCP Auto Answer" value="1" />
+				<item msciid="1049" title="TCP Connect Timeout (seconds)" value="30" />
+				<item msciid="1050" title="TCP Idle Timeout" value="5" />
+				<item msciid="1037" title="TCP Idle Timeout Unit" value="0" />
+				<item msciid="1051" title="TCP Connect Response Delay (seconds)" value="0" />
+				<item msciid="2755" title="Include Device ID on TCP Connect" value="0" />
+				<item msciid="2756" title="Device ID Prefix" value="" />
+				<item msciid="2757" title="Device ID Suffix" value="" />
+				<item msciid="2758" title="Send CR LF after Device ID" value="0" />
+			</section>
+			<section name="UDP">
+				<item msciid="1054" title="UDP Auto Answer" value="2" />
+				<item msciid="1055" title="UDP Idle Timeout (seconds)" value="50" />
+				<item msciid="1040" title="UDP Connect Last" value="0" />
+				<item msciid="1041" title="Allow Any Incoming IP" value="1" />
+				<item msciid="1042" title="Allow All UDP" value="0" />
+				<item msciid="1039" title="UDP Auto Answer Response" value="0" />
+				<item msciid="1036" title="Dial UDP Always" value="0" />
+				<item msciid="1052" title="UDP Serial Delay (.1 second)" value="0" />
+				<item msciid="10297" title="UDP Keepalive (seconds)" value="0" />
+				<item msciid="10294" title="UDP Recovery Ping" value="0.0.0.0" />
+			</section>
+			<section name="DUN">
+				<item msciid="10243" title="Host Authentication Mode" value="0" />
+				<item msciid="10244" title="PPP User ID" value="" />
+				<item msciid="10245" title="PPP Password" value="" />
+			</section>
+			<section name="SLIP">
+				<item msciid="1190" title="SLIP Protocol" value="0" />
+				<item msciid="1191" title="SLIP Flow Control" value="0" />
+				<item msciid="1142" title="Device PPP IP" value="192.168.15.31" />
+				<item msciid="1143" title="Host PPP IP" value="192.168.15.100" />
+			</section>
+			<section name="PPP">
+				<item msciid="1142" title="Device PPP IP" value="192.168.15.31" />
+				<item msciid="1143" title="Host PPP IP" value="192.168.15.100" />
+			</section>
+			<section name="Telemetry-MODBUS">
+				<item msciid="1795" title="Variable Type" value="0" />
+				<item msciid="1796" title="Variable Offset" value="0" />
+				<item msciid="1797" title="Variable Length" value="1" />
+				<item msciid="1798" title="Variable Mask (hex)" value="0" />
+				<item msciid="1794" title="Radio Keying Enabled" value="0" />
+			</section>
+		</menu>
+		<menu name="MODBUS Address List">
+			<section name="">
+				<table name="Address List"> 
+				</table>
+			</section>
+		</menu>
+		<menu name="LED Indicator">
+			<section name="">
+				<item msciid="10115" title="Display" value="1" />
+			</section>
+		</menu>
+	</page>
+	<page name="Applications">
+		<menu name="Data Usage Slot 1">
+			<section name="General">
+				<item msciid="10747" title="Usage Monitoring" value="1" />
+				<item msciid="10746" title="Plan Units" value="1" />
+			</section>
+			<section name="Daily Limit">
+				<item msciid="10724" title="Daily Limit (MB)" value="0" />
+				<item msciid="10724" title="Daily Limit (KB)" value="0" />
+			</section>
+			<section name="Monthly Limit">
+				<item msciid="10726" title="Monthly Limit Units" value="1" />
+				<item msciid="10725" title="Monthly Limit (in units as specified above)" value="20" />
+				<item msciid="10725" title="Monthly Limit (KB)" value="20" />
+				<item msciid="10722" title="Start Of Billing Cycle (Day Of Month)" value="1" />
+			</section>
+		</menu>
+		<menu name="Data Usage Slot 2">
+			<section name="General">
+				<item msciid="10801" title="Usage Monitoring" value="1" />
+				<item msciid="10786" title="Plan Units" value="1" />
+			</section>
+			<section name="Daily Limit">
+				<item msciid="10764" title="Daily Limit (MB)" value="0" />
+				<item msciid="10764" title="Daily Limit (KB)" value="0" />
+			</section>
+			<section name="Monthly Limit">
+				<item msciid="10766" title="Monthly Limit Units" value="1" />
+				<item msciid="10765" title="Monthly Limit (in units as specified above)" value="20" />
+				<item msciid="10765" title="Monthly Limit (KB)" value="20" />
+				<item msciid="10762" title="Start Of Billing Cycle (Day Of Month)" value="1" />
+			</section>
+		</menu>
+		<menu name="Garmin">
+			<section name="">
+				<item msciid="1326" title="Garmin Device Attached" value="0" />
+			</section>
+		</menu>
+		<menu name="ALEOS Application Framework">
+			<section name="General">
+				<item msciid="10250" title="ALEOS Application Framework" value="0" />
+				<item msciid="10120" title="Serial Port Reserved" value="0" />
+				<item msciid="10125" title="QCOM DM Port Resource Reserve" value="0" />
+			</section>
+		</menu>
+	</page>
+	<page name="I/O">
+		<menu name="Current State">
+			<section name="">
+				<item msciid="10320" title="Analog" value="1" />
+				<item msciid="10325" title="Digital Input" value="1" />
+				<item msciid="10330" title="Digital Output" value="1" />
+				<item msciid="10335" title="Pull-Up" value="1" />
+				<table name="Relay Output"> 
+					<row num="1">
+						<item msciid="831" title="Number" value="1" />
+						<item msciid="859" title="Value (0 = relay open, 1 = relay closed)" value="0" />
+					</row>
+				</table>
+			</section>
+		</menu>
+		<menu name="Configuration">
+			<section name="">
+				<item msciid="10320" title="Analog" value="1" />
+				<item msciid="10325" title="Digital Input" value="1" />
+				<item msciid="10330" title="Digital Output" value="1" />
+				<item msciid="10335" title="Pull-Up" value="1" />
+				<table name="Pull-up for I/O"> 
+					<row num="1">
+						<item msciid="841" title="Number" value="1" />
+						<item msciid="877" title="Value (Disabled = Low, Enabled = High)" value="0" />
+					</row>
+				</table>
+				<table name="Analog"> 
+					<row num="1">
+						<item msciid="821" title="Number" value="1" />
+						<item msciid="4011" title="Coefficient" value="1" />
+						<item msciid="4021" title="Offset" value="0" />
+						<item msciid="4031" title="Units" value="NOTSET" />
+					</row>
+				</table>
+				<table name="Relay Settings"> 
+					<row num="1">
+						<item msciid="831" title="Number" value="1" />
+						<item msciid="861" title="Initial Setting" value="0" />
+					</row>
+				</table>
+			</section>
+		</menu>
+	</page>
+	<page name="Admin">
+		<menu name="Advanced">
+			<section name="">
+				<item msciid="1188" title="Default Configuration Reset" value="0" />
+				<item msciid="1161" title="Status Update Address" value="0.0.0.0/0" />
+				<item msciid="1162" title="Status Update Period (seconds)" value="0" />
+				<item msciid="1176" title="Periodic Reboot Timer (hours)" value="0" />
+				<item msciid="1180" title="Time of Day (ToD) Reboot: Reboot Interval (days)" value="0" />
+				<item msciid="1189" title="ToD Reboot: Time Zone Offset from UTC" value="&#45;7" />
+				<item msciid="1182" title="ToD Reboot: Hour of day when Reboot occurs" value="1" />
+				<item msciid="57100" title="NAT Helper Disable" value="0" />
+				<item msciid="10288" title="Reset Mode" value="1" />
+				<item msciid="3036" title="Diagnostic shell access" value="0" />
+			</section>
+		</menu>
+		<menu name="Log">
+			<section name="Configure Logging">
+				<table name="Logging"> 
+					<row num="1">
+						<item msciid="17501" title="Sub System" value="0" />
+						<item msciid="17001" title="Verbosity" value="5" />
+						<item msciid="17101" title="Display in Log?" value="1" />
+					</row>
+					<row num="2">
+						<item msciid="17502" title="Sub System" value="1" />
+						<item msciid="17002" title="Verbosity" value="5" />
+						<item msciid="17102" title="Display in Log?" value="1" />
+					</row>
+					<row num="3">
+						<item msciid="17503" title="Sub System" value="2" />
+						<item msciid="17003" title="Verbosity" value="4" />
+						<item msciid="17103" title="Display in Log?" value="1" />
+					</row>
+					<row num="4">
+						<item msciid="17504" title="Sub System" value="3" />
+						<item msciid="17004" title="Verbosity" value="5" />
+						<item msciid="17104" title="Display in Log?" value="1" />
+					</row>
+					<row num="5">
+						<item msciid="17505" title="Sub System" value="4" />
+						<item msciid="17005" title="Verbosity" value="7" />
+						<item msciid="17105" title="Display in Log?" value="1" />
+					</row>
+					<row num="6">
+						<item msciid="17506" title="Sub System" value="5" />
+						<item msciid="17006" title="Verbosity" value="5" />
+						<item msciid="17106" title="Display in Log?" value="1" />
+					</row>
+					<row num="7">
+						<item msciid="17507" title="Sub System" value="6" />
+						<item msciid="17007" title="Verbosity" value="5" />
+						<item msciid="17107" title="Display in Log?" value="1" />
+					</row>
+					<row num="8">
+						<item msciid="17508" title="Sub System" value="7" />
+						<item msciid="17008" title="Verbosity" value="5" />
+						<item msciid="17108" title="Display in Log?" value="1" />
+					</row>
+					<row num="9">
+						<item msciid="17509" title="Sub System" value="8" />
+						<item msciid="17009" title="Verbosity" value="5" />
+						<item msciid="17109" title="Display in Log?" value="1" />
+					</row>
+					<row num="10">
+						<item msciid="17510" title="Sub System" value="9" />
+						<item msciid="17010" title="Verbosity" value="5" />
+						<item msciid="17110" title="Display in Log?" value="1" />
+					</row>
+					<row num="11">
+						<item msciid="17511" title="Sub System" value="10" />
+						<item msciid="17011" title="Verbosity" value="5" />
+						<item msciid="17111" title="Display in Log?" value="1" />
+					</row>
+					<row num="12">
+						<item msciid="17512" title="Sub System" value="11" />
+						<item msciid="17012" title="Verbosity" value="5" />
+						<item msciid="17112" title="Display in Log?" value="1" />
+					</row>
+					<row num="13">
+						<item msciid="17513" title="Sub System" value="12" />
+						<item msciid="17013" title="Verbosity" value="5" />
+						<item msciid="17113" title="Display in Log?" value="1" />
+					</row>
+					<row num="14">
+						<item msciid="17515" title="Sub System" value="14" />
+						<item msciid="17015" title="Verbosity" value="5" />
+						<item msciid="17115" title="Display in Log?" value="1" />
+					</row>
+					<row num="15">
+						<item msciid="17516" title="Sub System" value="15" />
+						<item msciid="17016" title="Verbosity" value="5" />
+						<item msciid="17116" title="Display in Log?" value="1" />
+					</row>
+					<row num="16">
+						<item msciid="17517" title="Sub System" value="16" />
+						<item msciid="17017" title="Verbosity" value="5" />
+						<item msciid="17117" title="Display in Log?" value="1" />
+					</row>
+					<row num="17">
+						<item msciid="17518" title="Sub System" value="17" />
+						<item msciid="17018" title="Verbosity" value="5" />
+						<item msciid="17118" title="Display in Log?" value="1" />
+					</row>
+				</table>
+				<item msciid="16998" title="Logging" value="0&#45;5&#45;1 1&#45;5&#45;1 2&#45;4&#45;1 3&#45;5&#45;1 4&#45;7&#45;1 5&#45;5&#45;1 6&#45;5&#45;1 7&#45;5&#45;1 8&#45;5&#45;1 9&#45;5&#45;1 10&#45;5&#45;1 11&#45;5&#45;1 12&#45;5&#45;1 14&#45;5&#45;1 15&#45;5&#45;1 16&#45;5&#45;1 17&#45;5&#45;1" />
+				<item msciid="17100" title="Linux Syslog" value="0" />
+				<item msciid="17000" title="Trace level logging" value="0" />
+			</section>
+			<section name="Remote Logging">
+				<item msciid="17700" title="Remote Syslog" value="0" />
+				<item msciid="17701" title="Syslog Format" value="0" />
+				<item msciid="17702" title="Tranfer Protocol" value="0" />
+				<item msciid="17703" title="Server" value="" />
+				<item msciid="17704" title="Port" value="514" />
+				<item msciid="17705" title="Encryption" value="0" />
+				<item msciid="17706" title="Client Authentication" value="0" />
+				<item msciid="17709" title="Verify Peer Certificate" value="0" />
+			</section>
+		</menu>
+		<menu name="Radio Module Firmware">
+			<section name="Firmware">
+				<item msciid="40000" title="Radio Module Firmware Management" value="" />
+			</section>
+			<section name="Options">
+				<item msciid="11222" title="Network Operator Switching" value="0" />
+				<item msciid="11223" title="ALMS Radio Module Firmware Update" value="0" />
+			</section>
+		</menu>
+	</page>
+</template>
