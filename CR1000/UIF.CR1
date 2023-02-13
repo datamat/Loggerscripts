@@ -244,7 +244,7 @@ DataTable (P01Table10,1,-1)
   ' Sample (1,Plvr,FP2) : FieldNames ("Niederschlag_Pluvio")
 EndTable
 
-DataTable (P01Table60,1,-1)
+DataTable (P01Table60,1,-1) ' Only keep some days of data
   DataInterval (0,60,Min,0)
   Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
   Sample (1,1,UINT2): FieldNames ("ProjektNr")
@@ -254,8 +254,8 @@ DataTable (P01Table60,1,-1)
   StdDev (1,RHUMcur,FP2,0) : FieldNames ("Luftfeuchtigkeit_Stw")
 EndTable
 
-DataTable (P01TableRAW,1,1) ' Something will be the minimum
-  DataInterval (0,1,Min,0) : CardOut (0,5000000)
+DataTable (P01TableRAW,1,-1) ' Something will be the minimum
+  DataInterval (0,1,Min,0) ': CardOut (0,5000000)
   Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
   Sample (1,TAIRcur,FP2,0) : FieldNames ("Lufttemperatur")
   Sample (1,SRADcur,FP2,0) : FieldNames ("Globalstrahlung")
@@ -336,7 +336,7 @@ EndSub
 ' Project 04: Device status
 Public LithiumBatt : Units LithiumBatt = V
 
-DataTable (DeviceStatus,1,-1)
+DataTable (DeviceStatus,1,-1) ' roughly 41 days of data or so
   DataInterval (0,10,Min,0)
   Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
   Sample (1,4,UINT2) : FieldNames ("ProjektNr")
