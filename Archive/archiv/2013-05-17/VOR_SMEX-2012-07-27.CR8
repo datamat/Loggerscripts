@@ -1,0 +1,295 @@
+' CR800
+'
+' Programm fuer die SwissSMEX-Veg Station Vordemwald
+' ---------------------------------------
+' IAC:
+'  6 Stk. T107;   Temp.      SET 1+2
+' 12 Stk. 10HS;   Soil M.    SET 3,4,5,6
+'  6 Stk. PICO32; SM + Temp. SET 7,8,9,10
+' WSL:
+'  6 Stk EC-5;    Soil M.    SET 11,12
+'  6 Stk. MPS-1;  Tens.      SET 13,14,15
+' Erstellt Mai 2010 K. Schroff
+' Anpassungen 3.3.2011 Peter Waldner: 
+' - Stations- und Projekt-ID und FileFormat
+' - Umrechnung PICO, HS_10 auf m3 m-3
+' - Umrechnung EC-5 auf m3 m-3
+' - Execution Intervall 10 Minuten und kein If time is
+' - Batteriespannung messen und speichern
+
+' 05.03.2011 Irene Lehner, IAC
+' Umsetzung des CR10X-Programms in ein CR800-Programm
+' mit Hilfe der Loggernet Transformation-Applikation
+' Dinge, die noch zu beachten sind:
+' - der alte Port, um den Multiplexer einzuschalten war Port 7. Der CR800 hat jedoch nur 4 Port, 
+'   daher aktuell auf 3 eingestellt
+' - beim Speichern wurde die Reihenfolge beibehalten (scheint ein Wunsch der WSL zu sein), 
+'   es ist aber zu beachten, 
+'   dass bei den Outputfiles des Loggers die Zeitinformation allen anderen Variablen 
+'   vorangestellt wird
+' - bei den Alias-Namen wurden die Messtiefen als Kennzeichnung eingefuegt. 
+'   es ist zu ueberpruefen, ob dies so stimmt
+
+'  20.4.2011 Karl Schroff
+' - GSM Modem ein und ausschalten, wahlweise SW12 oder C1
+' - 
+
+'\\\\\\\\\\\\\\\\\\\\\\\\\ DECLARATIONS /////////////////////////
+Public BattVolt               ' Batteriespannung (V)
+Public T107(6)                ' T107 Bodentemperatursensoren (degC)
+Public HSraw(12)              ' 10HS Bodenfeuchtesensoren Rohwert (mV)
+Public HS(12)                 ' 10HS Bodenfeuchtesensoren skalierter Wert (vol.%)
+Public PICO_SM(6)             ' PICO Bodenfeuchtesensoren - Bodenfeuchte (vol.%)
+Public PICO_T(6)              ' PICO Bodenfeuchtesensoren - Bodentemperatur (degC)
+Public MPS(6)                 ' MPS-1 Wasserpotential-Sonden der WSL (Pa)
+Public EC5raw(6)              ' EC-5 Bodenfeuchte-Sonden der WSL Rohwert (mV)
+Public EC5(6)                 ' EC-5 Bodenfeuchte-Sonden der WSL skalierter Wert (vol.%)
+Public Stat_ID
+Public Proj24_ID
+
+Units  BattVolt  = Volt       ' Batteriespannung (V)
+Units  T107      = degC       ' T107 Bodentemperatursensoren (degC)
+Units  HSraw     = mV         ' 10HS Bodenfeuchtesensoren Rohwert (mV)
+Units  HS        = vol.%      ' 10HS Bodenfeuchtesensoren skalierter Wert (vol.%)
+Units  PICO_SM   = vol.%      ' PICO Bodenfeuchtesensoren - Bodenfeuchte (vol.%)
+Units  PICO_T    = degC       ' PICO Bodenfeuchtesensoren - Bodentemperatur (degC)
+Units  MPS       = Pa         ' MPS-1 Wasserpotential Sonden der WSL (Pa)
+Units  EC5raw    = mV         ' EC-5 Bodenfeuchte-Sonden der WSL Rohwert (mV)
+Units  EC5       = vol.%      ' EC-5 Bodenfeuchte-Sonden der WSL skalierter Wert (vol.%)
+
+Dim    i                      ' Laufvariable
+
+' Alias dienen nur dem einfacheren Verstaendnis im Feld
+Alias T107(1) = Temp_5        ' T107 Bodentemperatursensoren (degC)
+Alias T107(2) = Temp_10
+Alias T107(3) = Temp_30
+Alias T107(4) = Temp_50
+Alias T107(5) = Temp_80
+Alias T107(6) = Temp_120
+
+Alias HS(1)    = HS1_5        ' 10HS Bodenfeuchtesensoren skalierter Wert (vol.%)
+Alias HS(2)    = HS1_10
+Alias HS(3)    = HS1_30
+Alias HS(4)    = HS1_50
+Alias HS(5)    = HS1_80
+Alias HS(6)    = HS1_120
+Alias HS(7)    = HS2_5
+Alias HS(8)    = HS2_10
+Alias HS(9)    = HS2_30
+Alias HS(10)   = HS2_50
+Alias HS(11)   = HS2_80
+Alias HS(12)   = HS2_120
+
+Alias PICO_SM(1) = TDR1_SM_10 ' PICO Bodenfeuchtesensoren - Bodenfeuchte (vol.%)
+Alias PICO_SM(2) = TDR1_SM_30
+Alias PICO_SM(3) = TDR1_SM_80
+Alias PICO_SM(4) = TDR2_SM_10
+Alias PICO_SM(5) = TDR2_SM_30
+Alias PICO_SM(6) = TDR2_SM_80
+
+Alias PICO_T(1) = TDR1_Temp_10 ' PICO Bodenfeuchtesensoren - Bodentemperatur (degC)
+Alias PICO_T(2) = TDR1_Temp_30
+Alias PICO_T(3) = TDR1_Temp_80
+Alias PICO_T(4) = TDR2_Temp_10
+Alias PICO_T(5) = TDR2_Temp_30
+Alias PICO_T(6) = TDR2_Temp_80
+
+Alias MPS(1) = MPS_5            ' MPS-1 Wasserpotential-Sonden der WSL (Pa)
+Alias MPS(2) = MPS_10
+Alias MPS(3) = MPS_30
+Alias MPS(4) = MPS_50
+Alias MPS(5) = MPS_80
+Alias MPS(6) = MPS_120
+
+Alias EC5(1) = EC5_5            ' EC-5 Bodenfeuchte-Sonden der WSL skalierter Wert (vol.%)
+Alias EC5(2) = EC5_10
+Alias EC5(3) = EC5_30
+Alias EC5(4) = EC5_50
+Alias EC5(5) = EC5_80
+Alias EC5(6) = EC5_120
+
+'\\\\\\\\\\\\\\\\\\\\\\\\ OUTPUT SECTION ////////////////////////
+
+DataTable(Table10,True,-1)
+  Sample( 1,Stat_ID,FP2)
+  Sample (1,Proj24_ID,FP2)
+  Sample( 6, PICO_SM(1), FP2)
+  Sample(12, HS(1), FP2)  
+  Sample( 6, T107(1), FP2)
+  Sample( 6, PICO_T(1), FP2)
+  Sample(12, HSraw(1), FP2)
+  Sample( 6, MPS(1), FP2)
+  Sample( 6, EC5raw(1), FP2)
+  Sample( 6, EC5(1), FP2)
+  Sample( 1, BattVolt, FP2)
+EndTable
+
+'\\\\\\\\\\\\\\\\\\\\\\\\\\\ PROGRAM ////////////////////////////
+
+BeginProg
+
+  Stat_ID = 35           ' Stations-ID von Vordemwald
+  Proj24_ID = 24         ' Projekt-ID SwissSMEX-Veg an der WSL
+
+  'Intervall von 10 Minuten
+  Scan(10, Min, 3, 0)
+
+    '**********************
+    ' M E S S U N G
+    '**********************
+
+    ' Batteriespannung messen
+    Battery(BattVolt)
+
+    ' MUX einschalten 
+    PortSet(3, 1)       'mit diesem Signal wird auch die 12V-Spannung aufgeschaltet (SW 12V mit sep. Relais)
+    Delay(0,20,mSec)
+    
+   ' Die Messungen erfolgen jeweils in 3-er Sets, da der 4. Eingang fuer EX benutzt wird
+
+    '**********************
+    ' T107 Temperaturproben (2x 3 Sonden)
+    ' SET 1
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    Therm107(T107(1),3,1,Vx1,0,_50Hz,1,0)  
+    ' SET 2
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    Therm107(T107(4),3,1,Vx1,0,_50Hz,1,0)    
+    
+    '**********************
+    ' 10HS Decagon Bodenfeuchtesensoren  (4x 3 Sonden)
+    ' SET 3
+    PulsePort(4,10000)              
+    Delay(0,20,mSec)            ' Verzoegerung hier etwas laenger für Einschwingvorgang
+    VoltSe(HSraw(1), 3, mV2500, 1, False, 0, _50Hz, 1, 0) 
+    ' SET 4
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    VoltSe(HSraw(4), 3, mV2500, 1, False, 0, _50Hz, 1, 0) 
+    ' SET 5
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    VoltSe(HSraw(7), 3, mV2500, 1, False, 0, _50Hz, 1, 0) 
+    ' SET 6
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    VoltSe(HSraw(10), 3, mV2500, 1, False, 0, _50Hz, 1, 0) 
+    
+    '**********************
+    ' PICO TRIME TDR-Bodenfeuchtesensoren - Bodenfeuchte  (2x 3 Sonden)
+    ' Messzeit der Sonden: 4s
+    ' SET 7
+    PulsePort(4,10000)              
+    Delay(0,4000,mSec)
+    VoltSe(PICO_SM(1), 3, mV2500, 1, False, 0, _50Hz, 1, 0) 
+    ' SET 8
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    VoltSe(PICO_SM(4), 3, mV2500, 1, False, 0, _50Hz, 1, 0) 
+    
+    '**********************
+    ' PICO TRIME TDR-Bodenfeuchtesensoren - Bodentemperatur  (2x 3 Sonden)
+    ' Messzeit der Sonden: 4s
+    ' SET 9           
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    VoltSe(PICO_T(1), 3, mV2500, 1, False, 0, _50Hz, 0.11, -40) 
+    ' SET 10
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    VoltSe(PICO_T(4), 3, mV2500, 1, False, 0, _50Hz, 0.11, -40) 
+    
+    '**********************
+    ' MPS-1 Sonden der WSL (2x 3 Sonden)
+    ' SET 11 
+    PulsePort(4,10000)              
+    Delay(0,20,mSec)
+    BrHalf(MPS(1), 3, mV2500, 1, VX1, 3, 2500, False, 50000,_50Hz,1, 0) 
+    ' SET 12
+    PulsePort(4,10000)              
+    Delay(0,20,mSec)
+    BrHalf(MPS(4), 3, mV2500, 1, VX1, 3, 2500, False, 50000,_50Hz,1, 0) 
+    
+    '**********************
+    ' EC-5 Sonden der WSL (3x 2 Sonden)
+    ' SET 13 
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    BrHalf(EC5raw(1), 2, mV2500, 1, VX1, 2, 2500, False, 20000,_50Hz,1, 0) 
+    ' SET 14
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    BrHalf(EC5raw(3), 2, mV2500, 1, VX1, 2, 2500, False, 20000,_50Hz,1, 0) 
+    ' SET 15
+    PulsePort(4,10000)              
+    Delay(0,10,mSec)
+    BrHalf(EC5raw(5), 2, mV2500, 1, VX1, 2, 2500, False, 20000,_50Hz,1, 0) 
+    
+    ' MUX ausschalten
+    PortSet(3, 0)    
+         
+    '**********************
+    ' S K A L I E R U N G
+    '**********************     
+
+     '**********************
+    ' 10HS Decagon Bodenfeuchtesensoren
+    ' Umrechnung in vol.%
+    For i = 1 To 12              
+      HS(i) = 5.84e-7*HSraw(i)^2 - 2.01e-4*HSraw(i) - 5.82e-2
+    Next i
+  
+    '**********************
+    ' PICO TRIME TDR-Bodenfeuchtesensoren - Bodenfeuchte
+    ' Umrechnung von Spannung (mV) in vol.%
+    For i = 1 To 6              
+      PICO_SM(i) = PICO_SM(i) * 0.001
+    Next i
+    
+    '**********************
+    ' EC-5 Sonden der WSL
+    ' Umrechnung von Spannung (mV) in vol.% - Quelle Manual EC5
+    For i = 1 To 6              
+      EC5(i)  = 0.00119*EC5raw(i) -0.4
+    Next i
+  
+   '**********************
+    ' S P E I C H E R N
+   '********************** 
+    CallTable Table10     
+    
+   '*********************
+   'NATEL schalten
+   '*********************
+   ' Batteriespannung > 13 V: Natel immer an
+   If BattVolt>13 Then 
+     SW12 (1) 
+     PortSet (1 ,1 )
+   EndIf 
+   If BattVolt<=13 Then
+      SW12 (0) 
+      PortSet (1 ,0 )
+   EndIf     
+   ' Zeitfenster
+   '06:30-06:40
+   If IfTime (390,1440,Min) Then 
+     SW12 (1) 
+     PortSet (1 ,1 )
+   EndIf 
+   If IfTime (400,1440,Min) Then 
+     SW12 (0) 
+     PortSet (1 ,0 )
+   EndIf 
+   '09:30-09:40  
+   If IfTime (570,1440,Min) Then 
+     SW12 (1) 
+     PortSet (1 ,1 )
+   EndIf
+   If IfTime (580,1440,Min) Then 
+     SW12 (0) 
+     PortSet (1 ,0 )
+   EndIf  
+  NextScan
+EndProg

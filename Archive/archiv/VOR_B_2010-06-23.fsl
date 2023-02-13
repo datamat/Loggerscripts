@@ -1,0 +1,204 @@
+Final Storage Label File for:  VOR_B-2010-06-22.csi
+Date:  6/23/2010
+Time:  04:32:20
+
+36 Input_Storage  10.00 Min
+1 WS_ms_S_WVT  L
+2 WR_Grad_D1_WVT  L
+3 WR_Grad_SD1_WVT  L
+4 WS_ms_MAX  L
+5 WS_ms_S_WVT  L
+6 WR_Grad_D1_WVT  L
+
+31 Input_Storage  10.00 Min
+1 Lutemp_C_STD  L
+2 GS_Wm2_STD  L
+3 PAR_umol_STD  L
+4 UVB_mWm2_STD  L
+5 WS_ms_STD  L
+
+30 Input_Storage  60.00 Min
+1 rF_Proz_STD  L
+
+10 Output_Table  10.00 Min
+1 10 L
+2 Stat_ID  L
+3 Proj1_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Lutemp_C_AVG  L
+8 GS_Wm2_AVG  L
+9 PAR_umol_AVG  L
+10 UVB_mWm2_AVG  L
+11 WS_S_WVT  L
+12 WR_D1_WVT  L
+13 Lutmp_std  L
+14 GS_std  L
+15 PAR_std  L
+16 UVB_std  L
+17 WS_std  L
+18 WR_std  L
+19 Wi_Spitze  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj1_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 rF_Proz_AVG  L
+8 Regen_mm_TOT  L
+9 rF_std  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj3_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 CS505_1_AVG  L
+8 CS505_2_AVG  L
+9 CS205_1_AVG  L
+10 CS205_2_AVG  L
+
+240 Output_Table 240.00 Min
+1 240 L
+2 Stat_ID  L
+3 Proj4_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Batt_V_AVG  L
+8 CR10Tmp_C_AVG  L
+9 LiBatt_V_AVG  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj5_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 ST1_C_AVG  L
+8 SF1_proz_AVG  L
+9 ST2_C_AVG  L
+10 SF2_proz_AVG  L
+11 BT1_5_AVG  L
+12 BT2_5_AVG  L
+13 BT1_20_AVG  L
+14 BT2_20_AVG  L
+15 BT1_10_AVG  L
+16 BT2_10_AVG  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj22_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Echo_1_15_AVG  L
+8 Echo_1_50_AVG  L
+9 Echo_1_80_AVG  L
+10 Echo_2_15_AVG  L
+11 Echo_2_50_AVG  L
+12 Echo_2_80_AVG  L
+13 Echo_3_15_AVG  L
+14 Echo_3_50_AVG  L
+15 Echo_3_80_AVG  L
+16 Echo_4_15_AVG  L
+17 Echo_4_50_AVG  L
+18 Echo_4_80_AVG  L
+19 EchoU1_15_AVG  L
+20 EchoU1_50_AVG  L
+21 EchoU1_80_AVG  L
+22 EchoU2_15_AVG  L
+23 EchoU2_50_AVG  L
+24 EchoU2_80_AVG  L
+25 EchoU3_15_AVG  L
+26 EchoU3_50_AVG  L
+27 EchoU3_80_AVG  L
+28 EchoU4_15_AVG  L
+29 EchoU4_50_AVG  L
+30 EchoU4_80_AVG  L
+31 EchoUin1_AVG  L
+32 EchoUin2_AVG  L
+33 EchoUin3_AVG  L
+34 EchoUin4_AVG  L
+
+138 Input_Storage   1.00 Min
+1 Hour_Minute_RTM  L
+
+10 Output_Table  10.00 Sec
+1 10 L
+2 Stat_ID  L
+3 Proj24_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 PICO_SM_1  L
+8 PICO_SM_2  L
+9 PICO_SM_3  L
+10 PICO_SM_4  L
+11 PICO_SM_5  L
+12 PICO_SM_6  L
+13 HS_1  L
+14 HS_2  L
+15 HS_3  L
+16 HS_4  L
+17 HS_5  L
+18 HS_6  L
+19 HS_7  L
+20 HS_8  L
+21 HS_9  L
+22 HS_10  L
+23 HS_11  L
+24 HS_12  L
+25 TEMP107_1  L
+26 TEMP107_2  L
+27 TEMP107_3  L
+28 TEMP107_4  L
+29 TEMP107_5  L
+30 TEMP107_6  L
+31 PICO_T_1  L
+32 PICO_T_2  L
+33 PICO_T_3  L
+34 PICO_T_4  L
+35 PICO_T_5  L
+36 PICO_T_6  L
+37 HSraw_1  L
+38 HSraw_2  L
+39 HSraw_3  L
+40 HSraw_4  L
+41 HSraw_5  L
+42 HSraw_6  L
+43 HSraw_7  L
+44 HSraw_8  L
+45 HSraw_9  L
+46 HSraw_10  L
+47 HSraw_11  L
+48 HSraw_12  L
+49 MPS_1_1  L
+50 MPS_1_2  L
+51 MPS_1_3  L
+52 MPS_1_4  L
+53 MPS_1_5  L
+54 MPS_1_6  L
+55 EC_5_1  L
+56 EC_5_2  L
+57 EC_5_3  L
+58 EC_5_4  L
+59 EC_5_5  L
+60 EC_5_6  L
+61 EC_5U_1  L
+62 EC_5U_2  L
+63 EC_5U_3  L
+64 EC_5U_4  L
+65 EC_5U_5  L
+66 EC_5U_6  L
+
+
+Estimated Total Final Storage Locations used per day 574686

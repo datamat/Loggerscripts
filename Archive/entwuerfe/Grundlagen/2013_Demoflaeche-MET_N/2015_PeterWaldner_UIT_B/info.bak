@@ -1,0 +1,52 @@
+'                                       Peter Waldner, 14.9.2014
+
+Anpassungen MeteoStation durch Peter Waldner vor Inbetriebnahme Testbetrieb auf Demoflaeche
+-------
+
+0. Station ohne Anpassungen
+   -----
+   Im Dezember 2013 wurde von WalJag eine neue Meteostation geliefert mit
+   - Staton mit CR1000, 2 Multiplexern, Katen, Auslegern ohne Sensoren
+   - Dataloggerprogramm im File 'WSL_LWF_K13.CR1'
+   - Device Configuration im File 'CR1000-1157633207-20131213 Device Konfig.xml'
+     inklusive 
+     - GPRS Zugangsdaten zur WSL (Server: wsl.swisscom.ch, User: 41791799064, Passwort: kup4m!RT)
+     - ftp aktiviert. 
+   O:\Meteo\MA\Campbell_3.3.1_Loggerfiles\entwuerfe\Grundlagen\MET_N\2013_WalJag
+
+
+1. Anpassung an LWF Konventionen
+   -----------------------------
+   Das Dataloggerprogramm wurde fuer eine LWF Meteofreilandstation angepasst
+   - LWF Fileformat mit ProjektNr und Messinterval
+   - Parameter nur Programm lesen und nicht aus 
+   - Zeitfenster angepasst
+   - Zeit GMT
+   - FTP Filenamen mit Zeitstempel
+   - FTP Zugangsdaten: ftp.wsl.ch, lwf_gprs, rpg08.wl
+   - Stationsname und Nummer
+   Dataloggerprogramm: WSL_LWF_K15.CR1
+   
+   (Kann als Basis fuer weitere Stationen verwendet werden)
+   
+2. Anpassung fuer Station UIT_B
+   ----------------------------
+   Fuer den Betrieb auf der LWF Demoflaeche wurden 
+   Verdrahtung und Dataloggerprogramm fuer weitere Sensoren angepasst
+   - Projekt 22: 3 EC-5 Sensoren
+   - Projekt 31: 10HS und MPS Sensoren
+   - Projekt 32: Stammabflusswippen
+   
+   Schema-Aenderungen
+   - C1,C2,C3 - C1,C2,C3 SDM-SW8a (Pulszaehler) verwendet
+   - C4 - CLK Multiplexer 1 und Multiplexer 2
+   - C5 - H2 Multiplexer 1 (SDI12 zu MPS)
+   - C7 - RES Multiplexer 1
+   - C8 - RES Multiplexer 2
+   - VX1 - L2 Multiplexer 2 (Speisung EC)
+   - 5V - L2 Multiplexer 1 (Speisung HS)
+   - SE9-SE12 auch fuer Multiplexer 2 verwendet
+   - SE13,SE14 fuer DiffVoltage Messung Ozon verwendet
+   Dataloggerprogramm: UIT_B.CR1
+   
+   

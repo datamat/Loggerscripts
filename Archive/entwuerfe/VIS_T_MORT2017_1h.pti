@@ -1,0 +1,169 @@
+Program Trace Information File for:  VIS_T_MORT2017_1h.csi
+Date: 6/29/2017
+Time: 12:16:01
+
+T = Program Table Number
+N = Sequential Program Instruction Location Number
+Instruction = Instruction Number and Name
+
+Inst ExTm = Individual Instruction Execution Time
+Block ExTm = Cumulative Execution Time for program block,
+             i.e., subroutine
+Prog ExTm = Cumulative Total Program Execution Time
+
+                                                          Output Flag High
+                                   Inst  Block   Prog     Inst  Block   Prog
+                                   ExTm   ExTm   ExTm     ExTm   ExTm   ExTm
+T|N|Instruction                   (msec) (msec) (msec)   (msec) (msec) (msec)
+---------------                   ------ ------ ------   ------ ------ ------
+1|1|30 Z=F x 10^n                   1.0    1.0    1.0      1.0    1.0    1.0
+1|2|30 Z=F x 10^n                   1.0    2.0    2.0      1.0    2.0    2.0
+1|3|30 Z=F x 10^n                   1.0    3.0    3.0      1.0    3.0    3.0
+1|4|30 Z=F x 10^n                   1.0    4.0    4.0      1.0    4.0    4.0
+1|5|17 Internal Temperature         6.2   10.2   10.2      6.2   10.2   10.2
+1|6|10 Batt Voltage                 8.3   18.5   18.5      8.3   18.5   18.5
+1|7|130 Status Monitor                *   18.5   18.5        *   18.5   18.5
+1|8|4 Excite-Delay (SE)            15.2   33.7   33.7     15.2   33.7   33.7
+1|9|4 Excite-Delay (SE)            15.2   48.9   48.9     15.2   48.9   48.9
+1|10|4 Excite-Delay (SE)           15.2   64.1   64.1     15.2   64.1   64.1
+1|11|4 Excite-Delay (SE)           15.2   79.3   79.3     15.2   79.3   79.3
+1|12|4 Excite-Delay (SE)           15.2   94.5   94.5     15.2   94.5   94.5
+1|13|4 Excite-Delay (SE)           15.2  109.7  109.7     15.2  109.7  109.7
+1|14|4 Excite-Delay (SE)           15.2  124.9  124.9     15.2  124.9  124.9
+1|15|4 Excite-Delay (SE)           15.2  140.1  140.1     15.2  140.1  140.1
+1|16|86 Do                          0.3  140.4  140.4      0.3  140.4  140.4
+1|17|22 Excitation with Delay    20000.5 20140.9 20140.9   20000.5 20140.9 20140.9
+1|18|86 Do                          0.3 20141.2 20141.2      0.3 20141.2 20141.2
+1|19|86 Do                          0.3 20141.5 20141.5      0.3 20141.5 20141.5
+1|20|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|21|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|22|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|23|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|24|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|25|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|26|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|27|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|28|105 SDI-12 Recorder              * 20141.5 20141.5        * 20141.5 20141.5
+1|29|86 Do                          0.3 20141.8 20141.8      0.3 20141.8 20141.8
+1|30|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|31|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|32|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|33|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|34|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|35|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|36|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|37|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|38|105 SDI-12 Recorder              * 20141.8 20141.8        * 20141.8 20141.8
+1|39|86 Do                          0.3 20142.1 20142.1      0.3 20142.1 20142.1
+1|40|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|41|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|42|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|43|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|44|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|45|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|46|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|47|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|48|105 SDI-12 Recorder              * 20142.1 20142.1        * 20142.1 20142.1
+1|49|86 Do                          0.3 20142.4 20142.4      0.3 20142.4 20142.4
+1|50|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|51|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|52|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|53|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|54|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|55|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|56|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|57|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|58|105 SDI-12 Recorder              * 20142.4 20142.4        * 20142.4 20142.4
+1|59|86 Do                          0.3 20142.7 20142.7      0.3 20142.7 20142.7
+1|60|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|61|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|62|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|63|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|64|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|65|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|66|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|67|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|68|105 SDI-12 Recorder              * 20142.7 20142.7        * 20142.7 20142.7
+1|69|86 Do                          0.3 20143.0 20143.0      0.3 20143.0 20143.0
+1|70|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|71|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|72|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|73|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|74|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|75|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|76|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|77|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|78|105 SDI-12 Recorder              * 20143.0 20143.0        * 20143.0 20143.0
+1|79|86 Do                          0.3 20143.3 20143.3      0.3 20143.3 20143.3
+1|80|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|81|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|82|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|83|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|84|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|85|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|86|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|87|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|88|105 SDI-12 Recorder              * 20143.3 20143.3        * 20143.3 20143.3
+1|89|86 Do                          0.3 20143.6 20143.6      0.3 20143.6 20143.6
+1|90|86 Do                          0.3 20143.9 20143.9      0.3 20143.9 20143.9
+1|91|86 Do                          0.3 20144.2 20144.2      0.3 20144.2 20144.2
+ Output Flag Set @ 191 for Array 60
+1|92|80 Set Active Storage Area     0.3 20144.5 20144.5      0.3 20144.5 20144.5
+1|93|70 Sample                      0.2 20144.7 20144.7      0.9 20145.4 20145.4
+ Output Data 1 Values
+1|94|70 Sample                      0.2 20144.9 20144.9      0.9 20146.3 20146.3
+ Output Data 1 Values
+1|95|77 Real Time                   0.2 20145.1 20145.1      3.8 20150.1 20150.1
+ Output Data 3 Values
+1|96|71 Average                     9.4 20154.5 20154.5     36.7 20186.8 20186.8
+ Output Data 8 Values
+1|97|86 Do                          0.3 20154.8 20154.8      0.3 20187.1 20187.1
+1|98|86 Do                          0.3 20155.1 20155.1      0.3 20187.4 20187.4
+ Output Flag Set @ 198 for Array 60
+1|99|80 Set Active Storage Area     0.3 20155.4 20155.4      0.3 20187.7 20187.7
+1|100|70 Sample                     0.2 20155.6 20155.6      0.9 20188.6 20188.6
+ Output Data 1 Values
+1|101|70 Sample                     0.2 20155.8 20155.8      0.9 20189.5 20189.5
+ Output Data 1 Values
+1|102|77 Real Time                  0.2 20156.0 20156.0      3.8 20193.3 20193.3
+ Output Data 3 Values
+1|103|71 Average                   69.9 20225.9 20225.9    278.7 20472.0 20472.0
+ Output Data 63 Values
+1|104|71 Average                   69.9 20295.8 20295.8    278.7 20750.7 20750.7
+ Output Data 63 Values
+1|105|86 Do                         0.3 20296.1 20296.1      0.3 20751.0 20751.0
+
+Program Table 1 Execution Interval 3600.000 Seconds
+
+Table 1 Estimated Total Program Execution Time in msec 20296.1 w/Output 20751.0
+
+Table 1 Estimated Total Final Storage Locations used per day 3504
+
+
+--------------- Table 2 ---------------
+2|1|86 Do                           0.3    0.3    0.3      0.3    0.3    0.3
+ Output Flag Set @ 21 for Array 120
+2|2|80 Set Active Storage Area      0.3    0.6    0.6      0.3    0.6    0.6
+2|3|70 Sample                       0.2    0.8    0.8      0.9    1.5    1.5
+ Output Data 1 Values
+2|4|70 Sample                       0.2    1.0    1.0      0.9    2.4    2.4
+ Output Data 1 Values
+2|5|77 Real Time                    0.2    1.2    1.2      3.8    6.2    6.2
+ Output Data 3 Values
+2|6|70 Sample                       0.2    1.4    1.4      0.9    7.1    7.1
+ Output Data 1 Values
+2|7|70 Sample                       0.2    1.6    1.6      0.9    8.0    8.0
+ Output Data 1 Values
+2|8|70 Sample                       0.2    1.8    1.8      0.9    8.9    8.9
+ Output Data 1 Values
+2|9|86 Do                           0.3    2.1    2.1      0.3    9.2    9.2
+
+Program Table 2 Execution Interval 7200.000 Seconds
+
+Table 2 Estimated Total Program Execution Time in msec    2.1 w/Output    9.2
+
+Table 2 Estimated Total Final Storage Locations used per day 108
+
+
+
+Estimated Total Final Storage Locations used per day 3612

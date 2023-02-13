@@ -1,0 +1,653 @@
+;{CR10X}
+
+;
+; Sub-Programm zu Station Vordemwald, WSL
+
+; IAC:
+;  6 Stk. T107;   Temp.      SET 1+2
+; 12 Stk. 10HS;   Soil M.    SET 3,4,5,6
+;  6 Stk. PICO32; SM + Temp. SET 7,8,9,10
+
+; WSL:
+;  6 Stk EC-5;    Soil M.    SET 11,12
+;  6 Stk. MPS-1;  Tens.      SET 13,14,15
+
+
+; Mai 2010
+; K. Schroff
+
+; C5 Port ergaenzt, Peter Waldner
+
+*Table 1 Program
+  01: 30        Execution Interval (seconds)
+
+; Das Intervall muss nicht 30 sec. sein,
+; wir sampeln alle 10 Min.
+
+; Modem einschalten
+     1:  Do (P86)
+      1: 45       Set Port 5 High
+
+; ----------------------------------------------------------------------
+
+2:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 1        Interval (same units as above)
+ 3: 30       Then Do
+
+; falls bereits ein 10 Min Intervall besteht,
+; kann das Folgende dort untergebracht werden und
+; dann fällt obiger Befehl weg
+; ----------------------------------------------------------------------
+
+
+
+; MUX einschalten
+; ----------------------------------------------
+3:  Do (P86)
+ 1: 47       Set Port 7 High
+
+4:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 2        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+; --------------------------------------------
+; auf ersten SET schalten
+; T107 Temperaturproben - es werden 3 Eingänge benutzt, 4. Eingang für EX
+; ------------------------------------------------
+
+5:  Do (P86)
+ 1: 74       Pulse Port 4
+
+6:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+7:  Temp (107) (P11)
+ 1: 3        Reps
+ 2: 1        SE Channel
+ 3: 31       Excite all reps w/E1, 50Hz, 10ms delay
+ 4: 71       Loc [ TEMP107_1 ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; -----------------------------------------
+; 2. SET
+; ----------------------------------------
+
+8:  Do (P86)
+ 1: 74       Pulse Port 4
+
+9:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+
+10:  Temp (107) (P11)
+ 1: 3        Reps
+ 2: 1        SE Channel
+ 3: 31       Excite all reps w/E1, 50Hz, 10ms delay
+ 4: 74       Loc [ TEMP107_4 ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; -----------------------------------------
+; 3. bis 6. Set: 12 Stk 10HS-Sonden
+; -----------------------------------------
+
+11:  Do (P86)
+ 1: 74       Pulse Port 4
+
+; ----------------------------------------------
+; Verzögerung etwas länger für Einschwingvorgang
+; ----------------------------------------------
+
+12:  Excitation with Delay (P22)
+ 1: 3        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 3        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+13:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 81       Loc [ HSraw_1   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+14:  Do (P86)
+ 1: 74       Pulse Port 4
+
+15:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+16:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 84       Loc [ HSraw_4   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+17:  Do (P86)
+ 1: 74       Pulse Port 4
+
+18:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+19:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 87       Loc [ HSraw_7   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+20:  Do (P86)
+ 1: 74       Pulse Port 4
+
+21:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+22:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 90       Loc [ HSraw_10  ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; ------------------------------------------
+; SET 7 bis 10 für 6 PICO-Sonden
+; erste zwei für Soil Moisture
+; letzte zwei für Temperatur
+; Messzeit der Sonden: 4 sec.
+; ------------------------------------------
+
+23:  Do (P86)
+ 1: 74       Pulse Port 4
+
+24:  Excitation with Delay (P22)
+ 1: 3        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 400      Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+25:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 101      Loc [ PICO_SM_1 ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+26:  Do (P86)
+ 1: 74       Pulse Port 4
+
+27:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+28:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 104      Loc [ PICO_SM_4 ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+29:  Do (P86)
+ 1: 74       Pulse Port 4
+
+30:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+31:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 111      Loc [ PICO_T_1  ]
+ 5: 0.11     Mult
+ 6: -40      Offset
+
+32:  Do (P86)
+ 1: 74       Pulse Port 4
+
+33:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+34:  Volt (SE) (P1)
+ 1: 3        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        SE Channel
+ 4: 114      Loc [ PICO_T_4  ]
+ 5: 0.11     Mult
+ 6: -40      Offset
+
+; ------------------------------------------------------
+; Weiterschalten auf SET 11, SET 12,2x3 MPS-1 Sonden WSL
+; ------------------------------------------------------
+
+35:  Do (P86)
+ 1: 74       Pulse Port 4
+
+36:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 2        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+
+37:  Excite-Delay (SE) (P4)
+ 1: 3        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 5        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 51       Loc [ MPS_1_1   ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+
+38:  Do (P86)
+ 1: 74       Pulse Port 4
+
+39:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 2        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+40:  Excite-Delay (SE) (P4)
+ 1: 3        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 5        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 54       Loc [ MPS_1_4   ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+
+; --------------------------------------------------------
+; Schalten auf SET 13, SET 14, SET 15; 3x2 EC-5 Sonden WSL
+; --------------------------------------------------------
+
+41:  Do (P86)
+ 1: 74       Pulse Port 4
+
+42:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+43:  Excite-Delay (SE) (P4)
+ 1: 2        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 2        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 57       Loc [ EC_5_1    ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+
+44:  Do (P86)
+ 1: 74       Pulse Port 4
+
+45:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+46:  Excite-Delay (SE) (P4)
+ 1: 2        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 2        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 59       Loc [ EC_5_3    ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+
+47:  Do (P86)
+ 1: 74       Pulse Port 4
+
+48:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+49:  Excite-Delay (SE) (P4)
+ 1: 2        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 2        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 61       Loc [ EC_5_5    ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+
+; ---------------------------------
+; MUX ausschalten
+; ---------------------------------
+
+50:  Do (P86)
+ 1: 57       Set Port 7 Low
+
+
+; ------------------------------
+; Umrechnen der 10HS mV in Vol%
+; ------------------------------
+
+
+51:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 12       Loop Count
+
+
+52:  Z=X*F (P37)
+ 1: 81    -- X Loc [ HSraw_1   ]
+ 2: 0.001    F
+ 3: 121   -- Z Loc [ HS_1      ]
+
+53:  End (P95)
+
+
+54:  Polynomial (P55)
+ 1: 12       Reps
+ 2: 121      X Loc [ HS_1      ]
+ 3: 121      F(X) Loc [ HS_1      ]
+ 4: -.0582   C0
+ 5: -.201    C1
+ 6: .584     C2
+ 7: 0.0      C3
+ 8: 0.0      C4
+ 9: 0.0      C5
+
+
+55:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 12       Loop Count
+
+56:  Z=X*F (P37)
+ 1: 121   -- X Loc [ HS_1      ]
+ 2: 100      F
+ 3: 121   -- Z Loc [ HS_1      ]
+
+57:  End (P95)
+
+
+
+; ---------------------------------------------------------
+; Speichern
+; Die Speicherplätze müssen nicht auf diesen Positionen sein,
+; es wäre aber schön, wenn die 4 Parameter-Gruppen eigene
+; Zehnergruppen hätten
+; ----------------------------------------------------------
+
+58:  Do (P86)
+ 1: 10       Set Output Flag High (Flag 0)
+
+59:  Set Active Storage Area (P80)^5554
+ 1: 1        Final Storage Area 1
+ 2: 10       Array ID
+
+
+60:  Real Time (P77)^29256
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+
+61:  Sample (P70)^25739
+ 1: 6        Reps
+ 2: 101      Loc [ PICO_SM_1 ]
+
+62:  Sample (P70)^31580
+ 1: 12       Reps
+ 2: 121      Loc [ HS_1      ]
+
+63:  Sample (P70)^1365
+ 1: 6        Reps
+ 2: 71       Loc [ TEMP107_1 ]
+
+64:  Sample (P70)^22020
+ 1: 6        Reps
+ 2: 111      Loc [ PICO_T_1  ]
+
+65:  Sample (P70)^26788
+ 1: 12       Reps
+ 2: 81       Loc [ HSraw_1   ]
+
+66:  Sample (P70)^23265
+ 1: 6        Reps
+ 2: 51       Loc [ MPS_1_1   ]
+
+67:  Sample (P70)^7533
+ 1: 6        Reps
+ 2: 57       Loc [ EC_5_1    ]
+
+
+68:  End (P95)
+
+
+
+*Table 2 Program
+  02: 0.0000    Execution Interval (seconds)
+
+*Table 3 Subroutines
+
+End Program
+
+
+
+-Input Locations-
+1 _________ 1 0 0
+2 _________ 1 0 0
+3 _________ 1 0 0
+4 _________ 1 0 0
+5 _________ 1 0 0
+6 _________ 1 0 0
+7 _________ 0 0 0
+8 _________ 0 0 0
+9 _________ 0 0 0
+10 _________ 0 0 0
+11 _________ 0 0 0
+12 _________ 0 0 0
+13 _________ 0 0 0
+14 _________ 0 0 0
+15 _________ 0 0 0
+16 _________ 0 0 0
+17 _________ 0 0 0
+18 _________ 0 0 0
+19 _________ 0 0 0
+20 _________ 0 0 0
+21 _________ 0 0 0
+22 _________ 0 0 0
+23 _________ 0 0 0
+24 _________ 0 0 0
+25 _________ 0 0 0
+26 _________ 0 0 0
+27 _________ 0 0 0
+28 _________ 0 0 0
+51 MPS_1_1   5 1 1
+52 MPS_1_2   9 1 1
+53 MPS_1_3   25 1 1
+54 MPS_1_4   13 1 1
+55 MPS_1_5   9 1 1
+56 MPS_1_6   17 1 1
+57 EC_5_1    5 1 1
+58 EC_5_2    17 1 1
+59 EC_5_3    5 1 1
+60 EC_5_4    17 1 1
+61 EC_5_5    5 1 1
+62 EC_5_6    17 1 1
+70 _________ 1 0 0
+71 TEMP107_1 1 1 1
+72 TEMP107_2 1 1 1
+73 TEMP107_3 1 1 1
+74 TEMP107_4 5 1 1
+75 TEMP107_5 9 1 1
+76 TEMP107_6 17 1 1
+81 HSraw_1   1 2 1
+82 HSraw_2   1 0 1
+83 HSraw_3   17 0 1
+84 HSraw_4   5 0 1
+85 HSraw_5   1 0 1
+86 HSraw_6   17 0 1
+87 HSraw_7   5 0 1
+88 HSraw_8   1 0 1
+89 HSraw_9   17 0 1
+90 HSraw_10  5 0 1
+91 HSraw_11  1 0 1
+92 HSraw_12  1 0 1
+101 PICO_SM_1 5 1 1
+102 PICO_SM_2 9 1 1
+103 PICO_SM_3 17 1 1
+104 PICO_SM_4 5 1 1
+105 PICO_SM_5 9 1 1
+106 PICO_SM_6 17 1 1
+107 _________ 0 0 0
+111 PICO_T_1  5 1 1
+112 PICO_T_2  9 1 1
+113 PICO_T_3  17 1 1
+114 PICO_T_4  5 1 1
+115 PICO_T_5  9 1 1
+116 PICO_T_6  17 1 1
+117 _________ 1 0 0
+118 _________ 1 0 0
+119 _________ 1 0 0
+120 _________ 1 0 0
+121 HS_1      5 3 3
+122 HS_2      9 2 1
+123 HS_3      9 2 1
+124 HS_4      9 2 1
+125 HS_5      9 2 1
+126 HS_6      9 2 1
+127 HS_7      9 2 1
+128 HS_8      9 2 1
+129 HS_9      9 2 1
+130 HS_10     9 2 1
+131 HS_11     9 2 1
+132 HS_12     17 2 1
+141 _________ 1 0 0
+142 _________ 1 0 0
+143 _________ 1 0 0
+144 _________ 1 0 0
+145 _________ 1 0 0
+146 _________ 1 0 0
+147 _________ 1 0 0
+148 _________ 1 0 0
+149 _________ 1 0 0
+150 _________ 1 0 0
+151 _________ 1 0 0
+152 _________ 1 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-Final Storage Area 2-
+0
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,10,5554
+1,Year_RTM,29256
+1,Day_RTM
+1,Hour_Minute_RTM
+2,PICO_SM_1~101,25739
+2,PICO_SM_2~102
+2,PICO_SM_3~103
+2,PICO_SM_4~104
+2,PICO_SM_5~105
+2,PICO_SM_6~106
+3,HS_1~121,31580
+3,HS_2~122
+3,HS_3~123
+3,HS_4~124
+3,HS_5~125
+3,HS_6~126
+3,HS_7~127
+3,HS_8~128
+3,HS_9~129
+3,HS_10~130
+3,HS_11~131
+3,HS_12~132
+4,TEMP107_1~71,1365
+4,TEMP107_2~72
+4,TEMP107_3~73
+4,TEMP107_4~74
+4,TEMP107_5~75
+4,TEMP107_6~76
+5,PICO_T_1~111,22020
+5,PICO_T_2~112
+5,PICO_T_3~113
+5,PICO_T_4~114
+5,PICO_T_5~115
+5,PICO_T_6~116
+6,HSraw_1~81,26788
+6,HSraw_2~82
+6,HSraw_3~83
+6,HSraw_4~84
+6,HSraw_5~85
+6,HSraw_6~86
+6,HSraw_7~87
+6,HSraw_8~88
+6,HSraw_9~89
+6,HSraw_10~90
+6,HSraw_11~91
+6,HSraw_12~92
+7,MPS_1_1~51,23265
+7,MPS_1_2~52
+7,MPS_1_3~53
+7,MPS_1_4~54
+7,MPS_1_5~55
+7,MPS_1_6~56
+8,EC_5_1~57,7533
+8,EC_5_2~58
+8,EC_5_3~59
+8,EC_5_4~60
+8,EC_5_5~61
+8,EC_5_6~62

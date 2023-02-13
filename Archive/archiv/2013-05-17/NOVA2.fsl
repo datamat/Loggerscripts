@@ -1,0 +1,66 @@
+Final Storage Label File for:  NOVA2.csi
+Date:  5/5/2008
+Time:  12:12:07
+
+33 Input_Storage 1440.00 Min
+1 BattVolt_MIN  L
+2 BattVolt_MAX  L
+
+36 Input_Storage   1.00 Min
+1 Hour_Minute_RTM  L
+
+10 Output_Table  10.00 Min
+1 10 L
+2 Stat_Nr__  L
+3 Proj_Nr  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Sap_1_AVG  H
+8 Sap_2_AVG  H
+9 Sap_3_AVG  H
+10 Sap_4_AVG  H
+11 Sap_5_AVG  H
+12 Sap_6_AVG  H
+13 Sap_7_AVG  H
+14 Sap_8_AVG  H
+15 Sap_9_AVG  H
+16 Sap_10_AVG  H
+17 Dend_1_AVG  H
+18 Dend_2_AVG  H
+19 Dend_3_AVG  H
+20 Dend_4_AVG  H
+21 Dend_5_AVG  H
+22 Dend_6_AVG  H
+23 Dend_7_AVG  H
+24 Dend_8_AVG  H
+25 Dend_9_AVG  H
+26 Dend_10_AVG  H
+27 Echo_1_AVG  H
+28 Echo_2_AVG  H
+29 Echo_3_AVG  H
+30 Echo_4_AVG  H
+31 Echo_5_AVG  H
+32 Echo_6_AVG  H
+33 Echo_7_AVG  H
+34 Echo_8_AVG  H
+35 Echo_9_AVG  H
+36 Echo_10_AVG  H
+37 BattVolt_AVG  H
+38 CR10XTemp_AVG  H
+39 Batt_Min_AVG  H
+40 Stat_Nr___AVG  H
+41 Proj_Nr_AVG  H
+42 Zeit_HHMM_AVG  H
+43 FlagKontr_AVG  H
+44 Ctr1_AVG  H
+45 Ctr2_AVG  H
+46 Ctr3_AVG  H
+47 Ctr4_AVG  H
+48 Ctr5_AVG  H
+49 Ctr6_AVG  H
+50 Ctr7_AVG  H
+51 Ctr8_AVG  H
+
+
+Estimated Total Final Storage Locations used per day 13824

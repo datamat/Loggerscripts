@@ -1,0 +1,210 @@
+'**********************************************************************
+'               CR1000 Datalogger, 23.12.2019, Peter Waldner
+' LAE_H Messturm Laegeren Zindlen Huette
+'**********************************************************************
+' Station:               WSL Messturm Laegeren Zindlen, ID 124
+' Telefonnummer:         bisher: +41 056 430 07 40, 
+'                        IP: 213.3.6.182 > geplant 109.164.227.78
+' Inventarnummer/PakBus: 002023, 124 
+' Port Forwarding 6788 > LAE_H
+' Angeschlossene Projekte:
+' Projekt 4: Technische Daten
+  ' Licht: Licht.+ - P1.CR1000, Licht.- - GND.CR1000
+  ' Licht: Tuere.+ - P1.CR1000, Tuere.- - GND.CR1000
+  
+' Projekt 23: Ozon
+  ' ThermoFischer49i.Analog.Pin14 - H1.CR1000
+  ' ThermoFischer49i.Analog.Pin19 - L1.CR1000
+  ' ThermoFischer49i.Analog.Pin19 - GND.CR1000
+  ' Voltage Channel 3: Pressure 0-1V
+  ' ThermoFischer49i.Analog.Pin15 - H2.CR1000
+  ' ThermoFischer49i.Analog.Pin16 - L2.CR1000
+  ' ThermoFischer49i.Analog.Pin16 - GND.CR1000
+  
+' Projekt 32: Stammabfluss - auskommentiert
+
+' Aenderungen 23.12.2019 Peter aldner
+' - Messung Luftdruck des Ozonmonitor provisorisch aufzeichnen
+' - Messung zweiter Ozonmonitor provisorisch aufzeichnen
+'**********************************************************************
+'Declare Public Variables
+Const statfull = "LAE_H"
+Const STATNR = 124
+Const Version =1
+Const SensorOff="NaN"
+
+'**********************************************************************
+' FTP streaming
+'Const FTPSrvr = "ftp.wsl.ch" 
+'Const FTPUser = "lwf_gprs"
+'Const FTPPassword = "rpg08.wl"
+Const FTPSrvr = "ftp.wsl.ch" 
+Const FTPUser = "lwfcr1000"
+Const FTPPassword = "01.yto.9ae"
+Const RemoteFolder = "/data/ftp/lwfcr1000/"
+Public tstamp As String
+Public tabelle As String
+Public filename As String * 200
+Public FTPResult
+Sub ftp()
+    filename=statfull+"_"+tabelle+"-"+tstamp+".crd"
+    ' FTPResult=FTPClient(FTPSrvr,FTPUser,FTPPassword,tabelle,filename,2,0,10,Sec,-1012)
+EndSub  
+
+'**********************************************************************
+'Projects
+
+'*** Project 04: Technical Informations
+Public battv: Units battv=Volts
+Public ptemp: Units ptemp=Degree C
+Public LithiumBatt : Units LithiumBatt = Volts
+Public Tuere: Units Tuere= Counts ' Pulse Channel 1
+Public Licht: Units Licht= Counts ' Pulse Channel 2
+
+DataTable (P04Tech,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,STATNR,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,4,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' data
+  Minimum (1,battv,FP2,0,0) : FieldNames ("BattVolt") '1
+  Average (1,ptemp,FP2,0) : FieldNames ("AvgPanelTemp") '2
+  Average (1,LithiumBatt,FP2,0) : FieldNames ("AvgLithiumBatt") '3
+  Totalize (1,Tuere,FP2,0) : FieldNames ("Tuere") '4
+  Totalize (1,Licht,FP2,0) : FieldNames ("Licht") '5
+EndTable
+Sub SubP04 ()
+  If TimeIntoInterval(0,1,Min) Then
+     PanelTemp (ptemp,250) 
+     Battery (battv)
+     LithiumBatt = Status.LithiumBattery (1,1)
+     ' pulse counting needs to be in main programme
+  EndIf
+EndSub
+
+'*** Project 23: Ozon
+' Ganzes Projekt entweder an-/abschalten, nicht einzeln wie bei Meteo
+Public OzonMess, OzonVolt, OzonConc
+Public OzonMess2, OzonVolt2, OzonConc2
+Public DruckO3 ' Default is float
+' Pressure measured by O3 Monitor Thermo Fischer 49i
+Units OzonMess = ppbv : Units OzonVolt = Volts : Units OzonConc = ppbv
+Units OzonMess2 = ppbv : Units OzonVolt2 = Volts : Units OzonConc2 = ppbv
+
+DataTable (P23Ozone10,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,STATNR,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,23,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' data
+  Average (1,OzonMess,FP2,0) : FieldNames ("OzonKonzentration") '1
+EndTable
+
+DataTable (P23Pressure10,1,-1)
+  DataInterval(0,10,Min,0)
+  Sample (1,STATNR,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,23,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' data
+  Average (1,DruckO3,FP2,0) : FieldNames ("DruckO3Monitor") '1
+End Table  
+
+DataTable (P23OzoneB10,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,STATNR,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,23,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' data
+  Average (1,OzonMess2,FP2,0) : FieldNames ("OzonZeitesGeraet") '1
+EndTable
+
+
+Sub SubP23 ()
+  If TimeIntoInterval (0,1,Min) Then
+    ' Ozonkonzentration in ppb (1 ppb pro mV) an Diff 1 messen
+    VoltDiff (OzonMess,1,mV2500,1,0,10000,250,0.2,0)
+    OzonConc=OzonMess
+    OzonVolt=SensorOff
+    ' Druck im Ozonmonitor 1 (Analogsignal) and Diff 2 
+    VoltDiff (DruckO3,1,mV2500,2,0,10000,250,0.2,0)
+    ' Ozonkonzentration zeites Geraet in ppb (1 ppb pro mV) an Diff 3 messen
+    VoltDiff (OzonMess2,1,mV2500,3,0,10000,250,0.2,0)
+    OzonConc2=OzonMess2
+    OzonVolt2=SensorOff
+  EndIf
+EndSub
+
+'*** Project 32: Stammabflusswippen
+'Public SW8AC (8) : Units SW8AC = Counts : Public i32
+
+'DataTable (P32Stammabfluss10,1,-1)
+'  DataInterval (0,10,Min,0)
+  ' LWF data format
+'  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+'  Sample (1,32,UINT2) : FieldNames ("ProjektNr")
+'  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Data
+'  Totalize (1,SW8AC (1),FP2,0)
+'  FieldNames ("Stammabfluss_Counts_1") '1
+  ' Totalize (1,SW8AC (2),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_2") '2
+  ' Totalize (1,SW8AC (3),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_3") '3
+  ' Totalize (1,SW8AC (4),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_4") '4
+  ' Totalize (1,SW8AC (5),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_5") '5
+'EndTable
+
+'Sub SubP32 ()
+'  If TimeIntoInterval (0,1,Min) Then
+'    SDMSW8A (SW8AC (),1,0,2,1,1,0)
+'    For i32=2 To 8
+'      SW8AC (i32) = SensorOff
+'    Next i32
+'  EndIf
+'EndSub
+
+
+'**********************************************************************
+'Main Program
+BeginProg
+  ' call measurement and to storing 
+ 	Scan (60,Sec,0,0)
+ 	  ' ftp variable
+    tstamp = Public.TimeStamp(1,1)
+    tstamp = Mid(tstamp,7,4)+"-"+Mid(tstamp,1,2)+"-"+Mid(tstamp,4,2)+"-"+ Mid(tstamp,12,2)+"-"+Mid(tstamp,15,2)
+		Call SubP04
+    PulseCount (Tuere,1,1 ,2,0,1.0,0)
+    PulseCount (Licht,1,2 ,2,0,1.0,0)
+		CallTable P04Tech
+		Call SubP23
+		CallTable P23Ozone10
+		CallTable P23Pressure10
+		CallTable P23OzoneB10
+		'Call SubP32
+		'CallTable P32Stammabfluss10
+	NextScan
+  ' call FTP streaming 
+  SlowSequence
+  Do
+    Delay(1,10,Sec)
+    tabelle="P04Tech"
+    Call ftp
+    FTPResult=FTPClient(FTPSrvr,FTPUser,FTPPassword,tabelle,filename,2,0,10,Sec,-1012)
+
+    tabelle="P23Ozone10"
+    Call ftp
+    FTPResult=FTPClient(FTPSrvr,FTPUser,FTPPassword,tabelle,filename,2,0,10,Sec,-1012)
+
+    ' Tables Pressure and Ozon Zeites Geraet bleiben lokal 
+
+    'tabelle="P32Stammabfluss10"
+    'Call ftp
+  Loop
+EndProg
+'**********************************************************************
+

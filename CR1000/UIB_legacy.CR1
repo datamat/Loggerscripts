@@ -1,0 +1,325 @@
+' WSL / LWF Meteostation, Uitikon Bestand (Demoflaeche), UIB_legacy, 122
+' Number/access: 41791945432-5.wsl.ch, 002040, 40
+
+' S T A T I O N   C O N F I G
+' ---------------------------------------------------------------
+Const StatName As String = "002040" : Const StatFull As String = "UIB"
+Const StatID = 122 : Const StatL As String = StatName + "_" + StatFull
+
+' D E F I N I T I O N S
+' ---------------------------------------------------------------
+' Modem
+Public Start As Boolean : Public HasInt As Boolean : Public Ping
+Public WithinWSL As Boolean : Public PingWSL
+
+' Connection
+Public Transferred As Boolean = 0 : Public FTPSuccess, FTPSuccesso
+Const FTPSrv = "ftp.wsl.ch" : Const FTPUsr = "lwfmeteousr"
+Const FTPPassword = "ZPVBNl.SEnsDJ"
+Const RemoteFolder = "/data/ftp/lwf_meteo/"
+Const FTPCRUserName = "lwfmeteo"
+Const FTPCRPassword = "cjOidtUHoZ2eHjLA"
+Public Tstamp As String : Public Filename As String * 100
+
+' Miscellaneous
+Const SensorOff = "NAN" : Const PortMdm = 9 : Const PortUVBTARH = 6
+Const PortMUXCLK = 4 : Const PortMUX1RES = 7 : Const PortMUX2RES = 8
+Dim Offset As Float : Public CRDPresent As Boolean : Dim CRDStat
+Public P4Batt, PTemp : Units P4Batt = Volts : Units PTemp = Deg C
+
+' S U B R O U T I N E S
+' ---------------------------------------------------------------
+' Check whether we are connected to the Internet/WSL
+Sub IsOnline()
+  Start = 1 : HasInt = 0 : Ping = PingIP ("8.8.8.8",200)
+  If Ping = 0 Then Ping = PingIP ("8.8.8.8",400)
+  If Ping = 0 Then Ping = PingIP ("8.8.8.8",2000)
+  If Ping <> 0 Then HasInt = 1
+  WithinWSL = 0 : PingWSL = PingIP ("10.30.1.20",200)
+  If PingWSL = 0 Then PingWSL = PingIP ("10.30.1.20",400)
+  If PingWSL = 0 Then PingWSL = PingIP ("10.30.1.20",2000)
+  If PingWSL <> 0 Then WithinWSL = 1
+EndSub
+
+' Send all files on drive to the WSL
+Sub SubSendToFTP ()
+  Delay (0,5,Sec) : Transferred = 0
+  Tstamp = Public.TimeStamp(1,1)
+  Tstamp = Mid(Tstamp,7,4)+Mid(Tstamp,1,2)+Mid(Tstamp,4,2)+ _
+  Mid(Tstamp,12,2)+Mid(Tstamp,15,2)+Mid(Tstamp,18,2)
+  ' Wenn Intervall auch 0, dann alle neue Daten geschickt:
+  '   -> am besten fuer uns!
+  ' Wenn Intervall unter 0, dann immer in dem Interval geschickt:
+  '   -> interessant, wenn man zBsp. stuendlich immer die letzten
+  '      drei Stunden schicken moechte (0,-3,Hour?)
+  ' Wenn Intervall ueber 0, dann immer in dem Abstand geschickt
+  '   -> interessant, wenn man nur 60 Minuten die 10 Minuten-
+  '      Werte uebertragen moechte (0,60,min)
+  '  Filename = RemoteFolder + StatFull + "_DeviceStatus_" + Tstamp + ".crd"
+  '  FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, _
+  '    "DeviceStatus",Filename,2,0,0,min,-1008)
+  Filename = RemoteFolder + StatFull + "_P22SoilEC510_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPassword, _
+  "P22SoilEC510",Filename,2,0,0,min,-1008)
+  Filename = RemoteFolder + StatFull + "_P23Ozone10_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPassword, _
+  "P23Ozone10",Filename,2,0,0,min,-1008)
+  Filename = RemoteFolder + StatFull + "_P30MPS10_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPassword, _
+  "P30MPS10",Filename,2,0,0,min,-1008)
+  Filename = RemoteFolder + StatFull + "_P32Stammabfluss10_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPassword, _
+  "PP32Stammabfluss10",Filename,2,0,0,min,-1008)
+  If FTPSuccesso = -2 Then Transferred = 1
+EndSub
+
+' P R O J E C T S
+' ---------------------------------------------------------------
+' Project 04: Device status (don't send to FTP, only LoggerNet)
+Public LithiumBatt : Units LithiumBatt = Volts
+
+DataTable (DeviceStatus,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,4,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Device status data
+  Minimum (1,P4Batt,FP2,0,0) : FieldNames ("MinBattVolt")
+  Average (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp")
+  Average (1,LithiumBatt,FP2,0) : FieldNames ("AvgLithiumBatt")
+  ' Sample (1,Pluvioact (9),Long)
+  ' FieldNames ("Status_Niederschlagsmessung_Pluvio2")
+  ' Sample (1,Pluvioact (8),Long)
+  ' FieldNames ("Status_Heizung_Pluvio2")
+  ' Sample (1,Pluvioact (7),FP2)
+  ' FieldNames ("Temperatur_Waegezelle_Pluvio2")
+  ' Average (1,Pluvioring (1),FP2,0)
+  ' FieldNames ("Temperatur_Elektronikeinheit_Pluvio2")
+  ' Average (1,Pluvioring (3),FP2,0)
+  ' FieldNames ("Temperatur_Auffangring_Pluvio2")
+EndTable
+
+Sub SubP04 ()
+  PanelTemp (PTemp,250) : Battery (P4Batt)
+  LithiumBatt = Status.LithiumBattery (1,1)
+  ' PLUVIO OTT on SDI12 C3
+EndSub
+
+' Project 22: Echo EC-5 Soil volumetric water content
+Const nEC = 4 : Public EC5act (nEC), ECU (nEC)
+Units EC5act = m3 m-3 : Units ECU = mV : Public i22
+
+DataTable (P22SoilEC510,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,22,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Soil water data
+  Average (1,EC5act (1),FP2,0) : FieldNames ("EC5_15cm")
+  Average (1,EC5act (2),FP2,0) : FieldNames ("EC5_50cm")
+  Average (1,EC5act (3),FP2,0) : FieldNames ("EC5_80cm")
+  Average (1,EC5act (4),FP2,0) : FieldNames ("EC5_05cm")
+  ' Average (1,EC5act (5),FP2,0) : FieldNames ("EC5_5")
+  ' Average (1,EC5act (6),FP2,0) : FieldNames ("EC5_6")
+  ' Average (1,EC550cmact (3),FP2,0) : FieldNames ("EC5_50cm_3")
+  ' Average (1,EC515cmact (3),FP2,0) : FieldNames ("EC5_15cm_3")
+  ' Average (1,EC580cmact (3),FP2,0) : FieldNames ("EC5_80cm_3")
+  Average (1,ECU (1),FP2,0) : FieldNames ("EC5_mV_15cm")
+  Average (1,ECU (2),FP2,0) : FieldNames ("EC5_mV_50cm")
+  Average (1,ECU (3),FP2,0) : FieldNames ("EC5_mV_80cm")
+  Average (1,ECU (4),FP2,0) : FieldNames ("EC5_mV_05cm")
+  ' Average (1,ECU (5),FP2,0) : FieldNames ("EC5_mV_5")
+  ' Average (1,ECU (6),FP2,0) : FieldNames ("EC5_mV_6")
+  ' Average (1,ECU (1),FP2,0) : FieldNames ("EC5_15cm_mV_3")
+  ' Average (1,ECU (2),FP2,0) : FieldNames ("EC5_50cm_mV_3")
+  ' Average (1,ECU (3),FP2,0) : FieldNames ("EC5_80cm_mV_3")
+EndTable
+
+Sub SubP22 ()
+  If TimeIntoInterval (0,60,Sec) Then
+    Delay (0,10,msec) : PortSet (PortMUX1RES,1) : Delay (0,10,msec)
+    ' Messen Spannung Echo EC-5 Bodenwassergehalt
+    For i22=1 To 2 ' Before it was from 0 to 2, three times each = 9
+      PulsePort (PortMUXCLK,10000) : Delay (0,10,msec) ' CLK is C7
+      BrHalf (ECU (i22),3,mV2500,9,Vx1,3,2500,0,10000,250,2500,0)
+      ' BrHalf (ECU (i22*3+2),1,mV2500,12,Vx2,1,2500,0,10000,250,2500,0)
+      ' BrHalf (ECU (i22*3+3),1,mV2500,13,Vx2,1,2500,0,10000,250,2500,0)
+    Next i22
+    Delay (0,10,msec) : PortSet (PortMUX1RES,0) : Delay (0,10,msec)
+    ' Umrechung in Bodenwassergehalt (Lineare Kalibration pro Sensor)
+    ' Standardkalibration Y = X*0.00119-0.4 fuer Mineralboeden
+    ' (p., 17 in Manual, 2006)
+    For i22=1 To nEC
+      EC5act (i22) = (ECU (i22) * 0.00119) - 0.401
+    Next i22
+    ' EC515cmact (3) = (ECU (7) * 0.00119) - 0.401
+    ' EC550cmact (3) = (ECU (8) * 0.00119) - 0.401
+    ' EC580cmact (3) = (ECU (9) * 0.00119) - 0.401
+  EndIf
+EndSub
+
+' Project 23: Ozon
+' Ganzes Projekt entweder an-/abschalten, nicht einzeln wie bei Meteo
+Public OzonMess ' Default is float
+Units OzonMess = ppbv
+
+DataTable (P23Ozone10,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,23,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Diff channel 5: 9 und 10, aber nur bei minimaler Spannung
+  Average (1,OzonMess,FP2,0) : FieldNames ("OzonKonzentration") '1
+  ' Diff channel 6: 11 und 12
+  ' Average (1,OzonVolt,FP2,0) : FieldNames ("OzonSpannung") '2
+  ' Diff channel 5: 9 und 10
+  ' Average (1,OzonConc,FP2,0) : FieldNames ("OzonConcentration") '3
+EndTable
+
+Sub SubP23 ()
+  If TimeIntoInterval (0,60,Sec) Then
+    ' Ozonkonzentration in ppb (0.2 ppb pro mV) messen
+    VoltDiff (OzonMess,1,mV2500,7,0,10000,250,0.2,0)
+    ' Batteriespannung Ozon an SE13, SE14
+    ' Multiplier =  (R1+R2)/R2/1000
+    ' Beispiel R1 = 620 kOhm,R2 = 110 kOhm,0.00663636
+    ' Original: 0.0062 (im Feld)
+    ' VoltDiff (OzonVolt,1,mV2500,7,1,0,250,0.00663636,0)
+    ' If OzonVolt >= 10.5 Then
+    '  OzonConc = OzonMess
+    ' Else
+    '   OzonConc = SensorOff
+    ' EndIf
+  EndIf
+EndSub
+
+' Project 30: Matrixpotential MPS2 oder MPS6
+Const nMPS = 9 : Public MPmeas(2) : Public MPS (nMPS), MPT (nMPS)
+Units MPS = hPa : Units MPT = Deg C : Public i30
+
+DataTable (P30MPS10,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,30,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' MPS data
+  Average (1,MPS (1),IEEE4,0) : FieldNames ("Bodenwasserpotential_05cm_1")
+  Average (1,MPS (2),IEEE4,0) : FieldNames ("Bodenwasserpotential_15cm_1")
+  Average (1,MPS (3),IEEE4,0) : FieldNames ("Bodenwasserpotential_30cm_1")
+  Average (1,MPS (4),IEEE4,0) : FieldNames ("Bodenwasserpotential_05cm_2")
+  Average (1,MPS (5),IEEE4,0) : FieldNames ("Bodenwasserpotential_15cm_2")
+  Average (1,MPS (6),IEEE4,0) : FieldNames ("Bodenwasserpotential_30cm_2")
+  Average (1,MPS (7),IEEE4,0) : FieldNames ("Bodenwasserpotential_05cm_3")
+  Average (1,MPS (8),IEEE4,0) : FieldNames ("Bodenwasserpotential_15cm_3")
+  Average (1,MPS (9),IEEE4,0) : FieldNames ("Bodenwasserpotential_30cm_3")
+  Average (1,MPT (1),FP2,0) : FieldNames ("Bodentemperatur_05cm_1")
+  Average (1,MPT (2),FP2,0) : FieldNames ("Bodentemperatur_15cm_1")
+  Average (1,MPT (3),FP2,0) : FieldNames ("Bodentemperatur_30cm_1")
+  Average (1,MPT (4),FP2,0) : FieldNames ("Bodentemperatur_05cm_2")
+  Average (1,MPT (5),FP2,0) : FieldNames ("Bodentemperatur_15cm_2")
+  Average (1,MPT (6),FP2,0) : FieldNames ("Bodentemperatur_30cm_2")
+  Average (1,MPT (7),FP2,0) : FieldNames ("Bodentemperatur_05cm_3")
+  Average (1,MPT (8),FP2,0) : FieldNames ("Bodentemperatur_15cm_3")
+  Average (1,MPT (9),FP2,0) : FieldNames ("Bodentemperatur_30cm_3")
+EndTable
+
+Sub SubP30 ()
+  If TimeIntoInterval (0,60,Sec) Then
+    Delay (0,10,msec) : PortSet (PortMUX2RES,1) : Delay (1,500,msec)
+    For i30=1 To nMPS
+      PulsePort (PortMUXCLK,10000) : Delay (1,500,msec)
+      MPmeas(1)=SensorOff
+      MPmeas(2)=SensorOff
+      ' Variante nicht adressierte Sensor: Adresse=0
+      ' SDI12Recorder(MPmeas(),5,0,"M!",1,0)
+      ' Variante adressierte Sensoren: Adresse=i30 (Mult nicht noetig)
+      SDI12Recorder(MPmeas(),5,i30,"M!",1,0)
+      MPS (i30) = MPmeas (1)
+      MPT (i30) = MPmeas (2)
+    Next i30
+    Delay (0,10,msec) : PortSet (PortMUX1RES,0) : Delay (0,10,msec)
+  EndIf
+EndSub
+
+' Project 32: Stammabflusswippen
+Public SW8AC (8) : Units SW8AC = Counts : Public i32
+
+DataTable (P32Stammabfluss10,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,32,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Data
+  Totalize (1,SW8AC (1),FP2,0)
+  FieldNames ("Stammabfluss_Counts_1") '1
+  ' Totalize (1,SW8AC (2),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_2") '2
+  ' Totalize (1,SW8AC (3),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_3") '3
+  ' Totalize (1,SW8AC (4),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_4") '4
+  ' Totalize (1,SW8AC (5),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_5") '5
+EndTable
+
+Sub SubP32 ()
+  If TimeIntoInterval (0,60,Sec) Then
+    SDMSW8A (SW8AC (),1,0,2,1,1,0)
+    For i32=2 To 8
+      SW8AC (i32) = SensorOff
+    Next i32
+  EndIf
+EndSub
+
+' M A I N   P R O G R A M
+' ---------------------------------------------------------------
+SequentialMode ' needed so that Scans run after each other
+
+BeginProg
+  SetStatus ("StationName",StatL) : SetStatus ("USRDriveSize",0)
+  SetStatus ("HTTPEnabled",True) : SetStatus ("FTPEnabled",True)
+  SetStatus ("FTPUserName",FTPCRUserName)
+  SetStatus ("FTPPassword",FTPCRPassword)
+  SetStatus ("TelnetEnabled",True) : SetStatus ("PingEnabled",True)
+
+  ' Main Scan
+  ' Buffer in SequentialMode always 0. Also, count = 0 to loop forever
+  Scan (30,Sec,0,0)
+    Call SubP04 ()
+    CallTable DeviceStatus
+    Call SubP22 ()
+    CallTable P22SoilEC510
+    Call SubP23 ()
+    CallTable P23Ozone10
+    Call SubP30 ()
+    CallTable P30MPS10
+    Call SubP32 ()
+    CallTable P32Stammabfluss10
+  NextScan
+
+  ' SlowScan 1
+  SlowSequence
+  Scan (1,Min,0,0)
+    Battery (P4Batt)
+    Call SubSendToFTP ()
+  NextScan
+  EndSequence
+
+  ' SlowScan 2
+  SlowSequence
+  Scan (2,Min,0,0)
+    Call IsOnline ()
+  NextScan
+  EndSequence
+
+  ' SlowScan 3
+  SlowSequence
+  Scan (60,Min,0,0)
+  NextScan
+  EndSequence
+EndProg

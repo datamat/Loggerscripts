@@ -1,0 +1,38 @@
+Final Storage Label File for:  NOVA29.csi
+Date:  8/22/2008
+Time:  10:12:23
+
+33 Input_Storage 1440.00 Min
+1 BattVolt_MIN  L
+2 BattVolt_MAX  L
+
+36 Input_Storage   1.00 Min
+1 Hour_Minute_RTM  L
+
+10 Output_Table  10.00 Min
+1 10 L
+2 Stat_Nr__  L
+3 Proj_Nr  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Sap_1_AVG  L
+8 Sap_1  L
+9 Dend_1_AVG  H
+10 Dend_1  H
+11 Echo_1_AVG  H
+12 Echo_2_AVG  H
+13 Echo_3_AVG  H
+14 Echo_4_AVG  H
+15 Echo_5_AVG  H
+16 Echo_6_AVG  H
+17 Echo_7_AVG  H
+18 Echo_8_AVG  H
+19 Echo_9_AVG  H
+20 BattVolt_AVG  H
+21 CR10XTemp_AVG  H
+22 Batt_Min_AVG  H
+23 VoltDend_AVG  H
+
+
+Estimated Total Final Storage Locations used per day 5472

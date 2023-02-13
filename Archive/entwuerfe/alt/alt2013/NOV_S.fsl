@@ -1,0 +1,55 @@
+Final Storage Label File for:  NOV_S.csi
+Date:  8/29/2008
+Time:  10:30:42
+
+38 Input_Storage 1440.00 Min
+1 BattVolt_MIN  L
+2 BattVolt_MAX  L
+
+41 Input_Storage   1.00 Min
+1 Hour_Minute_RTM  L
+
+10 Output_Table  10.00 Min
+1 10 L
+2 Stat_Nr__  L
+3 Proj_21  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Sap_1_AVG  L
+8 Sap_1  L
+9 Dend_1_AVG  H
+10 Dend_1  H
+11 BattVolt_AVG  H
+12 CR10XTemp_AVG  H
+13 Batt_Min_AVG  H
+14 VoltDend_AVG  H
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_Nr__  L
+3 Proj_22  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Echo_1_15_AVG  L
+8 Echo_1_50_AVG  L
+9 Echo_1_80_AVG  L
+10 Echo_2_15_AVG  L
+11 Echo_2_50_AVG  L
+12 Echo_2_80_AVG  L
+13 Echo_3_15_AVG  L
+14 Echo_3_50_AVG  L
+15 Echo_3_80_AVG  L
+16 EchoU1_15_AVG  L
+17 EchoU1_50_AVG  L
+18 EchoU1_80_AVG  L
+19 EchoU2_15_AVG  L
+20 EchoU2_50_AVG  L
+21 EchoU2_80_AVG  L
+22 EchoU3_15_AVG  L
+23 EchoU3_50_AVG  L
+24 EchoU3_80_AVG  L
+
+
+Estimated Total Final Storage Locations used per day 3456

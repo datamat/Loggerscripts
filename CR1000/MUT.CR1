@@ -1,0 +1,373 @@
+' WSL / LWF Meteostation, Mutrux, MUT, 121
+' Number/access: 41795569397-3.wsl.ch, 002023, 23
+
+SequentialMode
+
+' K O N S T A N T E N
+'----------------------------------------------------------------------------
+Const cPROGSCAN       =    5
+Const cSensorOff      = -999     '* Code fuer nicht angeschlossene Sensoren
+
+'*** Programm Konfiguration
+Const cnSTATUS        =    8      '* Anzahl binaerer Status-Werte
+Const cstVBATT        =    1      '*  - Binaerwert:      1
+Const cstTARH         =    2      '*  - Binaerwert:      2
+Const cstPLUV         =    3      '*  - Binaerwert:      4
+Const cstSRAD         =    4      '*  - Binaerwert:      8
+Const cstGHUM         =    5      '*  - Binaerwert:     16
+Const cstGPOT         =    6      '*  - Binaerwert:     32
+Const cstFTP          =    7      '*  - Binaerwert:     64
+Const cstNTP          =    8      '*  - Binaerwert:    128
+
+ConstTable
+  Const cMETEOINT     =   10      '* Speicherintervall der Meteodaten in Minuten
+  Const cPPPOPENATMPT =    5      '* Anzahl Verbindungsversuche bei GPRS-Attach
+  Const cFTP_IP       = "ftp.wsl.ch"
+  Const cFTP_User     = "username"
+  Const cFTP_Pwd      = "password"
+  Const cDataFileName = "USR:LocalData"
+  Const cFTPFileName  = "WSL_Birmesndorf.dat"
+EndConstTable
+
+' V A R I A B L E N
+'----------------------------------------------------------------------------
+Public StationID As Long
+Public ProjectID As Long
+Public ProgVers
+Public StatusIn As Long
+Public VBATact
+Public TLOGact
+Public TARHact(2)
+Alias TARHact(1) = TAIRact
+Alias TARHact(2) = RHUMact
+Public PLUVact
+Public SRADact
+
+Public TRHData(2)
+Alias TRHData(1)= TAIRact2
+Alias TRHData(2)= RHUMact2
+
+'*** Programmsteuerung:
+Public FlagMeteoData     As Boolean
+Public FlagConfigData    As Boolean
+Public FlagBatSave       As Boolean
+Public FlagForceMeasure  As Boolean
+Public FlagEnterStatus   As Boolean
+Public FlagEnterConfig   As Boolean
+Public FlagTimeSync      As Boolean
+Public FlagPPPOpen       As Boolean
+Public FlagPPPClose      As Boolean
+Public FlagInit          As Long
+
+'*** Programmkonfiguration:
+Public Quality As Long
+Public Status(cnSTATUS) As Long
+Alias Status(cstVBATT)  = StatBATT
+Alias Status(cstTARH)   = StatTARH
+Alias Status(cstPLUV)   = StatPLUV
+Alias Status(cstSRAD)   = StatSRAD
+Alias Status(cstGHUM)   = StatGHUM
+Alias Status(cstGPOT)   = StatGPOT
+Alias Status(cstFTP)    = StatFTP
+Alias Status(cstNTP)    = StatNTP
+Public SRadCali
+Public PluvCali
+Public VBATlim
+
+'*** Umrechnungen von Messgroessen:
+Public PluvSum
+Public Pluv10m
+Public VBATmean
+Public VBAT5h
+
+Dim    ActualTime(9)
+Alias ActualTime(1) = Year
+Alias ActualTime(2) = Month
+Alias ActualTime(3) = DayOfMonth
+Alias ActualTime(4) = hour
+Alias ActualTime(5) = minute
+Alias ActualTime(6) = second
+Alias ActualTime(7) = uSecond
+Alias ActualTime(8) = DayOfWeek
+Alias ActualTime(9) = DayOfYear
+
+'*** Masseinheiten
+Units TAIRact = deg_C
+Units RHUMact = %
+Units SRADact = W/m2
+Units VBATact = V
+Units TLOGact = deg_C
+Units TAIRact2 = deg_C
+Units RHUMact2 = %
+
+' D A T E N - T A B L E S
+'**************************************************************************************
+DataTable (Meteo,FlagMeteoData,-1)
+  DataInterval (0,cMETEOINT,Min,1)
+  Sample(1,StationID,IEEE4)
+  FieldNames("Stationskennung")
+  Sample(1,ProjectID,IEEE4)
+  FieldNames("Projektcode")
+  Sample(1,cMETEOINT,FP2)
+  FieldNames("Messintervall")
+  Average(1,TAIRact,FP2,False)
+  FieldNames("Lufttemperatur")
+  Average(1,RHUMact,FP2,False)
+  FieldNames("Luftfeuchtigkeit")
+  Sample(1,Pluv10m,FP2)
+  FieldNames("Niederschlag")
+  Sample(1,PluvSum,FP2)
+  FieldNames("Niederschlagssumme")
+  Average(1,SRADact,FP2,False)
+  FieldNames("Globalstrahlung")
+  Average(1,VBATact,FP2,False)
+  FieldNames("Batteriespannung")
+  Average(1,TLOGact,FP2,False)
+  FieldNames("Loggertemperatur")
+  Average(1,TAIRact2,FP2,False)
+  FieldNames("Lufttemperatur2")
+  Average(1,RHUMact2,FP2,False)
+  FieldNames("Luftfeuchtigkeit2")
+  Sample(1,Quality,FP2)
+  FieldNames("Qualitaet")
+  'TableFile ("USR:Mutrux_",12,-1, _
+  '  1,0,Min,FilewriteSuccess,LastFileName)
+EndTable
+
+DataTable (MeteoRAW,1,-1)
+  DataInterval (0,1,Min,0) : CardOut (0,5000000)
+  Sample(1,StationID,IEEE4)
+  FieldNames("Stationskennung")
+  Sample(1,ProjectID,IEEE4)
+  FieldNames("Projektcode")
+  Sample(1,cMETEOINT,FP2)
+  FieldNames("Messintervall")
+  Average(1,TAIRact,FP2,False)
+  FieldNames("Lufttemperatur")
+  Average(1,RHUMact,FP2,False)
+  FieldNames("Luftfeuchtigkeit")
+  Sample(1,Pluv10m,FP2)
+  FieldNames("Niederschlag")
+  Sample(1,PluvSum,FP2)
+  FieldNames("Niederschlagssumme")
+  Average(1,SRADact,FP2,False)
+  FieldNames("Globalstrahlung")
+  Average(1,VBATact,FP2,False)
+  FieldNames("Batteriespannung")
+  Average(1,TLOGact,FP2,False)
+  FieldNames("Loggertemperatur")
+  Average(1,TAIRact2,FP2,False)
+  FieldNames("Lufttemperatur2")
+  Average(1,RHUMact2,FP2,False)
+  FieldNames("Luftfeuchtigkeit2")
+  Sample(1,Quality,FP2)
+  FieldNames("Qualitaet")
+  'TableFile ("USR:Mutrux_",12,-1, _
+  '  1,0,Min,FilewriteSuccess,LastFileName)
+EndTable
+
+' S U B R O U T I N E N
+'****************************************************************************
+Sub SUBInitialize
+  FlagMeteoData    = True
+  FlagConfigData   = True
+  FlagBatSave      = False
+  FlagForceMeasure = False
+  FlagEnterStatus  = False
+  FlagEnterConfig  = False
+  FlagTimeSync     = False
+  FlagPPPOpen      = False
+  FlagPPPClose     = False
+  ' Programmparameter einlesen / initialisieren
+  Call SUBReadParameter
+  Call SUBInitStatus
+  FlagInit         = 1
+EndSub
+
+Sub SUBReadParameter
+  StationID        =     191   '* Stations-Identifikationsnummer
+  ProjectID        =      28   '* Projekt-Identifikationsnummer
+  StatusIn         =      63   '* Status (binaere Sensorkonfiguration)
+  SRadCali         =     100   '* Kalibrationsfaktor SKS1110
+  PluvCali         =   0.203   '* Wippenvolumen Niederschlagssensor
+  VBATlim          =    12.4   '* Grenzspannung fuer Batteriesparmode
+  ProgVers         =     2.2   '* Programmversion
+  ' Batteriespannung bei Initialisierung
+  VBAT5h=VBATlim+0.1
+EndSub
+
+Sub SUBCheckRange(lVal, lMin, lMax, lStatInd)
+  If Status(lStatInd) >= 1 Then
+    If (lVal > lMax) OR (lVal < lMin) OR (lVal = NAN) Then
+      Status(lStatInd) = Status(lStatInd) + 1
+    EndIf
+  EndIf
+EndSub
+
+Sub SUBEnterStatus
+  Dim k1
+  StatusIn = 0
+  For k1 = 1 To cnSTATUS
+    If Status(k1) >= 1 Then
+      StatusIn = StatusIn + INT(2^(k1-1)+0.3)
+    EndIf
+  Next k1
+  FlagEnterStatus = False
+EndSub
+
+Sub SUBInitStatus
+  Dim k2
+  For k2 = 1 To cnSTATUS
+    If ((StatusIn MOD (2^k2)) > (2^(k2-1)-0.5)) Then
+      Status(k2) = 1
+    Else
+      Status(k2) = 0
+    EndIf
+  Next k2
+EndSub
+
+Public HasElectricity As Boolean = 0
+Public DefaultTen As Boolean
+Public DefaultHour As Boolean
+Public IsDay As Boolean
+Public IsMdmOn As Boolean
+Public MdmStatus As String * 40 = "Off"
+Public FTPSuccess
+Const FTPSrvr = "ftp.wsl.ch"
+Const FTPUser = "mutrux"
+Const FTPPassword = "kns.16.cxh"
+Const RemoteFolder = "/data/ftp/mutrux/"
+Const FTPUsertest = "mutrux"
+Const FTPPasswordtest = "kns.16.cxh"
+Const RemoteFoldertest = "/data/ftp/mutrux/"
+Const FTPCRUserName = "lwfmeteo"
+
+Sub SubMdm ()
+  ' Default day is from 6 am to 6 pm UTC
+  IsDay=TimeIsBetween (360,1080,1440,Min)
+  ' Define time windows here for different voltages levels
+  DefaultTen=TimeIsBetween (8,3,10,Min)
+  DefaultHour=TimeIsBetween (58,8,60,Min)
+  ' Here are the logics of the windows and voltages
+  ' Maintenance of 20 mins, when mail is sent to logger (Modem and ON)
+  If HasElectricity Then
+    SW12 (1) : IsMdmOn=1 : MdmStatus="Always on"
+    ' Every day at least eight mins, for emergency handling
+  'ElseIf DefaultTen AND (VBATact >= 12.6) Then
+  '  SW12 (1) : IsMdmOn=1 : MdmStatus="TenMinutes"
+  ElseIf DefaultHour AND (VBATact >= 12.0) Then
+    SW12 (1) : IsMdmOn=1 : MdmStatus="Hourly"
+  Else
+    SW12 (0) : IsMdmOn=0 : MdmStatus="Off"
+  EndIf
+EndSub
+
+Public Tstamp As String
+Public Filename As String * 100
+
+Sub SubSendToFTP ()
+  Delay (0,5,sec)
+  Tstamp = Public.TimeStamp(1,1)
+  Tstamp = Mid(Tstamp,7,4)+Mid(Tstamp,1,2)+Mid(Tstamp,4,2)+ _
+  Mid(Tstamp,12,2)+Mid(Tstamp,15,2)+Mid(Tstamp,18,2)
+  Filename = RemoteFolder + "Mutrux_Meteo_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, _
+  "Meteo",Filename,2,0,0,min,-1008)
+  ' 0 NumRecs = Alle Daten werden gesendet, je nach Interval
+  ' Wenn Intervall auch 0, dann alle neue Daten geschickt:
+  '   -> am besten fuer uns!
+  ' Wenn Intervall unter 0, dann immer in dem Interval geschickt:
+  '   -> interessant, wenn man zBsp. stuendlich immer die letzten
+  '      drei Stunden schicken moechte (0,-3,Hour?)
+  ' Wenn Intervall ueber 0, dann immer in dem Abstand geschickt
+  '   -> interessant, wenn man nur 60 Minuten die 10 Minuten-
+  '      Werte uebertragen moechte (0,60,min)
+EndSub
+
+' H A U P T P R O G R A M M
+'****************************************************************************
+BeginProg
+  'SetStatus ("StationName",StatNameLogger)
+  SetStatus ("HTTPEnabled",True) : SetStatus ("FTPEnabled",True)
+  'SetStatus ("FTPUserName",FTPCRUserName)
+  'SetStatus ("FTPPassword",FTPCRPassword)
+  SetStatus ("TelnetEnabled",True) : SetStatus ("PingEnabled",True)
+  SetStatus ("USRDriveSize",0)
+
+  Scan (cPROGSCAN,Sec,0,0)
+    If FlagInit = 0 Then Call SUBInitialize
+    If FlagEnterStatus Then Call SUBEnterStatus
+
+    If FlagForceMeasure Then
+      PortSet(6,1)
+      Delay(1,1,Sec)
+    ElseIf TimeIntoInterval(55,60,Sec) Then
+      PortSet(6,1)
+    EndIf
+
+    If TimeIntoInterval(0,60,Sec) Then
+      Battery(VBATact)
+      AvgRun(VBATmean,1,VBATact,30)
+      PanelTemp(TLOGact,250)
+    EndIf
+
+    If StatPLUV >= 1 Then
+      PulseCount(PLUVact,1,2,2,0,PluvCali,0)
+      PluvSum = PluvSum + PLUVact
+      Pluv10m = Pluv10m + PLUVact
+    Else
+      PLUVact = cSensorOff
+    EndIf
+
+    If TimeIntoInterval(0,60,Sec) OR FlagForceMeasure Then
+      If StatTARH >= 1 Then
+        VoltSe(TAIRact,1,mv2500,3,False,0,_50Hz,0.1,-40)
+        VoltSe(RHUMact,1,mv2500,2,False,0,_50Hz,0.1,0)
+        Call SUBCheckRange(TAIRact,-40,50,cstTARH)
+        Call SUBCheckRange(RHUMact,0,100,cstTARH)
+      Else
+        TAIRact = cSensorOff
+        RHUMact = cSensorOff
+      EndIf
+      '--- Speisung Hygroclip ausschalten
+      PortSet(6,0)
+
+      If StatSRAD >= 1 Then
+        VoltSe(SRADact,1,mV25,1,False,0,250,SRadCali,0)
+        SUBCheckRange(SRADact,0,2000,cstSRAD)
+      Else
+        SRADact = cSensorOff
+      EndIf
+
+      '---   Lufttemperatur und -feuchte (Campbell CS215: C7) ----
+      '      white - GND
+      '      green - C7
+      '      black - POWER GND
+      '      red   - POWER 12V
+      '      clear - shield
+      SDI12Recorder (TRHData,7,0,"M!",1.0,0)
+
+    EndIf
+    FlagForceMeasure = False
+    CallTable Meteo : CallTable MeteoRAW
+    FlagConfigData = False
+    
+    If TimeIntoInterval(0,cMETEOINT,Min) Then
+      Pluv10m = 0
+    EndIf
+    If TimeIntoInterval(0,1440,Min) Then
+      If Month = 5 AND DayOfMonth = 1 Then
+        PluvSum = 0
+      EndIf
+    EndIf
+  NextScan
+
+  ' SlowScan 1
+  SlowSequence
+  Scan (1,Min,0,0)
+    Battery (VBATact)
+    Call SubMdm ()
+    Call SubSendToFTP ()
+  NextScan
+  EndSequence
+EndProg

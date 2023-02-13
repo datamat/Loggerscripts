@@ -1,0 +1,65 @@
+Program Trace Information File for:  SDM-SW8A_Test.csi
+Date: 11/21/2013
+Time: 15:46:19
+
+T = Program Table Number
+N = Sequential Program Instruction Location Number
+Instruction = Instruction Number and Name
+
+Inst ExTm = Individual Instruction Execution Time
+Block ExTm = Cumulative Execution Time for program block,
+             i.e., subroutine
+Prog ExTm = Cumulative Total Program Execution Time
+
+                                                          Output Flag High
+                                   Inst  Block   Prog     Inst  Block   Prog
+                                   ExTm   ExTm   ExTm     ExTm   ExTm   ExTm
+T|N|Instruction                   (msec) (msec) (msec)   (msec) (msec) (msec)
+---------------                   ------ ------ ------   ------ ------ ------
+1|1|91 If Flag/Port                 0.4    0.4    0.4      0.4    0.4    0.4
+1|2|89 If (X<=>F)                   0.6    1.0    1.0      0.6    1.0    1.0
+1|3|91 If Flag/Port                 0.4    1.4    1.4      0.4    1.4    1.4
+1|4|32 Z=Z+1                        0.8    2.2    2.2      0.8    2.2    2.2
+1|5|91 If Flag/Port                 0.4    2.6    2.6      0.4    2.6    2.6
+1|6|86 Do                           0.3    2.9    2.9      0.3    2.9    2.9
+  ----Subroutine 1---------------
+  3|1|85 Beginning of Subroutine    0.0    0.0    2.9      0.0    0.0    2.9
+  3|2|102 SDM-SW8A                  9.0    9.0   11.9      9.0    9.0   11.9
+  3|3|102 SDM-SW8A                 14.0   23.0   25.9     14.0   23.0   25.9
+  3|4|102 SDM-SW8A                 14.0   37.0   39.9     14.0   37.0   39.9
+  3|5|102 SDM-SW8A                  4.0   41.0   43.9      4.0   41.0   43.9
+  3|6|95 End                        0.2   41.2   44.1      0.2   41.2   44.1
+  -----End Subroutine 1 ---------
+1|7|32 Z=Z+1                        0.8    3.7   44.9      0.8    3.7   44.9
+1|8|86 Do                           0.3    4.0   45.2      0.3    4.0   45.2
+ Output Flag Set @ 18 for Array 108
+1|9|77 Real Time                    0.2    4.2   45.4      3.8    7.8   49.0
+ Output Data 2 Values
+1|10|70 Sample                      0.2    4.4   45.6      0.9    8.7   49.9
+ Output Data 1 Values
+1|11|86 Do                          0.3    4.7   45.9      0.3    9.0   50.2
+1|12|94 Else                        0.2    4.9   46.1      0.2    9.2   50.4
+1|13|32 Z=Z+1                       0.8    5.7   46.9      0.8   10.0   51.2
+1|14|86 Do                          0.3    6.0   47.2      0.3   10.3   51.5
+1|15|95 End                         0.2    6.2   47.4      0.2   10.5   51.7
+1|16|95 End                         0.2    6.4   47.6      0.2   10.7   51.9
+1|17|92 If time is                  0.7    7.1   48.3      0.7   11.4   52.6
+ Output Flag Set @ 117 for Array 117
+1|18|77 Real Time                   0.2    7.3   48.5      3.8   15.2   56.4
+ Output Data 2 Values
+1|19|72 Totalize                    5.6   12.9   54.1      9.5   24.7   65.9
+ Output Data 5 Values
+1|20|70 Sample                      0.2   13.1   54.3      2.5   27.2   68.4
+ Output Data 5 Values
+1|21|70 Sample                      0.2   13.3   54.5      2.5   29.7   70.9
+ Output Data 5 Values
+
+Program Table 1 Execution Interval    5.000 Seconds
+
+Table 1 Estimated Total Program Execution Time in msec   54.5 w/Output   70.9
+
+Table 1 Estimated Total Final Storage Locations used per day 74304
+
+
+
+Estimated Total Final Storage Locations used per day 74304

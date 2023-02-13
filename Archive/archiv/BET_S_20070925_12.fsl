@@ -1,0 +1,76 @@
+Final Storage Label File for:  BETTLACH12.csi
+Date:  9/25/2007
+Time:  14:56:35
+
+7 Input_Storage 120.00 Min
+1 U_log_MIN  L
+2 U_log_MAX  L
+3 U_log_AVG  L
+4 T_log_AVG  L
+
+120 Output_Table 120.00 Min
+1 120 L
+2 IDStation  L
+3 IDProj101  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 U_log_MIN  L
+8 U_log_MAX  L
+9 U_log_Avg  L
+10 T_log_Avg  L
+11 STATUS_f1  L
+12 STATUS_f5  L
+13 STATUS_f6  L
+14 STATUS_f7  L
+
+69 Input_Storage 120.00 Min
+1 Hour_Minute_RTM  L
+
+10 Output_Table  10.00 Min
+1 10 L
+2 IDStation  L
+3 IDProj202  L
+4 U_log_AVG  L
+5 Year_RTM  L
+6 Day_RTM  L
+7 Hour_Minute_RTM  L
+8 U_01_AVG  L
+9 U_02_AVG  L
+10 U_03_AVG  L
+11 U_04_AVG  L
+12 U_05_AVG  L
+13 U_06_AVG  L
+14 U_07_AVG  L
+15 U_08_AVG  L
+16 U_09_AVG  L
+17 U_10_AVG  L
+18 U_11_AVG  L
+19 U_12_AVG  L
+20 U_13_AVG  L
+21 U_14_AVG  L
+22 U_15_AVG  L
+23 U_16_AVG  L
+24 U_17_AVG  L
+25 U_18_AVG  L
+26 U_19_AVG  L
+27 U_20_AVG  L
+28 U_21_AVG  L
+29 U_22_AVG  L
+30 U_23_AVG  L
+31 U_24_AVG  L
+32 U_37_AVG  L
+33 U_38_AVG  L
+34 U_39_AVG  L
+35 U_40_AVG  L
+36 U_41_AVG  L
+37 U_42_AVG  L
+38 U_43_AVG  L
+39 U_44_AVG  L
+40 U_45_AVG  L
+41 U_46_AVG  L
+42 U_47_AVG  L
+43 U_48_AVG  L
+
+
+Estimated Total Final Storage Locations used per day 6360

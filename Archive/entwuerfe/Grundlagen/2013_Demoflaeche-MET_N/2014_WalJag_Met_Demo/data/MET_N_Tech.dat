@@ -1,0 +1,6 @@
+"TOA5","MET_N","CR1000","E5303","CR1000.Std.24","CPU:UIT_B.CR1","56636","Tech"
+"TIMESTAMP","RECORD","Stationskennung","MProjNr","Messintervall","Batteriespannung","Loggertemperatur"
+"TS","RN","","","","V","deg_C"
+"","","Smp","Smp","Smp","Avg","Avg"
+"2014-09-12 00:00:00",0,122,4,240,12.28,24.57
+"2014-09-12 04:00:00",1,122,4,240,12.27,23.96

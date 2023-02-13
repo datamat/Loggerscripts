@@ -1,0 +1,1407 @@
+;{CR10X}
+;--------------------------------------------------------------------------------
+; Stationsname:       VIST (Schema 26.6.2017, Variante 1)            29.6.2017
+; Standort:           Visp Bestand (ehemals TDR), StatNr=33
+; Datenkommunikation: Modem Station VIS_B wird umgeschaltet (15:15 - 15:30)
+;                     (Verdrahtung siehe Schema VIS_B)
+; Projekt 11: TDR-Batteriespannung
+; Projekt 22: EC-5 Sensoren (Bodenwassergehalt), Verdrahtung siehe unten
+; Projekt 30: MPS-2 Sensoren (Bodenmatrixpotential), Verdrahtung siehe unten
+; Projekt 8:  TDR Sensoren (Bodenwassergehalt), ausgeschaltet
+; Autoren:    Markasub, E. Graf Pannatier, P. Waldner
+; Flag/Ports
+; Flag 1:   Port 1: RES Multiplexer 1 (MPS-2)
+; Flag 2:   Port 2: CLK Multiplexer 1 (MPS-2)
+; Flag 3:   Port 3: SW 12-Ctrl
+; Flag 4:   Port 4:
+; Flag 5:   Port 5
+; Flag 6:   Port 6
+; Flag 7:   Port 7
+; Flag 8:   Port 8: SDI-12 Adressen 1-9=MPS-2 via Multiplexer 1
+;
+; Anpassung 26.9.2016 Peter Waldner
+; - Projekt 8: TDR-Messung geloescht
+; - Projekt 10: Messung Lithium Batterie hinzugefuegt
+; - Projekt 30: MPS-2 ueber SW 12 Port 3 ein/ausschalten
+;
+; Anpassung 26.6.2017 Peter Waldner  (siehe Schema)
+; - Projekt 22: keine Aenderung (Schema 26.6.2017, Variante 1): S1-S9
+; - Projekt 30: MPS-2 1 bis 9 umgehaengt auf Multiplexer, Set 1
+;               MPS-2 jeweils 1 bis 9 an Mutliplexer, Sets 2 bis 7 angehangt
+;                     Set 6 nur an C6, Set 7 nur an C7
+;                     Set 1: 1-3 Teilquadrat A1, 4-6 B1, 7-9 ehem. TDR Standort
+;                     Set 2-7: Visp Mortalitaet 2017 1-3 1m SE, 4-6 1m N, 7-9 1m SW vom Baum 
+;                     Set 2: Patch 1a, Baum 287 
+;                     Set 4: Patch 1b, Baum 281 
+;                     Set 4: Patch 2a, Baum 439 
+;                     Set 5: Patch 2b, Baum 435 
+;                     Set 6: Patch 3a, Baum 183 
+;                     Set 7: Patch 3b, Baum 204 
+; - Bemerkung:
+;               - Loop mit heraufzaehlenden InLocs fuerte bei SDI12 zu Fehlern
+;                 --> direkt programmiert
+;               - Wenn kein Sensor angeschlossen ist,
+;                 wird nur das MP aber nicht die Temperatur ueberschriebne
+;--------------------------------------------------------------------------------
+
+*Table 1 Program
+  01: 3600      Execution Interval (seconds)
+
+1:  Z=F (P30)
+ 1: 033      F
+ 2: 00       Exponent of 10
+ 3: 17       Z Loc [ Stat_ID   ]
+
+; Projekt 11: Loggertemperatur etc.
+2:  Z=F (P30)
+ 1: 011      F
+ 2: 00       Exponent of 10
+ 3: 21       Z Loc [ Proj11_ID ]
+
+; Projekt 22: ECHO EC-5
+3:  Z=F (P30)
+ 1: 22       F
+ 2: 00       Exponent of 10
+ 3: 31       Z Loc [ Proj22_ID ]
+
+; Projekt 30: Decagon MPS2
+4:  Z=F x 10^n (P30)
+ 1: 030      F
+ 2: 00       n, Exponent of 10
+ 3: 32       Z Loc [ Proj30_ID ]
+
+
+; --------------------------
+; Messen Projekt 11: Technische Daten
+5:  Internal Temperature (P17)
+ 1: 1        Loc [ CR10XTemp ]
+
+6:  Batt Voltage (P10)
+ 1: 2        Loc [ Batt      ]
+
+7:  Status Monitor (P130)
+ 1: 3        Lithium Battery (volts)
+ 2: 5        Loc [ LiBatt    ]
+
+
+; ------------------------------------
+;Messungen Projekt 22: ECHO EC-5 Sensoren
+
+; Sensor 1 (A1/3, 15cm): Weiss=E1, Rot=SE 1 (=H1), Blank=AG
+8:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 22       Loc [ EC_1      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Sensor 2 (A1/3, 50cm): Weiss=E1, Rot=SE 2 (=L1), Blank=AG
+9:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 2        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 23       Loc [ EC_2      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Sensor 3 (A1/3, 70cm): Weiss=E1, Rot=SE 3 (=H2), Blank=AG
+10:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 3        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 24       Loc [ EC_3      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Sensor 4 (B1/3, 15cm): Weiss=E2, Rot=SE 4 (=L2), Blank=AG
+11:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 4        SE Channel
+ 4: 2        Excite all reps w/Exchan 2
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 25       Loc [ EC_4      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Sensor 5 (B1/3, 50cm): Weiss=E2, Rot=SE 5 (=H3), Blank=AG
+12:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 5        SE Channel
+ 4: 2        Excite all reps w/Exchan 2
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 26       Loc [ EC_5      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Sensor 6 (B1/3, 70cm): Weiss=E2, Rot=SE 6 (=L3), Blank=AG
+13:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 6        SE Channel
+ 4: 2        Excite all reps w/Exchan 2
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 27       Loc [ EC_6      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Bei TDR:
+; Sensor 7 (TDR, 15 cm): Weiss=E3, Rot=SE 7 (=H4), Blank=AG
+14:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 7        SE Channel
+ 4: 3        Excite all reps w/Exchan 3
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 28       Loc [ EC_7      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+; Sensor 8 (TDR, 50 cm): Weiss=E3, Rot=SE 8 (=L4), Blank=AG
+15:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 8        SE Channel
+ 4: 3        Excite all reps w/Exchan 3
+ 5: 1        Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 29       Loc [ EC_8      ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+; ------------------------------------
+
+
+; ------------------------------------
+; Messung Projekt 30: 9 Decagon MPS2-sensors
+
+; MPS-2 einschalten (SW 12V-Ctrl mit C3 verbinden, SW 12V wird geschaltet)
+16:  Do (P86)
+ 1: 43       Set Port 3 High
+
+
+17:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0000     Delay W/Ex (0.01 sec units)
+ 3: 2000     Delay After Ex (0.01 sec units)
+ 4: 0000     mV Excitation
+
+; Multiplexer 1 einschalten
+; mux.H1 - C8.logger
+18:  Do (P86)
+ 1: 41       Set Port 1 High
+
+;------------------------
+; Set 1
+19:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+20:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 33       Loc [ MPS_1     ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+21:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 35       Loc [ MPS_3     ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+22:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 37       Loc [ MPS_5     ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+23:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 39       Loc [ MPS_7     ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+24:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 41       Loc [ MPS_9     ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+25:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 43       Loc [ MPS_11    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+26:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 45       Loc [ MPS_13    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+27:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 47       Loc [ MPS_15    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+28:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 49       Loc [ MPS_17    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+
+;------------------------
+; Set 2
+29:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+30:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 51       Loc [ MPS_19    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+31:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 53       Loc [ MPS_21    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+32:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 55       Loc [ MPS_23    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+33:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 57       Loc [ MPS_25    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+34:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 59       Loc [ MPS_27    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+35:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 61       Loc [ MPS_29    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+36:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 63       Loc [ MPS_31    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+37:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 65       Loc [ MPS_33    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+38:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 67       Loc [ MPS_35    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+;------------------------
+; Set 3
+39:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+40:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 69       Loc [ MPS_37    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+41:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 71       Loc [ MPS_39    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+42:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 73       Loc [ MPS_41    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+43:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 75       Loc [ MPS_43    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+44:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 77       Loc [ MPS_45    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+45:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 79       Loc [ MPS_47    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+46:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 81       Loc [ MPS_49    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+47:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 83       Loc [ MPS_51    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+48:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 85       Loc [ MPS_53    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+;------------------------
+; Set 4
+49:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+50:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 87       Loc [ MPS_55    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+51:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 89       Loc [ MPS_57    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+52:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 91       Loc [ MPS_59    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+53:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 93       Loc [ MPS_61    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+54:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 95       Loc [ MPS_63    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+55:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 97       Loc [ MPS_65    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+56:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 99       Loc [ MPS_67    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+57:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 101      Loc [ MPS_69    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+58:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 103      Loc [ MPS_71    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+;------------------------
+; Set 5
+59:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+60:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 105      Loc [ MPS_73    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+61:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 107      Loc [ MPS_75    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+62:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 109      Loc [ MPS_77    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+63:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 111      Loc [ MPS_79    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+64:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 113      Loc [ MPS_81    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+65:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 115      Loc [ MPS_83    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+66:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 117      Loc [ MPS_85    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+67:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 119      Loc [ MPS_87    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+68:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 8        Port
+ 4: 121      Loc [ MPS_89    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+;------------------------
+; Set 6
+69:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+70:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 123      Loc [ MPS_91    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+71:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 125      Loc [ MPS_93    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+72:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 6        Port
+ 4: 127      Loc [ MPS_95    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+73:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 6        Port
+ 4: 129      Loc [ MPS_97    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+74:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 6        Port
+ 4: 131      Loc [ MPS_99    ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+75:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 6        Port
+ 4: 133      Loc [ MPS_101   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+76:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 6        Port
+ 4: 135      Loc [ MPS_103   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+77:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 6        Port
+ 4: 137      Loc [ MPS_105   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+78:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 6        Port
+ 4: 139      Loc [ MPS_107   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+;------------------------
+; Set 7
+79:  Do (P86)
+ 1: 72       Pulse Port 2
+
+
+; Sensor 1: A1, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 1
+80:  SDI-12 Recorder (P105)
+ 1: 1        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 7        Port
+ 4: 141      Loc [ MPS_109   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 1: A1, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 2
+81:  SDI-12 Recorder (P105)
+ 1: 2        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 7        Port
+ 4: 143      Loc [ MPS_111   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 3: A1, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 3
+82:  SDI-12 Recorder (P105)
+ 1: 3        SDI-12 Address
+ 2: 0        Start Measurement (aM0!)
+ 3: 7        Port
+ 4: 145      Loc [ MPS_113   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 4: A3, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 4
+83:  SDI-12 Recorder (P105)
+ 1: 4        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 147      Loc [ MPS_115   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 5: A3, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 5
+84:  SDI-12 Recorder (P105)
+ 1: 5        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 149      Loc [ MPS_117   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 6: A3, 80 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 6
+85:  SDI-12 Recorder (P105)
+ 1: 6        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 151      Loc [ MPS_119   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 7: ehem. TDR, 15 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 7
+86:  SDI-12 Recorder (P105)
+ 1: 7        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 153      Loc [ MPS_121   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 8: ehem. TDR, 50 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 8
+87:  SDI-12 Recorder (P105)
+ 1: 8        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 155      Loc [ MPS_123   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+; Sensor 9: ehem. TDR, 70 cm, (Rot=C8, Weiss=SW 12V, Blank=G), SDI-12 Adresse 9
+88:  SDI-12 Recorder (P105)
+ 1: 9        SDI-12 Address
+ 2: 00       SDI-12 Command
+ 3: 7        Port
+ 4: 157      Loc [ MPS_125   ]
+ 5: 1.0      Mult
+ 6: 0.0      Offset
+
+
+
+89:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+
+; MPS-2 Stromversorgung ausschalten
+90:  Do (P86)
+ 1: 53       Set Port 3 Low
+; -------------
+
+
+
+; -------------------
+; Schreibe Zeile mit ECHO EC-5
+91:  Do (P86)
+ 1: 10       Set Output Flag High (Flag 0)
+
+92:  Set Active Storage Area (P80)^24128
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+93:  Sample (P70)^3786
+ 1: 1        Reps
+ 2: 17       Loc [ Stat_ID   ]
+
+94:  Sample (P70)^5762
+ 1: 1        Reps
+ 2: 31       Loc [ Proj22_ID ]
+
+
+95:  Real Time (P77)^5246
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+
+96:  Average (P71)^1496
+ 1: 8        Reps
+ 2: 22       Loc [ EC_1      ]
+
+97:  Do (P86)
+ 1: 20       Set Output Flag Low (Flag 0)
+; -------------
+
+
+; --------------
+; Schreibe Zeile mit Decagon MPS2: je Matrixpotential und Temperatur
+
+98:  Do (P86)
+ 1: 10       Set Output Flag High (Flag 0)
+
+
+99:  Set Active Storage Area (P80)^27423
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+100:  Sample (P70)^3786
+ 1: 1        Reps
+ 2: 17       Loc [ Stat_ID   ]
+
+101:  Sample (P70)^5762
+ 1: 1        Reps
+ 2: 32       Loc [ Proj30_ID ]
+
+102:  Real Time (P77)^5246
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+
+103:  Average (P71)^19268
+ 1: 63       Reps
+ 2: 33       Loc [ MPS_1     ]
+
+104:  Average (P71)^17228
+ 1: 63       Reps
+ 2: 96       Loc [ MPS_64    ]
+
+
+105:  Do (P86)
+ 1: 20       Set Output Flag Low (Flag 0)
+; -------------
+
+; ---------------------------
+*Table 2 Program
+  02: 7200      Execution Interval (seconds)
+
+; Schreiben Projekt 11: TDR-Batteriespannung
+1:  Do (P86)
+ 1: 10       Set Output Flag High (Flag 0)
+
+2:  Set Active Storage Area (P80)^19951
+ 1: 1        Final Storage Area 1
+ 2: 120      Array ID
+
+3:  Sample (P70)^32188
+ 1: 1        Reps
+ 2: 17       Loc [ Stat_ID   ]
+
+4:  Sample (P70)^2220
+ 1: 1        Reps
+ 2: 21       Loc [ Proj11_ID ]
+
+5:  Real Time (P77)^8511
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+6:  Sample (P70)^8151
+ 1: 1        Reps
+ 2: 2        Loc [ Batt      ]
+
+7:  Sample (P70)^20005
+ 1: 1        Reps
+ 2: 1        Loc [ CR10XTemp ]
+
+8:  Sample (P70)^21173
+ 1: 1        Reps
+ 2: 5        Loc [ LiBatt    ]
+
+9:  Do (P86)
+ 1: 20       Set Output Flag Low (Flag 0)
+
+*Table 3 Subroutines
+
+End Program
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-Input Locations-
+1 CR10XTemp 1 1 1
+2 Batt      1 1 1
+3 _________ 0 0 0
+4 _________ 0 0 0
+5 LiBatt    1 1 1
+6 _________ 0 0 0
+7 _________ 0 0 0
+8 _________ 0 0 0
+9 _________ 0 0 0
+10 _________ 0 0 0
+11 _________ 0 0 0
+12 _________ 0 0 0
+13 _________ 0 0 0
+14 _________ 0 0 0
+15 _________ 0 0 0
+16 _________ 0 0 0
+17 Stat_ID   1 4 1
+18 Proj8_ID  1 1 1
+19 Proj4_ID  1 0 0
+20 Proj10_ID 1 0 0
+21 Proj11_ID 1 1 1
+22 EC_1      1 1 1
+23 EC_2      1 1 1
+24 EC_3      1 0 1
+25 EC_4      1 0 1
+26 EC_5      1 0 1
+27 EC_6      1 0 1
+28 EC_7      1 0 1
+29 EC_8      1 0 1
+31 Proj22_ID 1 1 1
+32 Proj30_ID 1 1 1
+33 MPS_1     3 1 1
+34 MPS_2     3 1 0
+35 MPS_3     3 1 1
+36 MPS_4     3 1 0
+37 MPS_5     3 1 1
+38 MPS_6     3 1 0
+39 MPS_7     3 1 1
+40 MPS_8     3 1 0
+41 MPS_9     3 1 1
+42 MPS_10    3 1 0
+43 MPS_11    3 1 1
+44 MPS_12    3 1 0
+45 MPS_13    3 1 1
+46 MPS_14    3 1 0
+47 MPS_15    3 1 1
+48 MPS_16    3 1 0
+49 MPS_17    3 1 1
+50 MPS_18    3 1 0
+51 MPS_19    3 0 1
+52 MPS_20    3 0 0
+53 MPS_21    3 0 1
+54 MPS_22    3 0 0
+55 MPS_23    3 0 1
+56 MPS_24    3 0 0
+57 MPS_25    3 0 1
+58 MPS_26    3 0 0
+59 MPS_27    3 0 1
+60 MPS_28    3 0 0
+61 MPS_29    3 0 1
+62 MPS_30    3 0 0
+63 MPS_31    3 0 1
+64 MPS_32    3 0 0
+65 MPS_33    3 0 1
+66 MPS_34    3 0 0
+67 MPS_35    3 0 1
+68 MPS_36    3 0 0
+69 MPS_37    3 0 1
+70 MPS_38    3 0 0
+71 MPS_39    3 0 1
+72 MPS_40    3 0 0
+73 MPS_41    3 0 1
+74 MPS_42    3 0 0
+75 MPS_43    3 0 1
+76 MPS_44    3 0 0
+77 MPS_45    3 0 1
+78 MPS_46    3 0 0
+79 MPS_47    3 0 1
+80 MPS_48    3 0 0
+81 MPS_49    3 0 1
+82 MPS_50    3 0 0
+83 MPS_51    3 0 1
+84 MPS_52    3 0 0
+85 MPS_53    3 0 1
+86 MPS_54    3 0 0
+87 MPS_55    3 0 1
+88 MPS_56    3 0 0
+89 MPS_57    3 0 1
+90 MPS_58    3 0 0
+91 MPS_59    3 0 1
+92 MPS_60    3 0 0
+93 MPS_61    3 0 1
+94 MPS_62    3 0 0
+95 MPS_63    11 0 1
+96 MPS_64    11 1 0
+97 MPS_65    11 1 1
+98 MPS_66    11 1 0
+99 MPS_67    11 1 1
+100 MPS_68    11 1 0
+101 MPS_69    11 1 1
+102 MPS_70    11 1 0
+103 MPS_71    11 1 1
+104 MPS_72    11 1 0
+105 MPS_73    11 1 1
+106 MPS_74    11 1 0
+107 MPS_75    11 1 1
+108 MPS_76    11 1 0
+109 MPS_77    11 1 1
+110 MPS_78    11 1 0
+111 MPS_79    11 1 1
+112 MPS_80    11 1 0
+113 MPS_81    11 1 1
+114 MPS_82    11 1 0
+115 MPS_83    11 1 1
+116 MPS_84    11 1 0
+117 MPS_85    11 1 1
+118 MPS_86    11 1 0
+119 MPS_87    11 1 1
+120 MPS_88    11 1 0
+121 MPS_89    11 1 1
+122 MPS_90    11 1 0
+123 MPS_91    11 1 1
+124 MPS_92    11 1 0
+125 MPS_93    11 1 1
+126 MPS_94    11 1 0
+127 MPS_95    11 1 1
+128 MPS_96    11 1 0
+129 MPS_97    11 1 1
+130 MPS_98    11 1 0
+131 MPS_99    11 1 1
+132 MPS_100   11 1 0
+133 MPS_101   11 1 1
+134 MPS_102   11 1 0
+135 MPS_103   11 1 1
+136 MPS_104   11 1 0
+137 MPS_105   11 1 1
+138 MPS_106   11 1 0
+139 MPS_107   11 1 1
+140 MPS_108   11 1 0
+141 MPS_109   11 1 1
+142 MPS_110   11 1 0
+143 MPS_111   11 1 1
+144 MPS_112   11 1 0
+145 MPS_113   11 1 1
+146 MPS_114   11 1 0
+147 MPS_115   11 1 1
+148 MPS_116   11 1 0
+149 MPS_117   11 1 1
+150 MPS_118   11 1 0
+151 MPS_119   11 1 1
+152 MPS_120   11 1 0
+153 MPS_121   11 1 1
+154 MPS_122   11 1 0
+155 MPS_123   11 1 1
+156 MPS_124   11 1 0
+157 MPS_125   11 1 1
+158 MPS_126   19 1 0
+159 _________ 0 0 0
+160 _________ 0 0 0
+161 _________ 0 0 0
+162 _________ 0 0 0
+163 _________ 0 0 0
+164 _________ 0 0 0
+165 _________ 0 0 0
+166 _________ 0 0 0
+167 _________ 0 0 0
+168 _________ 0 0 0
+169 _________ 0 0 0
+170 _________ 0 0 0
+171 _________ 0 0 0
+172 _________ 0 0 0
+173 _________ 0 0 0
+174 _________ 0 0 0
+175 _________ 0 0 0
+176 _________ 0 0 0
+177 _________ 0 0 0
+178 _________ 0 0 0
+179 _________ 0 0 0
+180 _________ 0 0 0
+181 _________ 0 0 0
+182 _________ 0 0 0
+183 _________ 0 0 0
+184 _________ 0 0 0
+185 _________ 0 0 0
+186 _________ 0 0 0
+187 _________ 0 0 0
+188 _________ 0 0 0
+189 _________ 0 0 0
+190 _________ 0 0 0
+191 _________ 0 0 0
+192 _________ 0 0 0
+193 _________ 0 0 0
+194 _________ 0 0 0
+195 _________ 0 0 0
+196 _________ 0 0 0
+197 _________ 0 0 0
+198 _________ 0 0 0
+199 _________ 0 0 0
+200 _________ 0 0 0
+201 _________ 0 0 0
+202 _________ 0 0 0
+203 _________ 0 0 0
+204 _________ 0 0 0
+205 _________ 0 0 0
+206 _________ 0 0 0
+207 _________ 0 0 0
+208 _________ 0 0 0
+209 _________ 0 0 0
+210 _________ 0 0 0
+211 _________ 0 0 0
+212 _________ 0 0 0
+213 _________ 0 0 0
+214 _________ 0 0 0
+215 _________ 0 0 0
+216 _________ 0 0 0
+217 _________ 0 0 0
+218 _________ 0 0 0
+219 _________ 0 0 0
+220 _________ 0 0 0
+221 _________ 0 0 0
+222 _________ 0 0 0
+223 _________ 0 0 0
+224 _________ 0 0 0
+225 _________ 0 0 0
+226 _________ 0 0 0
+227 _________ 0 0 0
+228 _________ 0 0 0
+229 _________ 0 0 0
+230 _________ 0 0 0
+231 _________ 0 0 0
+232 _________ 0 0 0
+233 _________ 0 0 0
+234 _________ 0 0 0
+235 _________ 0 0 0
+236 _________ 0 0 0
+237 _________ 0 0 0
+238 _________ 0 0 0
+239 _________ 0 0 0
+240 _________ 0 0 0
+241 _________ 0 0 0
+242 _________ 0 0 0
+243 _________ 0 0 0
+244 _________ 0 0 0
+245 _________ 0 0 0
+246 _________ 0 0 0
+247 _________ 0 0 0
+248 _________ 0 0 0
+249 _________ 0 0 0
+250 _________ 0 0 0
+251 _________ 0 0 0
+252 _________ 0 0 0
+253 _________ 0 0 0
+254 _________ 0 0 0
+255 _________ 0 0 0
+256 _________ 0 0 0
+257 _________ 0 0 0
+258 _________ 0 0 0
+259 _________ 0 0 0
+260 _________ 0 0 0
+261 _________ 0 0 0
+262 _________ 0 0 0
+263 _________ 0 0 0
+264 _________ 0 0 0
+265 _________ 0 0 0
+266 _________ 0 0 0
+267 _________ 0 0 0
+268 _________ 0 0 0
+269 _________ 0 0 0
+270 _________ 0 0 0
+271 _________ 0 0 0
+272 _________ 0 0 0
+273 _________ 0 0 0
+274 _________ 0 0 0
+275 _________ 0 0 0
+276 _________ 0 0 0
+277 _________ 0 0 0
+278 _________ 0 0 0
+279 _________ 0 0 0
+280 _________ 0 0 0
+281 _________ 0 0 0
+282 _________ 0 0 0
+283 _________ 0 0 0
+284 _________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-Final Storage Area 2-
+0
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,60,24128
+1,Stat_ID~17,3786
+2,Proj30_ID~32,5762
+3,Year_RTM,5246
+3,Day_RTM
+3,Hour_Minute_RTM
+4,EC_1_AVG~22,1496
+4,EC_2_AVG~23
+4,EC_3_AVG~24
+4,EC_4_AVG~25
+4,EC_5_AVG~26
+4,EC_6_AVG~27
+4,EC_7_AVG~28
+4,EC_8_AVG~29
+5,120,19951
+6,Stat_ID~17,32188
+7,Proj11_ID~21,2220
+8,Year_RTM,8511
+8,Day_RTM
+8,Hour_Minute_RTM
+9,Batt~2,8151
+10,CR10XTemp~1,20005
+11,MPS_1_AVG~33,19268
+11,MPS_2_AVG~34
+11,MPS_3_AVG~35
+11,MPS_4_AVG~36
+11,MPS_5_AVG~37
+11,MPS_6_AVG~38
+11,MPS_7_AVG~39
+11,MPS_8_AVG~40
+11,MPS_9_AVG~41
+11,MPS_10_AVG~42
+11,MPS_11_AVG~43
+11,MPS_12_AVG~44
+11,MPS_13_AVG~45
+11,MPS_14_AVG~46
+11,MPS_15_AVG~47
+11,MPS_16_AVG~48
+11,MPS_17_AVG~49
+11,MPS_18_AVG~50
+11,MPS_19_AVG~51
+11,MPS_20_AVG~52
+11,MPS_21_AVG~53
+11,MPS_22_AVG~54
+11,MPS_23_AVG~55
+11,MPS_24_AVG~56
+11,MPS_25_AVG~57
+11,MPS_26_AVG~58
+11,MPS_27_AVG~59
+11,MPS_28_AVG~60
+11,MPS_29_AVG~61
+11,MPS_30_AVG~62
+11,MPS_31_AVG~63
+11,MPS_32_AVG~64
+11,MPS_33_AVG~65
+11,MPS_34_AVG~66
+11,MPS_35_AVG~67
+11,MPS_36_AVG~68
+11,MPS_37_AVG~69
+11,MPS_38_AVG~70
+11,MPS_39_AVG~71
+11,MPS_40_AVG~72
+11,MPS_41_AVG~73
+11,MPS_42_AVG~74
+11,MPS_43_AVG~75
+11,MPS_44_AVG~76
+11,MPS_45_AVG~77
+11,MPS_46_AVG~78
+11,MPS_47_AVG~79
+11,MPS_48_AVG~80
+11,MPS_49_AVG~81
+11,MPS_50_AVG~82
+11,MPS_51_AVG~83
+11,MPS_52_AVG~84
+11,MPS_53_AVG~85
+11,MPS_54_AVG~86
+11,MPS_55_AVG~87
+11,MPS_56_AVG~88
+11,MPS_57_AVG~89
+11,MPS_58_AVG~90
+11,MPS_59_AVG~91
+11,MPS_60_AVG~92
+11,MPS_61_AVG~93
+11,MPS_62_AVG~94
+11,MPS_63_AVG~95
+12,LiBatt~5,21173
+13,MPS_64_AVG~96,17228
+13,MPS_65_AVG~97
+13,MPS_66_AVG~98
+13,MPS_67_AVG~99
+13,MPS_68_AVG~100
+13,MPS_69_AVG~101
+13,MPS_70_AVG~102
+13,MPS_71_AVG~103
+13,MPS_72_AVG~104
+13,MPS_73_AVG~105
+13,MPS_74_AVG~106
+13,MPS_75_AVG~107
+13,MPS_76_AVG~108
+13,MPS_77_AVG~109
+13,MPS_78_AVG~110
+13,MPS_79_AVG~111
+13,MPS_80_AVG~112
+13,MPS_81_AVG~113
+13,MPS_82_AVG~114
+13,MPS_83_AVG~115
+13,MPS_84_AVG~116
+13,MPS_85_AVG~117
+13,MPS_86_AVG~118
+13,MPS_87_AVG~119
+13,MPS_88_AVG~120
+13,MPS_89_AVG~121
+13,MPS_90_AVG~122
+13,MPS_91_AVG~123
+13,MPS_92_AVG~124
+13,MPS_93_AVG~125
+13,MPS_94_AVG~126
+13,MPS_95_AVG~127
+13,MPS_96_AVG~128
+13,MPS_97_AVG~129
+13,MPS_98_AVG~130
+13,MPS_99_AVG~131
+13,MPS_100_AVG~132
+13,MPS_101_AVG~133
+13,MPS_102_AVG~134
+13,MPS_103_AVG~135
+13,MPS_104_AVG~136
+13,MPS_105_AVG~137
+13,MPS_106_AVG~138
+13,MPS_107_AVG~139
+13,MPS_108_AVG~140
+13,MPS_109_AVG~141
+13,MPS_110_AVG~142
+13,MPS_111_AVG~143
+13,MPS_112_AVG~144
+13,MPS_113_AVG~145
+13,MPS_114_AVG~146
+13,MPS_115_AVG~147
+13,MPS_116_AVG~148
+13,MPS_117_AVG~149
+13,MPS_118_AVG~150
+13,MPS_119_AVG~151
+13,MPS_120_AVG~152
+13,MPS_121_AVG~153
+13,MPS_122_AVG~154
+13,MPS_123_AVG~155
+13,MPS_124_AVG~156
+13,MPS_125_AVG~157
+13,MPS_126_AVG~158
+14,60,27423

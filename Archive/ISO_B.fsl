@@ -1,0 +1,123 @@
+Final Storage Label File for:  ISO_B.csi
+Date:  5/13/2013
+Time:  08:03:26
+
+36 Input_Storage  10.00 Min
+1 WS_ms_S_WVT  L
+2 WR_Grad_D1_WVT  L
+3 WR_Grad_SD1_WVT  L
+4 WS_ms_MAX  L
+5 WS_ms_S_WVT  L
+6 WR_Grad_D1_WVT  L
+
+31 Input_Storage  10.00 Min
+1 Lutemp_C_STD  L
+2 GS_Wm2_STD  L
+3 PAR_umol_STD  L
+4 UVB_mWm2_STD  L
+5 WS_ms_STD  L
+
+30 Input_Storage  60.00 Min
+1 rF_Proz_STD  L
+
+10 Output_Table  10.00 Min
+1 10 L
+2 Stat_ID  L
+3 Proj1_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Lutemp_C_AVG  L
+8 GS_Wm2_AVG  L
+9 PAR_umol_AVG  L
+10 UVB_mWm2_AVG  L
+11 WS_S_WVT  L
+12 WR_D1_WVT  L
+13 Lutmp_std  L
+14 GS_std  L
+15 PAR_std  L
+16 UVB_std  L
+17 WS_std  L
+18 WR_std  L
+19 Wi_Spitze  L
+20 rF10_AVG  L
+21 regen10_TOT  L
+22 rFstd10  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj1_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 rF_Proz_AVG  L
+8 Regen_mm_TOT  L
+9 rF_std  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj2_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Dendro01_AVG  L
+8 Dendro02_AVG  L
+9 Dendro03_AVG  L
+10 Dendro04_AVG  L
+11 Dendro05_AVG  L
+12 Dendro06_AVG  L
+13 Dendro07_AVG  L
+14 Dendro08_AVG  L
+15 Dendro09_AVG  L
+16 Dendro10_AVG  L
+17 Drehpot1_AVG  L
+18 Drehpot2_AVG  L
+19 Drehpot3_AVG  L
+20 Drehpot4_AVG  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj3_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 CS505_1_AVG  L
+8 CS505_2_AVG  L
+9 CS205_1_AVG  L
+10 CS205_2_AVG  L
+
+240 Output_Table 240.00 Min
+1 240 L
+2 Stat_ID  L
+3 Proj4_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Batt_V_AVG  L
+8 CR10Tmp_C_AVG  L
+9 LiBatt_V_AVG  L
+
+60 Output_Table  60.00 Min
+1 60 L
+2 Stat_ID  L
+3 Proj5_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 ST1_C_AVG  L
+8 SF1_proz_AVG  L
+9 ST2_C_AVG  L
+10 SF2_proz_AVG  L
+11 BT1_5_AVG  L
+12 BT2_5_AVG  L
+13 BT1_20_AVG  L
+14 BT2_20_AVG  L
+
+138 Input_Storage   1.00 Min
+1 Hour_Minute_RTM  L
+
+
+Estimated Total Final Storage Locations used per day 4494

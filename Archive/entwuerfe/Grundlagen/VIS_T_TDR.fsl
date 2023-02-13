@@ -1,0 +1,79 @@
+Final Storage Label File for:  VIS_T_TDR.csi
+Date:  9/22/2016
+Time:  13:33:23
+
+60 Output_Table 3600.00 Sec
+1 60 L
+2 Stat_ID  L
+3 Proj30_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 EC_1_AVG  L
+8 EC_2_AVG  L
+9 EC_3_AVG  L
+10 EC_4_AVG  L
+11 EC_5_AVG  L
+12 EC_6_AVG  L
+13 EC_7_AVG  L
+14 EC_8_AVG  L
+
+60 Output_Table 3600.00 Sec
+1 60 L
+2 Stat_ID  L
+3 Proj30_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 __MPS2_1__AVG  L
+8 __________AVG  L
+9 MPS2_2_AVG  L
+10 __________AVG  L
+11 MPS2_3_AVG  L
+12 __________AVG  L
+13 MPS2_4_AVG  L
+14 __________AVG  L
+15 MPS2_5_AVG  L
+16 __________AVG  L
+17 MPS2_6_AVG  L
+18 __________AVG  L
+19 MPS2_7_AVG  L
+20 __________AVG  L
+21 MPS2_8_AVG  L
+22 __________AVG  L
+23 MPS2_9_AVG  L
+24 LiBatt_AVG  L
+
+60 Output_Table 3600.00 Sec
+1 60 L
+2 Stat_ID  L
+3 Proj8_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Water_1  H
+8 Water_2  H
+9 Water_3  H
+10 Water_4  H
+11 Water_5  H
+12 Water_6  H
+13 Water_7  H
+14 Water_8  H
+15 Water_9  H
+16 Water_10  H
+17 Water_11  H
+18 Water_12  H
+
+120 Output_Table 7200.00 Sec
+1 120 L
+2 Stat_ID  L
+3 Proj11_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 Batt  L
+8 CR10XTemp  L
+9 LiBatt  L
+
+
+Estimated Total Final Storage Locations used per day 1740

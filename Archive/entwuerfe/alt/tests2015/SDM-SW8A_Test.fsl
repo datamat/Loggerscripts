@@ -1,0 +1,32 @@
+Final Storage Label File for:  SDM-SW8A_Test.csi
+Date:  11/21/2013
+Time:  15:46:19
+
+108 Output_Table   5.00 Sec
+1 108 L
+2 Day_RTM  L
+3 Hour_Minute_RTM  L
+4 n_reset  L
+
+117 Output_Table   5.00 Min
+1 117 L
+2 Day_RTM  L
+3 Hour_Minute_RTM  L
+4 sf_1_TOT  L
+5 sf_2_TOT  L
+6 sf_3_TOT  L
+7 sf_4_TOT  L
+8 sf_5_TOT  L
+9 sf_stat_1  L
+10 sf_stat_2  L
+11 sf_stat_3  L
+12 sf_stat_4  L
+13 sf_stat_5  L
+14 sf_duty_1  L
+15 sf_duty_2  L
+16 sf_duty_3  L
+17 sf_duty_4  L
+18 sf_duty_5  L
+
+
+Estimated Total Final Storage Locations used per day 74304

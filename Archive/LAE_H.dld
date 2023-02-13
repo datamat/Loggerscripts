@@ -1,0 +1,141 @@
+};CR10X
+;LAE_H.dld
+;$
+;:Stat_ID  :Proj1_ID :Proj2_ID :Proj3_ID :Proj4_ID 
+;:Proj5_ID :Proj6_ID :Proj23_ID:_________:K_TrF    
+;:K_Pyr    :K_PAR    :K_UV     :K_WG     :K_WR     
+;:K_Ns     :K_Oz     :_________:_________:rF_Proz  
+;:Lutemp_C :GS_Wm2   :PAR_umol :UVB_mWm2 :WS_ms    
+;:WR_Grad  :Regen_mm :Ozon_ppbv:ozon_batt:rF_std   
+;:Lutmp_std:GS_std   :PAR_std  :UVB_std  :WS_std   
+;:WS_mean  :WR_mean  :WR_std   :K_Dendr10:K_Dendr01
+;:K_Drehp1 :K_Dendr02:K_Dendr03:K_Dendr04:K_Dendr05
+;:K_Dendr06:K_Dendr07:K_Dendr08:K_Dendr09:Dendro01 
+;:Dendro02 :Dendro03 :Dendro04 :Dendro05 :Dendro06 
+;:Dendro07 :Dendro08 :Dendro09 :Dendro10 :Drehpot1 
+;:Drehpot2 :Drehpot3 :Drehpot4 :K_Drehp2 :K_Drehp3 
+;:K_Drehp4 :_________:_________:_________:K_CS505_1
+;:K_CS205_1:K_CS505_2:K_CS205_2:_________:ozonppb  
+;:ozoncount:ozonbatt :regen10  :_________:pCS505_1 
+;:pCS505_2 :CS205_1  :CS205_2  :CS505_1  :CS505_2  
+;:_________:_________:_________:_________:Batt_V   
+;:CR10Tmp_C:_________:rF10     :_________:rFstd10  
+;:_________:K_ST1_C  :K_ST2_C  :K_SF1_pro:K_SF2_pro
+;:K_BT1_5  :K_BT2_5  :K_BT1_10 :K_BT2_10 :K_BT1_20 
+;:K_BT2_20 :_________:_________:_________:ST1_C    
+;:SF1_proz :ST2_C    :SF2_proz :BT1_5    :BT2_5    
+;:BT1_10   :BT2_10   :BT1_20   :BT2_20   :_________
+;:_________:_________:_________:_________:_________
+;:_________:_________:korBatt_V:Ladsoll_V:_________
+;:_________:_________:_________:_________:_________
+;:_________:_________:Zeit_HHMM:_________:_________
+;:_________:_________:_________:_________:_________
+;:_________:_________:SMS_Fail :LiBatt_V :ZahlerMin
+;:Dendro061:Wi_Spitze:WS_S_WVT :WR_D1_WVT
+;$
+
+;%
+;Final Storage Label File for:  LAE_H.csi
+;Date:  7/10/2018
+;Time:  12:27:32
+;
+;10 Output_Table  10.00 Min
+;1 10 L
+;2 Stat_ID  L
+;3 Proj23_ID  L
+;4 Year_RTM  L
+;5 Day_RTM  L
+;6 Hour_Minute_RTM  L
+;7 Ozon_ppbv_AVG  L
+;
+;
+;Estimated Total Final Storage Locations used per day 1008
+;%
+
+MODE 1
+SCAN RATE 10
+
+1:P30
+1:99@1
+2:00
+3:1
+
+2:P30
+1:23@8
+2:00
+3:8
+
+3:P89
+1:8
+2:1
+3:23
+4:30
+
+4:P92
+1:00--
+2:10
+3:30
+
+5:P2
+1:1
+2:5
+3:1
+4:28
+5:1
+6:0.0
+
+6:P95
+
+7:P95
+
+8:P89
+1:8
+2:1
+3:23
+4:30
+
+9:P92
+1:0000
+2:10
+3:10
+
+10:P80
+1:1
+2:10
+
+11:P70
+1:1
+2:1
+
+12:P70
+1:1
+2:8
+
+13:P77
+1:1220
+
+14:P71
+1:1
+2:28
+
+15:P95
+
+
+MODE 2
+SCAN RATE 10
+
+
+MODE 3
+
+MODE 10
+1:154
+2:64
+3:1024
+
+
+MODE 12
+1:9044
+2:9045
+3:0000
+
+

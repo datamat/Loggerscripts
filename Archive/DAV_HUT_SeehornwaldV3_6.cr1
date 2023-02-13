@@ -1,0 +1,767 @@
+'CR1000 Series Datalogger - Seehornwald Davos V3.6
+'Program by Roman Zweifel, WSL
+'Version 3.6
+'6. November 2017: Parameter auf neuen Barometer PAA-33X (4-20mA, 100Ohm), S/N 606891 angepasst
+'12. Juni 2017: Fehler im Prg behoben, falsche Var/Typ des neuen Sensors
+'09. Juni 2017: Neuer Barometer PAA-33X angeschlossen -> neuer Input/Channel auf dem Logger PA_H1_0_2/ Alter Baro wird nicht mehr gemittelt aber noch executed
+'17. Juni 2015: Prg abspecken auf die wirklich noch geloggten Parameter: Dendro, Sap, Bodensensoren
+'               geloescht wurden: Meteosensoren, IRGA
+'26. April 2012 (falsche Offsets bei SE-Messungen korrigiert 1 -> 0, Regenmessung angepasst)
+'Set up: 1 CR1000 mit NL120 und drei Multiplexer AM16/32B
+'Multiplexer 1: 4x16 SE (SE Sensoren vom ehemaligen CR7 inkl 3 Diffs & Dendrometer vom CR10)
+'Multiplexer 2: 4x16 Ext und SE (Sensoren des ehemaligen CR10X, CR10 und CR7)
+'Multiplexer 3: 4x16 Diff (Sensoren des ehemaligen CR10X, CR10 und CR7)
+'FTP Output
+
+'Declare Variables and Units
+Dim SECount(64)    'AM16/32B number 1
+Dim	VXCount(64)    'AM16/32B number 2
+Dim	Diff_Count(32) 'AM16/32B number 3
+
+'Variables related to CR1000_Davos
+Public Batt_Volt
+Public PTemp_C
+Public Rain 'von Nabel
+Public Flag(8) As Boolean
+Public PA_H1_0_2
+
+'Variables related to Am 16/32B number 1
+Public SE_mV(64)
+Public HtFlx_Wm2
+Public D1_150
+Public D2_147
+Public D3_148
+Public D4_37
+Public D5_296
+Public D6_411N
+Public D7_1
+Public D8_34
+Public D9_410
+Public D10_30
+Public D11_410Xylem
+Public D12_411RootS
+Public D13_empty
+Public D14_empty
+Public D15_empty
+Public D16_empty
+Public D17_empty
+Public D18_empty
+
+Public PAR 'DIFF
+Public Net_Rad 'DIFF; von Nabel
+Public Baro 'DIFF
+
+'Variables related to Am 16/32B number 2 (SE with Excitation Even L)
+Public VX_mV(64)
+Public BodenTemp05_C
+Public BodenTemp15_C
+Public BodenTemp50_C
+Public BodenFeu05
+Public BodenFeu15
+Public BodenFeu50
+Public SWC1_15
+Public SWC1_50
+Public SWC1_80
+Public SWC2_15
+Public SWC2_50
+Public SWC2_80
+Public SWC3_15
+Public SWC3_50
+Public SWC3_80
+Public SWC4_15
+Public SWC4_50
+Public SWC4_80
+Public PsiSoil05_kPa
+Public PsiSoil15_kPa
+Public PsiSoil45_kPa
+
+Public Band_147 'DIFF
+Public Band_148 'DIFF
+
+'Variables related to Am 16/32B number 3 (32 Diffs)
+Public Diff_mV(32)
+Public StemTC_296
+Public StemTC_148
+Public Sap_296N
+Public Sap_296S
+Public Sap_148N
+Public Sap_148S
+Public Sap_411N
+Public Sap_411S
+Public Sap_147N
+Public Sap_147S
+Public Sap_150N
+Public Sap_150S
+Public Sap_34N
+Public Sap_34S
+Public Sap_30N
+Public Sap_30S
+Public Sap_1N
+Public Sap_1S
+Public Sap_33N
+Public Sap_33S
+Public Sap_37N
+Public Sap_37S
+Public StemCO2_296_100
+Public StemCO2_296_150
+Public StemCO2_148_100
+Public StemCO2_296_Soil
+Public StemCO2_147_900
+Public StemCO2_147_100
+Public StemCO2_296_900
+Public StemCO2_147_Soil
+Public StemCO2_411_100
+Public StemCO2_411_600
+
+'TableFile variables to write data table10min to FTP USR drive
+Public OutStat As Boolean, LastFileName As String * 30
+
+'Definition of units
+Units Batt_Volt=Volts
+Units PTemp_C=Deg C
+Units Rain=mm
+Units SE_mV()=mV
+Units HtFlx_Wm2=W m-2
+Units PA_H1_0_2=Pa
+
+Units D1_150=Mikro m
+Units D2_147=Mikro m
+Units D3_148=Mikro m
+Units D4_37=Mikro m
+Units D5_296=Mikro m
+Units D6_411N=Mikro m
+Units D7_1=Mikro m
+Units D8_34=Mikro m
+Units D9_410=Mikro m
+Units D10_30=Mikro m
+Units D11_410Xylem=Mikro m
+Units D12_411RootS=Mikro m
+Units D13_empty=Mikro m
+Units D14_empty=Mikro m
+Units D15_empty=Mikro m
+Units D16_empty=Mikro m
+Units D17_empty=Mikro m
+Units D18_empty=Mikro m
+Units PAR=Mikromol m-2 s-1
+Units Net_Rad=W m-2
+Units Baro=hPa?
+
+Units VX_mV()=mV
+Units BodenTemp05_C=Deg C
+Units BodenTemp15_C=Deg C
+Units BodenTemp50_C=Deg C
+Units BodenFeu05=%
+Units BodenFeu15=%
+Units BodenFeu50=%
+'Units SWC=%
+Units PsiSoil05_kPa=kPa
+Units PsiSoil15_kPa=kPa
+Units PsiSoil45_kPa=kPa
+Units Band_147=mV
+Units Band_148=mV
+
+Units Diff_mV()=mV
+Units StemTC_296=Deg C
+Units StemTC_148=Deg C
+Units Sap_296N=Deg C
+Units Sap_296S=Deg C
+Units Sap_148N=Deg C
+Units Sap_148S=Deg C
+Units Sap_411N=Deg C
+Units Sap_411S=Deg C
+Units Sap_147N=Deg C
+Units Sap_147S=Deg C
+Units Sap_150N=Deg C
+Units Sap_150S=Deg C
+Units Sap_34N=Deg C
+Units Sap_34S=Deg C
+Units Sap_30N=Deg C
+Units Sap_30S=Deg C
+Units Sap_1N=Deg C
+Units Sap_1S=Deg C
+Units Sap_33N=Deg C
+Units Sap_33S=Deg C
+Units Sap_37N=Deg C
+Units Sap_37S=Deg C
+Units StemCO2_296_100=Vol%
+Units StemCO2_296_150=Vol%
+Units StemCO2_148_100=Vol%
+Units StemCO2_296_Soil=Vol%
+Units StemCO2_147_900=Vol%
+Units StemCO2_147_100=Vol%
+Units StemCO2_296_900=Vol%
+Units StemCO2_147_Soil=Vol%
+Units StemCO2_411_100=Vol%
+Units StemCO2_411_600=Vol%
+
+
+'Define Data Tables
+DataTable(Table10Min,True,-1)
+	DataInterval(0,10,Min,10)
+	Average(1,Batt_Volt,FP2,False)
+	Average(1,PTemp_C,FP2,False)
+	Average(1,HtFlx_Wm2,FP2,false)
+	Average(1,PAR,FP2,false)
+	Average(1,Net_Rad,FP2,false)
+	Average(1,PA_H1_0_2,IEEE4,false)
+	Sample(1,Rain,FP2)
+	Average(1,BodenTemp05_C,IEEE4,false)
+	Average(1,BodenTemp15_C,IEEE4,false)
+	Average(1,BodenTemp50_C,IEEE4,false)
+	Average(1,BodenFeu05,IEEE4,false)
+	Average(1,BodenFeu15,IEEE4,false)
+	Average(1,BodenFeu50,IEEE4,false)
+  Average(1,SWC1_15,IEEE4,false)
+  Average(1,SWC1_50,IEEE4,false)
+  Average(1,SWC1_80,IEEE4,false)
+  Average(1,SWC2_15,IEEE4,false)
+  Average(1,SWC2_50,IEEE4,false)
+  Average(1,SWC2_80,IEEE4,false)
+  Average(1,SWC3_15,IEEE4,false)
+  Average(1,SWC3_50,IEEE4,false)
+  Average(1,SWC3_80,IEEE4,false)
+  Average(1,SWC4_15,IEEE4,false)
+  Average(1,SWC4_50,IEEE4,false)
+  Average(1,SWC4_80,IEEE4,false)
+  Average(1,PsiSoil05_kPa,IEEE4,false)
+  Average(1,PsiSoil15_kPa,IEEE4,false)
+  Average(1,PsiSoil45_kPa,IEEE4,false)
+  Average(1,Sap_296N,IEEE4,false)
+  Average(1,Sap_296S,IEEE4,false)
+  Average(1,Sap_148N,IEEE4,false)
+  Average(1,Sap_148S,IEEE4,false)
+  Average(1,Sap_411N,IEEE4,false)
+  Average(1,Sap_411S,IEEE4,false)
+  Average(1,Sap_147N,IEEE4,false)
+  Average(1,Sap_147S,IEEE4,false)
+  Average(1,Sap_150N,IEEE4,false)
+  Average(1,Sap_150S,IEEE4,false)
+  Average(1,Sap_34N,IEEE4,false)
+  Average(1,Sap_34S,IEEE4,false)
+  Average(1,Sap_30N,IEEE4,false)
+  Average(1,Sap_30S,IEEE4,false)
+  Average(1,Sap_1N,IEEE4,false)
+  Average(1,Sap_1S,IEEE4,false)
+  Average(1,Sap_33N,IEEE4,false)
+  Average(1,Sap_33S,IEEE4,false)
+  Average(1,Sap_37N,IEEE4,false)
+  Average(1,Sap_37S,IEEE4,false)
+  Average(1,StemCO2_296_Soil,IEEE4,false)
+  Average(1,StemCO2_296_100,IEEE4,false)
+  Average(1,StemCO2_296_150,IEEE4,false)
+  Average(1,StemCO2_296_900,IEEE4,false)
+  Average(1,StemCO2_148_100,IEEE4,false)
+  Average(1,StemCO2_147_Soil,IEEE4,false) 
+  Average(1,StemCO2_147_100,IEEE4,false)
+  Average(1,StemCO2_147_900,IEEE4,false)
+  Average(1,StemCO2_411_600,IEEE4,false)
+  Average(1,StemCO2_411_100,IEEE4,false)
+  Average(1,StemTC_296,IEEE4,false)
+  Average(1,StemTC_148,IEEE4,false)  
+  Average(1,D1_150,IEEE4,false)
+  Average(1,D2_147,IEEE4,false)
+  Average(1,D3_148,IEEE4,false)
+  Average(1,D4_37,IEEE4,false)
+  Average(1,D5_296,IEEE4,false)
+  Average(1,D6_411N,IEEE4,false)
+  Average(1,D7_1,IEEE4,false)
+  Average(1,D8_34,IEEE4,false)
+  Average(1,D9_410,IEEE4,false)
+  Average(1,D10_30,IEEE4,false)
+  Average(1,D11_410Xylem,IEEE4,false)
+  Average(1,D12_411RootS,IEEE4,false)
+  Average(1,D13_empty,IEEE4,false)
+  Average(1,D14_empty,IEEE4,false)
+  Average(1,D15_empty,IEEE4,false)
+  Average(1,D16_empty,IEEE4,false)
+  Average(1,D17_empty,IEEE4,false)
+  Average(1,D18_empty,IEEE4,false)
+  Average(1,Band_147,IEEE4,false)
+  Average(1,Band_148,IEEE4,false)
+ 
+	' needs to be inside the data table that should be written to a file
+	TableFile("USR:Davos10Min",8,-1,0,1,Hr,OutStat,LastFileName)
+EndTable
+
+DataTable(Table60Min,true,-1) 
+  DataInterval(0,60,Min,10)
+  Average(1,SWC1_15,IEEE4,false)
+  Average(1,SWC1_50,IEEE4,false)
+  Average(1,SWC1_80,IEEE4,false)
+  Average(1,SWC2_15,IEEE4,false)
+  Average(1,SWC2_50,IEEE4,false)
+  Average(1,SWC2_80,IEEE4,false)
+  Average(1,SWC3_15,IEEE4,false)
+  Average(1,SWC3_50,IEEE4,false)
+  Average(1,SWC3_80,IEEE4,false)
+  Average(1,SWC4_15,IEEE4,false)
+  Average(1,SWC4_50,IEEE4,false)
+  Average(1,SWC4_80,IEEE4,false)
+EndTable
+
+
+
+'Main Program
+BeginProg
+	Scan(20,Sec,0,0)
+		'Default Datalogger Battery Voltage measurement Batt_Volt:
+		Battery(Batt_Volt)
+		PanelTemp(PTemp_C,_50Hz)
+		PulseCount (Rain,1,1,0,0,0.1,0)
+		
+    'measure air pressure from PAA-33X (0-20mA, 100Ohm)
+    'S/N 233305-0425
+    VoltDiff (PA_H1_0_2,1,mV2500,7,True ,0,_50Hz,37.5,55000)
+		
+		'Turn AM16/32 Multiplexer 1 On
+		'64 SE Input channels (former CR7)
+		PortSet(2,1)
+		
+		SECount=1
+    	
+    SubScan (0,uSec,1))
+			'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 1-4 (leer)
+      VoltSe (SE_mV(SECount),1,mV5000,1,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,2,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,3,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,4,1,0,_50Hz,1.0,0)
+      SECount=SECount+1 
+       
+      'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 5-8 (leer)
+      VoltSe (SE_mV(SECount),1,0,1,1,6000,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,0,2,1,6000,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,0,3,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,0,4,1,0,_50Hz,1.0,0)
+      SECount=SECount+1  
+        
+      'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 9-12 (leer)
+      VoltSe (SE_mV(SECount),1,0,1,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,0,2,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,0,3,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,0,4,1,6000,_50Hz,1.0,0)
+      SECount=SECount+1    
+      
+      'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 13-16 (Dendrometer)
+      VoltSe (SE_mV(SECount),1,mV5000,1,1,0,_50Hz,1.0,0)
+      D1_150=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,2,1,0,_50Hz,1.0,0)
+      D2_147=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,3,1,0,_50Hz,1.0,0)
+      D3_148=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,4,1,0,_50Hz,1.0,0)
+      D4_37=SE_mV(SECount)*4
+      SECount=SECount+1  
+      
+     'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 17-20 (Dendrometer)
+      VoltSe (SE_mV(SECount),1,mV5000,1,1,0,_50Hz,1.0,0)
+      D5_296=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,2,1,0,_50Hz,1.0,0)
+      D6_411N=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,3,1,0,_50Hz,1.0,0)
+      D7_1=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,4,1,0,_50Hz,1.0,0)
+      D8_34=SE_mV(SECount)*4
+      SECount=SECount+1  
+      
+      'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 21-24 (Dendrometer)
+      VoltSe (SE_mV(SECount),1,mV5000,1,1,0,_50Hz,1.0,0)
+      D9_410=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,2,1,0,_50Hz,1.0,0)
+      D10_30=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,3,1,0,_50Hz,1.0,0)
+      D11_410Xylem=SE_mV(SECount)*4
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,4,1,0,_50Hz,1.0,0)
+      D12_411Roots=SE_mV(SECount)*4
+      SECount=SECount+1  
+       
+       'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 25-28 (Dendrometer)
+      VoltSe (SE_mV(SECount),1,mV5000,1,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,2,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,3,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,4,1,0,_50Hz,1.0,0)
+      SECount=SECount+1  
+      
+       'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 29-32 (Dendrometer)
+      VoltSe (SE_mV(SECount),1,mV5000,1,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      VoltSe (SE_mV(SECount),1,mV5000,2,1,0,_50Hz,1.0,0)
+      SECount=SECount+1
+      'Empty SE channel 31
+      SECount=SECount+1
+      'Empty SE channel 32 
+      SECount=SECount+1   
+       
+      'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 33-36 (HtFlx (SE) & PAR (DIFF))
+      VoltSe (SE_mV(SECount),1,mV25,1,1,0,_50Hz,1.0,0)
+      HtFlx_Wm2=40.816*SE_mV(SECount)'Faktor vom 22.10.1998 (HP3-183)
+      SECount=SECount+1
+      'Empty SE channel 34     
+      SECount=SECount+1
+      VoltDiff (SE_mV(SECount),1,autorange,2,True,3000,_50Hz,1.0,0)
+      PAR=SE_mV(SECount)*100
+      SECount=SECount+2 'SE channels 35 and 36 = Diff channel     
+      
+       'Switch to next AM16/32 Multiplexer channel
+			PulsePort(1,1000)'SE 37-40 (BARO (DIFF) & Net_Rad)
+      VoltDiff (SE_mV(SECount),1,autorange,1,True,3000,_50Hz,1.0,0)
+      Baro=SE_mV(SECount)*0.1+800
+      SECount=SECount+2 'SE channels 33 and 34 = Diff channel 
+      VoltDiff (SE_mV(SECount),1,3,2,True,3000,_50Hz,108.11,0)
+      Net_Rad=SE_mV(SECount)
+      SECount=SECount+2 'SE channels 35 and 36 = Diff channel 
+     
+    NextSubScan
+   		     
+		'Turn AM16/32 Multiplexer 1 Off
+		
+		PortSet(2,0)
+			
+						
+'----------------------------------------------------------------------------------		
+		'Turn AM16/32 Multiplexer 2 On
+	  'Multiplexer 2 in 4x16 mode. Three SE plus one EXCITATION channel
+	  'ODD H and L & EVEN H are SE input channels
+	  'EVEN L is connected to Vx1
+		Delay (1,2,Sec)
+		PortSet(3,1)
+		
+		VXCount=1
+	  	
+    SubScan (0,uSec,1))
+			'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 1-3 (BodenTemp)
+      Therm107 (VX_mV(VXCount),1,5,Vx1,10000,_50Hz,1.0,0)
+      BodenTemp50_C=VX_mV(VXCount)
+      VXCount=VXCount+1
+      Therm107 (VX_mV(VXCount),1,6,Vx1,10000,_50Hz,1.0,0)
+      BodenTemp15_C=VX_mV(VXCount)
+      VXCount=VXCount+1   
+      Therm107 (VX_mV(VXCount),1,7,Vx1,10000,_50Hz,1.0,0)
+      BodenTemp05_C=VX_mV(VXCount)
+      VXCount=VXCount+2 'adding 2 to keep the counting variable equal with the input channel on the multiplexer  
+	
+	   'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 5-7 (BodenFeuchte EC-5. Three sensors with max excitation power of CR1000 (25 mA))
+      ExciteV (Vx1,2500,10)
+      VoltSe (VX_mV(VXCount),1,mV2500,5,1,0,_50Hz,1.0,0)
+      BodenFeu05=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,6,1,0,_50Hz,1.0,0)
+      BodenFeu15=VX_mV(VXCount)* 0.00119-0.4
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,7,1,10000,_50Hz,1.0,0)
+      BodenFeu50=VX_mV(VXCount)* 0.00119-0.4
+      VXCount=VXCount+2  
+      
+      'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 9-11 (BodenFeuchte EC-5, WSL)
+			ExciteV (Vx1,2500,10)
+      VoltSe (VX_mV(VXCount),1,mV2500,5,1,0,_50Hz,1.0,0)
+      SWC1_15=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,6,1,0,_50Hz,1.0,0)
+      SWC1_50=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,7,1,10000,_50Hz,1.0,0)
+      SWC1_80=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+2  
+      
+      'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 13-15 (BodenFeuchte EC-5, WSL)
+      ExciteV (Vx1,2500,10)
+      VoltSe (VX_mV(VXCount),1,mV2500,5,1,0,_50Hz,1.0,0)
+      SWC2_15=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,6,1,0,_50Hz,1.0,0)
+      SWC2_50=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,7,1,10000,_50Hz,1.0,0)
+      SWC2_80=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+2  
+      
+      'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 17-19 (BodenFeuchte EC-5, WSL)
+      ExciteV (Vx1,2500,10)
+      VoltSe (VX_mV(VXCount),1,mV2500,5,1,0,_50Hz,1.0,0)
+      SWC3_15=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,6,1,0,_50Hz,1.0,0)
+      SWC3_50=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,7,1,10000,_50Hz,1.0,0)
+      SWC3_80=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+2  
+      
+       'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 21-23 (BodenFeuchte EC-5, WSL)
+      ExciteV (Vx1,2500,10)
+      VoltSe (VX_mV(VXCount),1,mV2500,5,1,0,_50Hz,1.0,0)
+      SWC4_15=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,6,1,0,_50Hz,1.0,0)
+      SWC4_50=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+1   
+      VoltSe (VX_mV(VXCount),1,mV2500,7,1,10000,_50Hz,1.0,0)
+      SWC4_80=VX_mV(VXCount)* 0.00119-0.40
+      VXCount=VXCount+2  
+      
+      'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 25-27 (Soil water potential MPS-1. Only 1 sensors per excitation measurable with max excitation power of CR1000 (25 mA))
+      BrHalf (VX_mV(VXCount),1,mV2500,5,Vx1,1,2500,false,10000,_50Hz,2500,0)
+       PsiSoil05_kPa = -EXP(0.000048 * VX_mV(VXCount)^2- 0.0846 * VX_mV(VXCount) + 39.45)
+       VXCount=VXCount+1   
+      'Empty
+       VXCount=VXCount+1   
+      'Empty
+       VXCount=VXCount+2   
+       
+       'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 29-31 (Soil water potential MPS-1. Only 1 sensors per excitation measurable with max excitation power of CR1000 (25 mA))
+      BrHalf (VX_mV(VXCount),1,mV2500,5,Vx1,1,2500,false,10000,_50Hz,2500,0)
+       PsiSoil15_kPa = -EXP(0.000048 * VX_mV(VXCount)^2- 0.0846 * VX_mV(VXCount) + 39.45)
+       VXCount=VXCount+1   
+      'Empty
+       VXCount=VXCount+1   
+      'Empty
+       VXCount=VXCount+2   
+       
+       'Switch to next AM16/32 Multiplexer 2 channel
+			PulsePort(1,1000)'SE 33-35 (Soil water potential MPS-1. Only 1 sensors per excitation measurable with max excitation power of CR1000 (25 mA))
+      BrHalf (VX_mV(VXCount),1,mV2500,5,Vx1,1,2500,false,10000,_50Hz,2500,0)
+       PsiSoil45_kPa = -EXP(0.000048 * VX_mV(VXCount)^2- 0.0846 * VX_mV(VXCount) + 39.45)
+       VXCount=VXCount+1   
+       'Empty
+       VXCount=VXCount+1   
+       'Empty
+       VXCount=VXCount+2   
+
+      'Switch to next AM16/32 Multiplexer 2 channel
+	     PulsePort(1,1000)'SE 37-39 (Diff Banddendrometer)
+       VoltDiff (VX_mV(VXCount),1,mV250,3,True,0,_50Hz,1.0,0)
+       Band_147=VX_mV(VXCount)
+       VXCount=VXCount+2 
+       'Empty
+       VXCount=VXCount+2 
+         
+      'Switch to next AM16/32 Multiplexer 2 channel
+	     PulsePort(1,1000)'SE 41-44 (Diff Banddendrometer)
+       VoltDiff (VX_mV(VXCount),1,mV250,3,True,0,_50Hz,1.0,0)
+       Band_148=VX_mV(VXCount)
+       VXCount=VXCount+2 
+       'Empty
+       VXCount=VXCount+2 
+
+      'Switch to next AM16/32 Multiplexer 2 channel
+	     PulsePort(1,1000)'SE 45-48 (leer)
+       VoltDiff (VX_mV(VXCount),1,mV250,3,True,0,_50Hz,1.0,0)
+       VXCount=VXCount+2 
+       'Empty
+       VXCount=VXCount+2 
+
+         
+		NextSubScan
+	    
+		'Turn AM16/32 Multiplexer 2 Off
+		PortSet(3,0)	
+		
+		
+		
+'----------------------------------------------------------------------------------		
+		'Turn AM16/32 Multiplexer 3 On
+	  'Multiplexer 3 in 4x16 mode. 32 Diff input channels  
+	  Delay (1,3,Sec)
+		PortSet(4,1)
+		
+		Diff_Count=1
+	  	
+    SubScan (0,uSec,1))
+			'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 1-2 (StemTC - Thermocouple)	
+      TCDiff (Diff_mV(Diff_Count),1,mV2_5,5,TypeT,PTemp_C,True ,0,250,1.0,0)
+      StemTC_296=Diff_mV(Diff_Count)
+      Diff_Count=Diff_Count+1 
+      TCDiff (Diff_mV(Diff_Count),1,mV2_5,5,TypeT,PTemp_C,True ,0,250,1.0,0)
+      StemTC_148=Diff_mV(Diff_Count)
+      Diff_Count=Diff_Count+1
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 3-4 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_296N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_296S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+	
+	   'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 5-6 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_148N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_148S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+
+     'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 7-8 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_411N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_411S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1  
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 9-10 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_147N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_147S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 11-12 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_150N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_150S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+       
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 13-14 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_34N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_34S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 15-16 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_30N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_30S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 17-18 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_1N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_1S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 19-20 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_33N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_33S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1
+       
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 21-22 (Granier sapflow)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,5,True,0,_50Hz,1.0,0)
+      Sap_37N=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2_5,6,True,0,_50Hz,1.0,0)
+      Sap_37S=Diff_mV(Diff_Count)*25
+      Diff_Count=Diff_Count+1 
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 23-24 (StemCO2)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,5,True,0,_50Hz,1.0,0)
+      StemCO2_296_100=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,6,True,0,_50Hz,1.0,0)
+      StemCO2_296_150=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 25-26 (StemCO2)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,5,True,0,_50Hz,1.0,0)
+      StemCO2_148_100=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,6,True,0,_50Hz,1.0,0)
+      StemCO2_296_Soil=Diff_mV(Diff_Count)/2500 'GMM222 measurement range 1%)
+      Diff_Count=Diff_Count+1 
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 27-28 (StemCO2)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,5,True,0,_50Hz,1.0,0)
+      StemCO2_147_900=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,6,True,0,_50Hz,1.0,0)
+      StemCO2_147_100=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 29-30 (StemCO2)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,5,True,0,_50Hz,1.0,0)
+      StemCO2_296_900=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,6,True,0,_50Hz,1.0,0)
+      StemCO2_147_Soil=Diff_mV(Diff_Count)/2500 'GMM222 measurement range 1%)
+      Diff_Count=Diff_Count+1 
+      
+      'Switch to next AM16/32 Multiplexer 3 channel
+			PulsePort(1,1000)'Diff 31-32 (StemCO2)	
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,5,True,0,_50Hz,1.0,0)
+      StemCO2_411_100=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+      Diff_Count=Diff_Count+1 
+      VoltDiff (Diff_mV(Diff_Count),1,mV2500,6,True,0,_50Hz,1.0,0)
+      StemCO2_411_600=Diff_mV(Diff_Count)/125 'GMM221 measurement range 20%)
+   
+            
+		NextSubScan
+	    
+		'Turn AM16/32 Multiplexer 3 Off
+		PortSet(4,0)			
+		
+		
+'----------------------------------------------------------------------------------	
+	
+		'Call Data Tables and Store Data
+		CallTable(Table10Min)
+		CallTable(Table60Min)
+	NextScan
+'----------------------------------------------------------------------------------		
+		
+EndProg
+   2        

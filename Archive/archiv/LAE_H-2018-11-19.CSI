@@ -1,0 +1,299 @@
+;{CR10X}
+;------------------------------------------------------------------------------
+; Stationsname:        Test-Logger CR10X X15998                  10.7.2018 WA
+; Stationsstandort:    Laegeren Messturm Zindlen (Huette)
+; In Betrieb:          vom 10.7.2018
+;
+; Datenkommunikation:  keine
+; Table 1 - Projekt 4: Service
+; Table 1 - Projekt 23: Ozonmessung
+;
+; Flag / Port Usage:
+; Flag 1:                           Port 1:
+; Flag 2:                           Port 2:
+; Flag 3:                           Port 3:
+; Flag 4:                           Post 4:
+; Flag 5:                           Port 5:
+; Flag 6:                           Port 6:
+; Flag 7:                           Port 7:
+; Flag 8:                           Port 8:
+;
+; ----------------------------
+; Diff 6: Ozonmonitor Spannungssignal Ozon
+
+
+;==============================================================================
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+;------------------------------------------------------------------------------
+; Stations- und Projektkennungen
+
+1:  Z=F (P30)
+ 1: 99       F @@1
+ 2: 00       Exponent of 10
+ 3: 1        Z Loc [ Stat_ID   ]
+
+2:  Z=F (P30)
+ 1: 23       F @@8
+ 2: 00       Exponent of 10
+ 3: 8        Z Loc [ Proj23_ID ]
+;==============================================================================
+;------------------------------------------------------------------------------
+; Projekt 23: Ozonmessung
+
+; Sensorkennung
+3:  If (X<=>F) (P89)
+ 1: 8        X Loc [ Proj23_ID ]
+ 2: 1        =
+ 3: 23       F
+ 4: 30       Then Do
+
+
+; Ozonmessung
+;                                                alle 5 Minuten
+4:  If time is (P92)
+ 1: 00    -- Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 30       Then Do
+
+     ; Ozonkonzentration [0-1000mV entspricht 0-300 bbp, d.h. Mult 0.3]
+     5:  Volt (Diff) (P2)
+      1: 1        Reps
+      2: 5        2500 mV Slow Range
+      3: 1        DIFF Channel
+      4: 28       Loc [ Ozon_ppbv ]
+      5: 1        Multiplier
+      6: 0.0      Offset
+
+
+6:  End (P95)
+; Ende alle 5 Minuten
+
+7:  End (P95)
+; Ende der Ozonmessung
+
+; -------------------
+; Speichern der Ozonmessewrte in Array Nr. 10
+8:  If (X<=>F) (P89)
+ 1: 8        X Loc [ Proj23_ID ]
+ 2: 1        =
+ 3: 23       F
+ 4: 30       Then Do
+
+
+     9:  If time is (P92)
+      1: 0000     Minutes (Seconds --) into a
+      2: 10       Interval (same units as above)
+      3: 10       Set Output Flag High (Flag 0)
+
+     10:  Set Active Storage Area (P80)^10012
+      1: 1        Final Storage Area 1
+      2: 10       Array ID
+
+     11:  Sample (P70)^6920
+      1: 1        Reps
+      2: 1        Loc [ Stat_ID   ]
+
+     12:  Sample (P70)^7444
+      1: 1        Reps
+      2: 8        Loc [ Proj23_ID ]
+
+     13:  Real Time (P77)^32262
+      1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+     ; Ozonkonzentration (FolgeNr=1)
+     14:  Average (P71)^25212
+      1: 1        Reps
+      2: 28       Loc [ Ozon_ppbv ]
+
+
+15:  End (P95)
+; Ende des Speichervorgangs
+;==============================================================================
+*Table 2 Program
+  02: 10        Execution Interval (seconds)
+
+*Table 3 Subroutines
+End Program
+
+
+
+
+
+
+
+
+
+
+
+-Input Locations-
+1 Stat_ID   1 1 1
+2 Proj1_ID  1 0 0
+3 Proj2_ID  1 0 0
+4 Proj3_ID  1 0 0
+5 Proj4_ID  1 0 0
+6 Proj5_ID  1 0 0
+7 Proj6_ID  1 0 0
+8 Proj23_ID 1 3 1
+9 _________ 0 0 0
+10 K_TrF     1 0 0
+11 K_Pyr     1 0 0
+12 K_PAR     1 0 0
+13 K_UV      1 0 0
+14 K_WG      1 0 0
+15 K_WR      1 0 0
+16 K_Ns      1 0 0
+17 K_Oz      1 0 0
+18 _________ 0 0 0
+19 _________ 0 0 0
+20 rF_Proz   1 0 0
+21 Lutemp_C  1 0 0
+22 GS_Wm2    1 0 0
+23 PAR_umol  1 0 0
+24 UVB_mWm2  1 0 0
+25 WS_ms     1 0 0
+26 WR_Grad   1 0 0
+27 Regen_mm  1 0 0
+28 Ozon_ppbv 1 1 1
+29 ozon_batt 1 0 0
+30 rF_std    1 1 0
+31 Lutmp_std 1 0 0
+32 GS_std    9 0 0
+33 PAR_std   9 0 0
+34 UVB_std   9 0 0
+35 WS_std    17 0 0
+36 WS_mean   1 0 0
+37 WR_mean   1 0 0
+38 WR_std    1 0 0
+39 K_Dendr10 1 0 0
+40 K_Dendr01 1 0 0
+41 K_Drehp1  1 0 0
+42 K_Dendr02 1 0 0
+43 K_Dendr03 1 0 0
+44 K_Dendr04 1 0 0
+45 K_Dendr05 1 0 0
+46 K_Dendr06 1 0 0
+47 K_Dendr07 1 0 0
+48 K_Dendr08 1 0 0
+49 K_Dendr09 1 0 0
+50 Dendro01  1 0 0
+51 Dendro02  1 0 0
+52 Dendro03  1 0 0
+53 Dendro04  1 0 0
+54 Dendro05  1 0 0
+55 Dendro06  1 0 0
+56 Dendro07  1 0 0
+57 Dendro08  1 0 0
+58 Dendro09  1 0 0
+59 Dendro10  1 0 0
+60 Drehpot1  1 0 0
+61 Drehpot2  1 0 0
+62 Drehpot3  1 0 0
+63 Drehpot4  1 0 0
+64 K_Drehp2  1 0 0
+65 K_Drehp3  1 0 0
+66 K_Drehp4  1 0 0
+67 _________ 1 0 0
+68 _________ 0 0 0
+69 _________ 0 0 0
+70 K_CS505_1 1 0 0
+71 K_CS205_1 1 0 0
+72 K_CS505_2 1 0 0
+73 K_CS205_2 1 0 0
+74 _________ 0 0 0
+75 ozonppb   1 0 0
+76 ozoncount 1 0 0
+77 ozonbatt  1 0 0
+78 regen10   1 0 0
+79 _________ 0 0 0
+80 pCS505_1  1 0 0
+81 pCS505_2  1 0 0
+82 CS205_1   1 0 0
+83 CS205_2   1 0 0
+84 CS505_1   1 0 0
+85 CS505_2   1 0 0
+86 _________ 1 0 0
+87 _________ 1 0 0
+88 _________ 0 0 0
+89 _________ 0 0 0
+90 Batt_V    1 0 0
+91 CR10Tmp_C 1 0 0
+92 _________ 0 0 0
+93 rF10      1 0 0
+94 _________ 0 0 0
+95 rFstd10   1 0 0
+96 _________ 0 0 0
+97 K_ST1_C   1 0 0
+98 K_ST2_C   1 0 0
+99 K_SF1_pro 1 0 0
+100 K_SF2_pro 1 0 0
+101 K_BT1_5   1 0 0
+102 K_BT2_5   1 0 0
+103 K_BT1_10  1 0 0
+104 K_BT2_10  1 0 0
+105 K_BT1_20  1 0 0
+106 K_BT2_20  1 0 0
+107 _________ 0 0 0
+108 _________ 0 0 0
+109 _________ 0 0 0
+110 ST1_C     1 0 0
+111 SF1_proz  1 0 0
+112 ST2_C     1 0 0
+113 SF2_proz  1 0 0
+114 BT1_5     1 0 0
+115 BT2_5     1 0 0
+116 BT1_10    1 0 0
+117 BT2_10    1 0 0
+118 BT1_20    1 0 0
+119 BT2_20    1 0 0
+120 _________ 1 0 0
+121 _________ 1 0 0
+122 _________ 0 0 0
+123 _________ 0 0 0
+124 _________ 0 0 0
+125 _________ 0 0 0
+126 _________ 0 0 0
+127 _________ 0 0 0
+128 korBatt_V 1 0 0
+129 Ladsoll_V 1 0 0
+130 _________ 0 0 0
+131 _________ 0 0 0
+132 _________ 1 0 0
+133 _________ 1 0 0
+134 _________ 1 0 0
+135 _________ 1 0 0
+138 Zeit_HHMM 1 0 0
+148 SMS_Fail  1 0 0
+149 LiBatt_V  1 0 0
+150 ZahlerMin 1 0 0
+151 Dendro061 1 0 0
+152 Wi_Spitze 1 0 0
+153 WS_S_WVT  1 0 0
+154 WR_D1_WVT 1 0 0
+-Program Security-
+9044
+9045
+0000
+-Mode 4-
+1
+8
+-Final Storage Area 2-
+1024
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,10,10012
+1,Stat_ID~1,6920
+2,Proj23_ID~8,7444
+3,Year_RTM,32262
+3,Day_RTM
+3,Hour_Minute_RTM
+4,Ozon_ppbv_AVG~28,25212

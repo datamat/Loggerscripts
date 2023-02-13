@@ -1,0 +1,264 @@
+Program Trace Information File for:  BETTLACH11.csi
+Date: 9/4/2007
+Time: 10:59:03
+
+T = Program Table Number
+N = Sequential Program Instruction Location Number
+Instruction = Instruction Number and Name
+
+Inst ExTm = Individual Instruction Execution Time
+Block ExTm = Cumulative Execution Time for program block,
+             i.e., subroutine
+Prog ExTm = Cumulative Total Program Execution Time
+
+                                                          Output Flag High
+                                   Inst  Block   Prog     Inst  Block   Prog
+                                   ExTm   ExTm   ExTm     ExTm   ExTm   ExTm
+T|N|Instruction                   (msec) (msec) (msec)   (msec) (msec) (msec)
+---------------                   ------ ------ ------   ------ ------ ------
+1|1|30 Z=F x 10^n                   1.0    1.0    1.0      1.0    1.0    1.0
+1|2|30 Z=F x 10^n                   1.0    2.0    2.0      1.0    2.0    2.0
+1|3|89 If (X<=>F)                   0.6    2.6    2.6      0.6    2.6    2.6
+1|4|10 Batt Voltage                 8.3   10.9   10.9      8.3   10.9   10.9
+1|5|17 Internal Temperature         6.2   17.1   17.1      6.2   17.1   17.1
+1|6|92 If time is                   0.7   17.8   17.8      0.7   17.8   17.8
+ Output Flag Set @ 16 for Input Location 7
+1|7|80 Set Active Storage Area      0.3   18.1   18.1      0.3   18.1   18.1
+1|8|74 Minimum                      2.0   20.1   20.1      8.0   26.1   26.1
+ Output Data 1 Values
+1|9|73 Maximum                      2.2   22.3   22.3      8.0   34.1   34.1
+ Output Data 1 Values
+1|10|71 Average                     2.8   25.1   25.1     10.3   44.4   44.4
+ Output Data 2 Values
+1|11|92 If time is                  0.7   25.8   25.8      0.7   45.1   45.1
+ Output Flag Set @ 111 for Array 120
+1|12|80 Set Active Storage Area     0.3   26.1   26.1      0.3   45.4   45.4
+1|13|70 Sample                      0.2   26.3   26.3      1.3   46.7   46.7
+ Output Data 2 Values
+1|14|77 Real Time                   0.2   26.5   26.5      3.8   50.5   50.5
+ Output Data 3 Values
+1|15|70 Sample                      0.2   26.7   26.7      2.1   52.6   52.6
+ Output Data 4 Values
+1|16|70 Sample                      0.2   26.9   26.9      2.1   54.7   54.7
+ Output Data 4 Values
+1|17|95 End                         0.2   27.1   27.1      0.2   54.9   54.9
+1|18|86 Do                          0.3   27.4   27.4      0.3   55.2   55.2
+  ----Subroutine 1---------------
+  3|1|85 Beginning of Subroutine    0.0    0.0   27.4      0.0    0.0   55.2
+  3|2|89 If (X<=>F)                 0.6    0.6   28.0      0.6    0.6   55.8
+  3|3|89 If (X<=>F)                 0.6    1.2   28.6      0.6    1.2   56.4
+  3|4|91 If Flag/Port               0.4    1.6   29.0      0.4    1.6   56.8
+  3|5|91 If Flag/Port               0.4    2.0   29.4      0.4    2.0   57.2
+  3|6|95 End                        0.2    2.2   29.6      0.2    2.2   57.4
+  -----End Subroutine 1 ---------
+1|19|92 If time is                  0.7   28.1   30.3      0.7   55.9   58.1
+1|20|92 If time is                  0.7   28.8   31.0      0.7   56.6   58.8
+
+Program Table 1 Execution Interval   10.000 Seconds
+
+Table 1 Estimated Total Program Execution Time in msec   31.0 w/Output   58.8
+
+Table 1 Estimated Total Final Storage Locations used per day 168
+
+
+--------------- Table 2 ---------------
+2|1|89 If (X<=>F)                   0.6    0.6    0.6      0.6    0.6    0.6
+2|2|86 Do                           0.3    0.9    0.9      0.3    0.9    0.9
+ Output Flag Set @ 22 for Input Location 69
+2|3|80 Set Active Storage Area      0.3    1.2    1.2      0.3    1.2    1.2
+2|4|77 Real Time                    0.2    1.4    1.4      3.8    5.0    5.0
+ Output Data 0 Values
+2|5|86 Do                           0.3    1.7    1.7      0.3    5.3    5.3
+2|6|86 Do                           0.3    2.0    2.0      0.3    5.6    5.6
+2|7|91 If Flag/Port                 0.4    2.4    2.4      0.4    6.0    6.0
+2|8|30 Z=F x 10^n                   1.0    3.4    3.4      1.0    7.0    7.0
+2|9|95 End                          0.2    3.6    3.6      0.2    7.2    7.2
+2|10|91 If Flag/Port                0.4    4.0    4.0      0.4    7.6    7.6
+2|11|30 Z=F x 10^n                  1.0    5.0    5.0      1.0    8.6    8.6
+2|12|95 End                         0.2    5.2    5.2      0.2    8.8    8.8
+2|13|30 Z=F x 10^n                  1.0    6.2    6.2      1.0    9.8    9.8
+2|14|94 Else                        0.2    6.4    6.4      0.2   10.0   10.0
+2|15|30 Z=F x 10^n                  1.0    7.4    7.4      1.0   11.0   11.0
+2|16|30 Z=F x 10^n                  1.0    8.4    8.4      1.0   12.0   12.0
+2|17|95 End                         0.2    8.6    8.6      0.2   12.2   12.2
+2|18|86 Do                          0.3    8.9    8.9      0.3   12.5   12.5
+  ----Subroutine 2---------------
+  3|1|85 Beginning of Subroutine    0.0    0.0    8.9      0.0    0.0   12.5
+  3|2|91 If Flag/Port               0.4    0.4    9.3      0.4    0.4   12.9
+  3|3|30 Z=F x 10^n                 1.0    1.4   10.3      1.0    1.4   13.9
+  3|4|89 If (X<=>F)                 0.6    2.0   10.9      0.6    2.0   14.5
+  3|5|91 If Flag/Port               0.4    2.4   11.3      0.4    2.4   14.9
+  3|6|30 Z=F x 10^n                 1.0    3.4   12.3      1.0    3.4   15.9
+  3|7|95 End                        0.2    3.6   12.5      0.2    3.6   16.1
+  3|8|89 If (X<=>F)                 0.6    4.2   13.1      0.6    4.2   16.7
+  3|9|91 If Flag/Port               0.4    4.6   13.5      0.4    4.6   17.1
+  3|10|30 Z=F x 10^n                1.0    5.6   14.5      1.0    5.6   18.1
+  3|11|95 End                       0.2    5.8   14.7      0.2    5.8   18.3
+  3|12|89 If (X<=>F)                0.6    6.4   15.3      0.6    6.4   18.9
+  3|13|91 If Flag/Port              0.4    6.8   15.7      0.4    6.8   19.3
+  3|14|30 Z=F x 10^n                1.0    7.8   16.7      1.0    7.8   20.3
+  3|15|95 End                       0.2    8.0   16.9      0.2    8.0   20.5
+  3|16|89 If (X<=>F)                0.6    8.6   17.5      0.6    8.6   21.1
+  3|17|91 If Flag/Port              0.4    9.0   17.9      0.4    9.0   21.5
+  3|18|30 Z=F x 10^n                1.0   10.0   18.9      1.0   10.0   22.5
+  3|19|95 End                       0.2   10.2   19.1      0.2   10.2   22.7
+  3|20|89 If (X<=>F)                0.6   10.8   19.7      0.6   10.8   23.3
+  3|21|91 If Flag/Port              0.4   11.2   20.1      0.4   11.2   23.7
+  3|22|30 Z=F x 10^n                1.0   12.2   21.1      1.0   12.2   24.7
+  3|23|95 End                       0.2   12.4   21.3      0.2   12.4   24.9
+  3|24|89 If (X<=>F)                0.6   13.0   21.9      0.6   13.0   25.5
+  3|25|91 If Flag/Port              0.4   13.4   22.3      0.4   13.4   25.9
+  3|26|30 Z=F x 10^n                1.0   14.4   23.3      1.0   14.4   26.9
+  3|27|95 End                       0.2   14.6   23.5      0.2   14.6   27.1
+  3|28|95 End                       0.2   14.8   23.7      0.2   14.8   27.3
+  3|29|91 If Flag/Port              0.4   15.2   24.1      0.4   15.2   27.7
+  3|30|91 If Flag/Port              0.4   15.6   24.5      0.4   15.6   28.1
+  3|31|89 If (X<=>F)                0.6   16.2   25.1      0.6   16.2   28.7
+  3|32|91 If Flag/Port              0.4   16.6   25.5      0.4   16.6   29.1
+  3|33|91 If Flag/Port              0.4   17.0   25.9      0.4   17.0   29.5
+  3|34|89 If (X<=>F)                0.6   17.6   26.5      0.6   17.6   30.1
+  3|35|91 If Flag/Port              0.4   18.0   26.9      0.4   18.0   30.5
+  3|36|91 If Flag/Port              0.4   18.4   27.3      0.4   18.4   30.9
+  3|37|89 If (X<=>F)                0.6   19.0   27.9      0.6   19.0   31.5
+  3|38|91 If Flag/Port              0.4   19.4   28.3      0.4   19.4   31.9
+  3|39|30 Z=F x 10^n                1.0   20.4   29.3      1.0   20.4   32.9
+  3|40|86 Do                        0.3   20.7   29.6      0.3   20.7   33.2
+  3|41|86 Do                        0.3   21.0   29.9      0.3   21.0   33.5
+  3|42|86 Do                        0.3   21.3   30.2      0.3   21.3   33.8
+  3|43|95 End                       0.2   21.5   30.4      0.2   21.5   34.0
+  3|44|91 If Flag/Port              0.4   21.9   30.8      0.4   21.9   34.4
+  3|45|30 Z=F x 10^n                1.0   22.9   31.8      1.0   22.9   35.4
+  3|46|95 End                       0.2   23.1   32.0      0.2   23.1   35.6
+  3|47|91 If Flag/Port              0.4   23.5   32.4      0.4   23.5   36.0
+  3|48|30 Z=F x 10^n                1.0   24.5   33.4      1.0   24.5   37.0
+  3|49|95 End                       0.2   24.7   33.6      0.2   24.7   37.2
+  3|50|91 If Flag/Port              0.4   25.1   34.0      0.4   25.1   37.6
+  3|51|30 Z=F x 10^n                1.0   26.1   35.0      1.0   26.1   38.6
+  3|52|95 End                       0.2   26.3   35.2      0.2   26.3   38.8
+  3|53|91 If Flag/Port              0.4   26.7   35.6      0.4   26.7   39.2
+  3|54|30 Z=F x 10^n                1.0   27.7   36.6      1.0   27.7   40.2
+  3|55|95 End                       0.2   27.9   36.8      0.2   27.9   40.4
+  3|56|91 If Flag/Port              0.4   28.3   37.2      0.4   28.3   40.8
+  3|57|30 Z=F x 10^n                1.0   29.3   38.2      1.0   29.3   41.8
+  3|58|95 End                       0.2   29.5   38.4      0.2   29.5   42.0
+  3|59|91 If Flag/Port              0.4   29.9   38.8      0.4   29.9   42.4
+  3|60|30 Z=F x 10^n                1.0   30.9   39.8      1.0   30.9   43.4
+  3|61|95 End                       0.2   31.1   40.0      0.2   31.1   43.6
+  3|62|95 End                       0.2   31.3   40.2      0.2   31.3   43.8
+  -----End Subroutine 2 ---------
+2|19|89 If (X<=>F)                  0.6    9.5   40.8      0.6   13.1   44.4
+2|20|25 Read Ports                  0.5   10.0   41.3      0.5   13.6   44.9
+2|21|25 Read Ports                  0.5   10.5   41.8      0.5   14.1   45.4
+2|22|25 Read Ports                  0.5   11.0   42.3      0.5   14.6   45.9
+2|23|91 If Flag/Port                0.4   11.4   42.7      0.4   15.0   46.3
+2|24|30 Z=F x 10^n                  1.0   12.4   43.7      1.0   16.0   47.3
+2|25|30 Z=F x 10^n                  1.0   13.4   44.7      1.0   17.0   48.3
+2|26|30 Z=F x 10^n                  1.0   14.4   45.7      1.0   18.0   49.3
+2|27|95 End                         0.2   14.6   45.9      0.2   18.2   49.5
+2|28|89 If (X<=>F)                  0.6   15.2   46.5      0.6   18.8   50.1
+2|29|86 Do                          0.3   15.5   46.8      0.3   19.1   50.4
+2|30|87 Beginning of Loop           0.3   15.8   47.1      0.3   19.4   50.7
+ Execution times in the loop are calculated for one pass only.
+2|31|90 Step Loop Index             0.7   16.5   47.8      0.7   20.1   51.4
+2|32|86 Do                          0.3   16.8   48.1      0.3   20.4   51.7
+2|33|22 Excitation with Delay      50.5   67.3   98.6     50.5   70.9  102.2
+2|34|2 Volt (Diff)                 18.8   86.1  117.4     18.8   89.7  121.0
+2|35|95 End                         0.2   86.3  117.6      0.2   89.9  121.2
+2|36|89 If (X<=>F)                  0.6   86.9  118.2      0.6   90.5  121.8
+2|37|87 Beginning of Loop           0.3   87.2  118.5      0.3   90.8  122.1
+ Execution times in the loop are calculated for one pass only.
+2|38|90 Step Loop Index             0.7   87.9  119.2      0.7   91.5  122.8
+2|39|86 Do                          0.3   88.2  119.5      0.3   91.8  123.1
+2|40|22 Excitation with Delay      50.5  138.7  170.0     50.5  142.3  173.6
+2|41|2 Volt (Diff)                 18.8  157.5  188.8     18.8  161.1  192.4
+2|42|95 End                         0.2  157.7  189.0      0.2  161.3  192.6
+2|43|89 If (X<=>F)                  0.6  158.3  189.6      0.6  161.9  193.2
+2|44|87 Beginning of Loop           0.3  158.6  189.9      0.3  162.2  193.5
+ Execution times in the loop are calculated for one pass only.
+2|45|90 Step Loop Index             0.7  159.3  190.6      0.7  162.9  194.2
+2|46|86 Do                          0.3  159.6  190.9      0.3  163.2  194.5
+2|47|22 Excitation with Delay      50.5  210.1  241.4     50.5  213.7  245.0
+2|48|2 Volt (Diff)                 18.8  228.9  260.2     18.8  232.5  263.8
+2|49|95 End                         0.2  229.1  260.4      0.2  232.7  264.0
+2|50|87 Beginning of Loop           0.3  229.4  260.7      0.3  233.0  264.3
+ Execution times in the loop are calculated for one pass only.
+2|51|90 Step Loop Index             0.7  230.1  261.4      0.7  233.7  265.0
+2|52|86 Do                          0.3  230.4  261.7      0.3  234.0  265.3
+2|53|22 Excitation with Delay      50.5  280.9  312.2     50.5  284.5  315.8
+2|54|2 Volt (Diff)                 18.8  299.7  331.0     18.8  303.3  334.6
+2|55|95 End                         0.2  299.9  331.2      0.2  303.5  334.8
+2|56|94 Else                        0.2  300.1  331.4      0.2  303.7  335.0
+2|57|87 Beginning of Loop           0.3  300.4  331.7      0.3  304.0  335.3
+ Execution times in the loop are calculated for one pass only.
+2|58|30 Z=F x 10^n                  1.0  301.4  332.7      1.0  305.0  336.3
+2|59|95 End                         0.2  301.6  332.9      0.2  305.2  336.5
+2|60|95 End                         0.2  301.8  333.1      0.2  305.4  336.7
+2|61|94 Else                        0.2  302.0  333.3      0.2  305.6  336.9
+2|62|87 Beginning of Loop           0.3  302.3  333.6      0.3  305.9  337.2
+ Execution times in the loop are calculated for one pass only.
+2|63|30 Z=F x 10^n                  1.0  303.3  334.6      1.0  306.9  338.2
+2|64|95 End                         0.2  303.5  334.8      0.2  307.1  338.4
+2|65|95 End                         0.2  303.7  335.0      0.2  307.3  338.6
+2|66|86 Do                          0.3  304.0  335.3      0.3  307.6  338.9
+2|67|94 Else                        0.2  304.2  335.5      0.2  307.8  339.1
+2|68|87 Beginning of Loop           0.3  304.5  335.8      0.3  308.1  339.4
+ Execution times in the loop are calculated for one pass only.
+2|69|30 Z=F x 10^n                  1.0  305.5  336.8      1.0  309.1  340.4
+2|70|95 End                         0.2  305.7  337.0      0.2  309.3  340.6
+2|71|95 End                         0.2  305.9  337.2      0.2  309.5  340.8
+2|72|86 Do                          0.3  306.2  337.5      0.3  309.8  341.1
+ Output Flag Set @ 272 for Array 10
+2|73|80 Set Active Storage Area     0.3  306.5  337.8      0.3  310.1  341.4
+2|74|70 Sample                      0.2  306.7  338.0      0.9  311.0  342.3
+ Output Data 1 Values
+2|75|70 Sample                      0.2  306.9  338.2      0.9  311.9  343.2
+ Output Data 1 Values
+2|76|77 Real Time                   0.2  307.1  338.4      3.8  315.7  347.0
+ Output Data 3 Values
+2|77|70 Sample                      0.2  307.3  338.6     14.9  330.6  361.9
+ Output Data 36 Values
+2|78|95 End                         0.2  307.5  338.8      0.2  330.8  362.1
+2|79|89 If (X<=>F)                  0.6  308.1  339.4      0.6  331.4  362.7
+2|80|91 If Flag/Port                0.4  308.5  339.8      0.4  331.8  363.1
+2|81|86 Do                          0.3  308.8  340.1      0.3  332.1  363.4
+2|82|87 Beginning of Loop           0.3  309.1  340.4      0.3  332.4  363.7
+ Execution times in the loop are calculated for one pass only.
+2|83|86 Do                          0.3  309.4  340.7      0.3  332.7  364.0
+2|84|22 Excitation with Delay     100.5  409.9  441.2    100.5  433.2  464.5
+2|85|95 End                         0.2  410.1  441.4      0.2  433.4  464.7
+2|86|87 Beginning of Loop           0.3  410.4  441.7      0.3  433.7  465.0
+ Execution times in the loop are calculated for one pass only.
+2|87|90 Step Loop Index             0.7  411.1  442.4      0.7  434.4  465.7
+2|88|86 Do                          0.3  411.4  442.7      0.3  434.7  466.0
+2|89|22 Excitation with Delay     100.5  511.9  543.2    100.5  535.2  566.5
+2|90|2 Volt (Diff)                 18.8  530.7  562.0     18.8  554.0  585.3
+2|91|95 End                         0.2  530.9  562.2      0.2  554.2  585.5
+2|92|86 Do                          0.3  531.2  562.5      0.3  554.5  585.8
+2|93|94 Else                        0.2  531.4  562.7      0.2  554.7  586.0
+2|94|87 Beginning of Loop           0.3  531.7  563.0      0.3  555.0  586.3
+ Execution times in the loop are calculated for one pass only.
+2|95|30 Z=F x 10^n                  1.0  532.7  564.0      1.0  556.0  587.3
+2|96|95 End                         0.2  532.9  564.2      0.2  556.2  587.5
+2|97|95 End                         0.2  533.1  564.4      0.2  556.4  587.7
+2|98|92 If time is                  0.7  533.8  565.1      0.7  557.1  588.4
+ Output Flag Set @ 298 for Array 11
+2|99|80 Set Active Storage Area     0.3  534.1  565.4      0.3  557.4  588.7
+2|100|70 Sample                     0.2  534.3  565.6      0.9  558.3  589.6
+ Output Data 1 Values
+2|101|70 Sample                     0.2  534.5  565.8      0.9  559.2  590.5
+ Output Data 1 Values
+2|102|77 Real Time                  0.2  534.7  566.0      3.8  563.0  594.3
+ Output Data 3 Values
+2|103|70 Sample                     0.2  534.9  566.2      5.3  568.3  599.6
+ Output Data 12 Values
+2|104|95 End                        0.2  535.1  566.4      0.2  568.5  599.8
+
+Program Table 2 Execution Interval   10.000 Seconds
+
+Table 2 Estimated Total Program Execution Time in msec  566.4 w/Output  599.8
+
+Table 2 Estimated Total Final Storage Locations used per day 365472
+
+
+
+Estimated Total Final Storage Locations used per day 365640

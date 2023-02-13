@@ -1,0 +1,139 @@
+;{CR10X}
+;Sample program for reading MPS-1 with CR10X
+;wiring:
+;White-Excitation -E1
+;Red-Analog out-SE CH1
+;Bare-ground-AG
+;
+;output is water potential in units of kPa
+
+*Table 1 Program
+  01: 3600      Execution Interval (seconds)
+
+1:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 1        Delay (0.01 sec units)
+ 6: 2500     mV Excitation
+ 7: 1        Loc [ MPS1_mV   ]
+ 8: 1.0      Mult
+ 9: 0.0      Offset
+
+2:  Z=X*Y (P36)
+ 1: 1        X Loc [ MPS1_mV   ]
+ 2: 1        Y Loc [ MPS1_mV   ]
+ 3: 2        Z Loc [ __mV_sq__ ]
+
+3:  Z=F x 10^n (P30)
+ 1: 4.8      F
+ 2: -5       n, Exponent of 10
+ 3: 3        Z Loc [ C2        ]
+
+
+4:  Z=X*Y (P36)
+ 1: 3        X Loc [ C2        ]
+ 2: 2        Y Loc [ __mV_sq__ ]
+ 3: 4        Z Loc [ __term1__ ]
+
+5:  Z=X*F (P37)
+ 1: 1        X Loc [ MPS1_mV   ]
+ 2: -0.0846  F
+ 3: 5        Z Loc [ __term2__ ]
+
+
+6:  Z=X+Y (P33)
+ 1: 4        X Loc [ __term1__ ]
+ 2: 5        Y Loc [ __term2__ ]
+ 3: 6        Z Loc [ power     ]
+
+7:  Z=X+F (P34)
+ 1: 6        X Loc [ power     ]
+ 2: 39.45    F
+ 3: 6        Z Loc [ power     ]
+
+8:  Z=EXP(X) (P41)
+ 1: 6        X Loc [ power     ]
+ 2: 7        Z Loc [ MPS1_kPa  ]
+
+9:  Z=X*F (P37)
+ 1: 7        X Loc [ MPS1_kPa  ]
+ 2: -1       F
+ 3: 7        Z Loc [ MPS1_kPa  ]
+
+10:  If time is (P92)
+ 1: 0000     Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+
+11:  Real Time (P77)^26415
+ 1: 1110     Year,Day,Hour/Minute (midnight = 0000)
+
+
+12:  Average (P71)^17313
+ 1: 1        Reps
+ 2: 7        Loc [ MPS1_kPa  ]
+
+13:  Do (P86)
+ 1: 20       Set Output Flag Low (Flag 0)
+
+*Table 2 Program
+  02: 0.0000    Execution Interval (seconds)
+
+*Table 3 Subroutines
+
+End Program
+
+-Input Locations-
+1 MPS1_mV   1 3 1
+2 __mV_sq__ 1 1 1
+3 C2        1 1 1
+4 __term1__ 1 1 1
+5 __term2__ 1 1 1
+6 power     1 2 2
+7 MPS1_kPa  1 2 2
+8 _________ 0 0 0
+9 _________ 0 0 0
+10 _________ 0 0 0
+11 _________ 0 0 0
+12 _________ 0 0 0
+13 _________ 0 0 0
+14 _________ 0 0 0
+15 _________ 0 0 0
+16 _________ 0 0 0
+17 _________ 0 0 0
+18 _________ 0 0 0
+19 _________ 0 0 0
+20 _________ 0 0 0
+21 _________ 0 0 0
+22 _________ 0 0 0
+23 _________ 0 0 0
+24 _________ 0 0 0
+25 _________ 0 0 0
+26 _________ 0 0 0
+27 _________ 0 0 0
+28 _________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-Final Storage Area 2-
+0
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,Year_RTM,26415
+0,Day_RTM
+0,Hour_Minute_RTM
+1,MPS1_kPa_AVG~7,17313

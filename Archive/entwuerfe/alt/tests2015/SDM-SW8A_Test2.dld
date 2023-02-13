@@ -1,0 +1,151 @@
+};CR10X
+;SDM-SW8A_Test2.dld
+;$
+;:Statnr   :Projnr   :_________:_________:_________
+;:_________:_________:_________:_________:_________
+;:sf_1     :sf_2     :sf_3     :sf_4     :sf_5     
+;:sf_stat_1:sf_stat_2:sf_stat_3:sf_stat_4:sf_stat_5
+;:sf_duty_1:sf_duty_2:sf_duty_3:sf_duty_4:sf_duty_5
+;:sf_reset :n_reset  :epr_1    :epr_2    :epr_3    
+;:epr_4    :epr_5    :n1       :n2       
+;$
+
+;%
+;Final Storage Label File for:  SDM-SW8A_Test2.csi
+;Date:  11/21/2013
+;Time:  18:41:26
+;
+;115 Output_Table  10.00 Sec
+;1 115 L
+;2 Day_RTM  L
+;3 Hour_Minute_RTM  L
+;4 sf_1_TOT  L
+;5 sf_2_TOT  L
+;6 sf_3_TOT  L
+;7 sf_4_TOT  L
+;8 sf_5_TOT  L
+;9 n_reset  L
+;
+;
+;Estimated Total Final Storage Locations used per day 77760
+;%
+
+MODE 1
+SCAN RATE 1
+
+1:P102
+1:1
+2:00
+3:3
+4:1
+5:28
+6:1.0
+7:0.0
+
+2:P102
+1:1
+2:00
+3:0
+4:1
+5:16
+6:1.0
+7:0.0
+
+3:P89
+1:16
+2:4
+3:0.0
+4:21
+
+4:P91
+1:21
+2:30
+
+5:P102
+1:8
+2:00
+3:2
+4:1
+5:16
+6:1.0
+7:0.0
+
+6:P102
+1:8
+2:00
+3:1
+4:1
+5:16
+6:1.0
+7:0.0
+
+7:P102
+1:8
+2:00
+3:0
+4:1
+5:16
+6:1.0
+7:0.0
+
+8:P32
+1:27
+
+9:P86
+1:11
+
+10:P95
+
+11:P91
+1:11
+2:30
+
+12:P32
+1:34
+
+13:P102
+1:5
+2:00
+3:2
+4:1
+5:11
+6:1.0
+7:0.0
+
+14:P95
+
+15:P92
+1:0--
+2:10
+3:10
+
+16:P77
+1:110
+
+17:P72
+1:5
+2:11
+
+18:P70
+1:1
+2:27
+
+
+MODE 2
+SCAN RATE 1
+
+
+MODE 3
+
+MODE 10
+1:48
+2:64
+3:0
+
+
+MODE 12
+1:0000
+2:0000
+3:0000
+
+

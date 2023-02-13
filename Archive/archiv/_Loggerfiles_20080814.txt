@@ -1,0 +1,102 @@
+LWF Meteo Dataloggerprogramme (*.CSI,  *.DLD)
+---------------------------------------------
+
+Peter Waldner, 14.8.2008
+
+
+1.  Speicherorte
+    ------------
+
+(1) Dateienserver sphinx.wsl.ch\Org
+    --> Associated von der LoggerNet-Konfiguration auf dem Online-Komputer?
+    O:\Meteo\MA\Campbell_3.3.1_Loggerfiles
+
+(2) Online-Komputer
+    --> von Gustav Schneiter verwendet bei uebers GSM-Netz
+
+(3) Feldkomputer costa.wsl.ch (Gustav Schneiter)
+    --> Von Gustav Schneiter verwendet im Feld
+    C:\Documents and Settings\Schneite\My Documents\Campbelldata
+
+(4) Feldkomputer costa.wsl.ch (Gustav Schneiter)
+    --> vom LoggerNet automatische Kopie der hochgeladenen *.DLD Dateien
+
+(5) Feldkomputer costa.wsl.ch (Gustav Schneiter)¨
+    --> Kopie von (1) vom .......?
+    C:\Prog\Campbell_3.3.1_Loggerfiles  
+  
+
+2.  Vorliegende Versionen
+    ---------------------
+
+    VOR_B
+    -----
+
+(1) archiv\VOR_B_20080220.CSI                   12.10.2002
+; Anpassungen 12.07.02
+    --> In Betrieb vom 12.10.2001 bis 20.02.2008
+
+(1) archiv\VOR_B_20080320.CSI			
+; Anpassungen 12.07.02
+; Aenderung BT -10cm P. Waldner                                      20.02.2008
+    --> In Betrieb vom 20.02.2003 bis 20.03.2008
+
+(1) archiv\VOR_B_20080813.CSI				10.06.2008
+; Anpassungen 12.07.02
+; Aenderung BT -10cm P. Waldner                                      20.02.2008
+; Aenderung Projekt 2 deaktiviert P. Waldner                         20.03.2008
+    --> In Betrieb vom 20.03.2008 bis 13.08.2008
+
+(1) archiv\VOR_B_20080814.CSI				13.08.2008
+; Anpassungen 12.07.02
+; Anpassungen 20.02.2008 (P. Waldner, G. Schneiter): T -10cm
+; Anpassungen 20.03.2008 (P. Waldner, G. Schneiter): Projekt 2 deaktiviert
+; Anpassungen 13.08.2008 (P. Waldner, G. Schneiter): Clip 2 nicht umgenaehngt
+    --> In Betrieb vom 13.08.2008 bis ........
+
+    -----
+
+(3) VOR_B.CSI
+; Anpassungen 12.07.02
+; Aenderung BT -10cm P. Waldner                                      20.02.2008
+; Aenderung Projekt 2 deaktiviert P. Waldner                         20.03.2008
+    --> In Betrieb vom 20.03.2008 bis 13.08.2008
+    -  Erstellt im Feld aus 
+       O:\LWF\MA\Projekte\ECHO\Installation\vor\entwurf\VOR_B.CSI
+---> umbenannt.
+
+(3) archiv\VOR_B_20021012.CSI			12.10.2002
+; Anpassungen 12.07.02
+    -  Bis 13.8.2008 als VOR_B.CSI in (3)
+    -  entspricht (1) archiv\VOR_B_20080220.CSI
+---> umbenannt.
+
+
+   VORD
+   ----
+
+(1) VORD.CSI					09.09.2002
+    -  unkommentiertes CSI-File
+--> unbenannt in archiv\VORD_20020909.CSI
+
+(1) archiv\VORD_KOR.CSI				07.12.2006
+    -  unkommentiertes CSI-File
+--> unbenannt in archiv\VORD_20061207.CSI
+
+
+(1) archiv\VORD_WA1.CSI				23.04.2007
+; Version:                Originalprogramm korrigiert.
+  01: 20      0 Execution Interval (seconds)
+--> loeschen
+
+(1) archiv\VORD_WA2.CSI				27.04.2007
+; Version:                NUR DENDRO
+; In Betrieb:             von 24.4.2007 bis 27.4.2007
+  01: 20      0 Execution Interval (seconds)
+--> unbenannt in archiv\VORD_20070424.CSI
+
+(1) archiv\VORD_M10.CSI				27.04.2007
+; Version:                NUR DENDRO
+; In Betrieb:             von 27.4.2007 bis ...
+  01: 600     0 Execution Interval (seconds)
+--> unbenannt in archiv\VORD_20070427.CSI

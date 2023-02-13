@@ -1,0 +1,95 @@
+Final Storage Label File for:  BETTLACH11.csi
+Date:  9/4/2007
+Time:  10:59:03
+
+7 Input_Storage 120.00 Min
+1 U_log_MIN  L
+2 U_log_MAX  L
+3 U_log_AVG  L
+4 T_log_AVG  L
+
+120 Output_Table 120.00 Min
+1 120 L
+2 IDStation  L
+3 IDProj101  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 U_log_MIN  L
+8 U_log_MAX  L
+9 U_log_Avg  L
+10 T_log_Avg  L
+11 STATUS_f1  L
+12 STATUS_f5  L
+13 STATUS_f6  L
+14 STATUS_f7  L
+
+69 Input_Storage  10.00 Sec
+1 Hour_Minute_RTM  L
+
+10 Output_Table  10.00 Sec
+1 10 L
+2 IDStation  L
+3 IDProj201  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 U_01  L
+8 U_02  L
+9 U_03  L
+10 U_04  L
+11 U_05  L
+12 U_06  L
+13 U_07  L
+14 U_08  L
+15 U_09  L
+16 U_10  L
+17 U_11  L
+18 U_12  L
+19 U_13  L
+20 U_14  L
+21 U_15  L
+22 U_16  L
+23 U_17  L
+24 U_18  L
+25 U_19  L
+26 U_20  L
+27 U_21  L
+28 U_22  L
+29 U_23  L
+30 U_24  L
+31 U_25  L
+32 U_26  L
+33 U_27  L
+34 U_28  L
+35 U_29  L
+36 U_30  L
+37 U_31  L
+38 U_32  L
+39 U_33  L
+40 U_34  L
+41 U_35  L
+42 U_36  L
+
+11 Output_Table  10.00 Min
+1 11 L
+2 IDStation  L
+3 IDProj202  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 U_37  L
+8 U_38  L
+9 U_39  L
+10 U_40  L
+11 U_41  L
+12 U_42  L
+13 U_43  L
+14 U_44  L
+15 U_45  L
+16 U_46  L
+17 U_47  L
+18 U_48  L
+
+
+Estimated Total Final Storage Locations used per day 365640

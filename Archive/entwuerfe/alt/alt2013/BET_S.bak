@@ -1,0 +1,1430 @@
+;{CR10X}
+;
+;==============================================================================
+; Station:                                                             3.12.2007
+; --------
+;   o Serial Number:       SV01019 - Bettlach11
+;   o Location:            Bettlachstock Bestand
+;   o Call Number:         079 239 41 63 via SV99004 and MD9
+;   o Connection:          TAPI REMOTE - MD9 - MD9_2R (Addresse 2, Security Code: 8903) (Sap und Dendro Station)
+;                                            - MD9_1R (Addresse 1, Security Code: 9044) (Meteo)
+;   o Service Window:      8h00 bis 8h15 (Winterzeit)
+;   + Station Program 1:   Solar Battery Charge Control (Flag/Port 4)
+;   + Station Program 2:   Voltage-dependent Sensor Switch
+;                            Port 1: AM416 reset
+;                            Port 2: AM416 1 clock
+;                            Port 3: AM416 2 clock
+;                            Port 4: High = Shunt ein
+;                            Flag/Port 5: TDP50 1-12 + AVRD
+;                            Flag/Port 6: TDP50 13-24
+;                            Flag/Port 7: TDP50 25-36
+;                            Port 8: high = Speisung Dendro (TRACO)
+;                          ALLE Heizungen Port 5,6,7,8 aus
+;                            Flag 1:  high:  alle Heizungen aus - Messungen gehen weiter
+;                            Flag 1:  low:   Standard programm
+;                            Flag 2:  high:  Messfenster Sapflow ein
+;                            Flag 2:  low:   Messfenster Sapflow aus
+;                            Flag 3:
+;                            Flag 4: high wenn Batt_Volt > 13.9, low wenn Batt_Volt < 13.5
+;
+; Program:
+; --------
+;   o Source Code:         Bettlach14.CSI
+;   o Author:              Revidiertes markasub-Prg, Roman Zweifel
+;   o Version:             15 (3.12.07)
+; Projects Table 1:
+;   + Project 101:         Status Data (Final Storage Area 2)
+; Projects Table 2:
+;   + Project (201)-10:    Sapflow Data (Final Storag Area 1)
+;   + Project (202)-2:     Dendrometer Data (Final Storag Area 1)
+;
+; Table 4 Parameters:
+; -------------------
+; @@00  Station ID [4]
+; @@01  Execution Interval Table 2 [10s]
+; @@02  Project ID Sapflow Data [10]
+; @@03  Project ID Dendrometer Data [2]
+; @@04  Shunt On [13.9 V]
+; @@05  Shunt Off [13.5 V]
+; @@06  Sapflow Sensors 1 - 12 On [if U_Log_min > 11.9 V]     Flag 5 - C5 - ADRD1 + 2 ein/aus
+; @@07  Sapflow Sensors 1 - 12 Off [11.6 V]
+; @@08  Sapflow Sensors 13 - 24 On [if U_Log_min > 12.2 V]    Flag 6 - C6 - AVRD2
+; @@09  Sapflow Sensors 13 - 24 Off [11.8 V]
+; @@10  Sapflow Sensors 25 - 36 On [20.4 V]    Flag 7 - C7
+; @@11  Sapflow Sensors 25 - 36 Off [20.0 V]
+;
+;
+; Notation:
+; ---------
+; U_log        Logger Supply Voltage [V]
+; U_log_MIN    Minimum of Logger Supply Voltage [V]
+; U_log_MAX    Maximum of Logger Supply Voltage [V]
+; U_log_AVG    Average of Logger Supply Voltage [V]
+; T_log        Logger Temperature [°C]
+; T_log_AVG    Average of Logger Temperature [°C]
+; U_n          n = {01,02,...,36} : Sapflow Signal Voltages [mV]
+;              n = {37,38,...,48} : Dendrometer Signal Voltages [mV]
+; Statusf1: 11/21 Manuelles EIN/AUS-schalten der drei Speisungsgruppen (ueber Flag1)
+; Statusf5: 15/25 EIN/AUS der Sap-Speisungsgruppe 1
+; Statusf6: 16/26 EIN/AUS der Sap-Speisungsgruppe 2
+; Statusf7: 17/27 EIN/AUS der Sap-Speisungsgruppe 3
+;
+;
+; Changes 16.4.2010 (Peter Waldner)
+; -----------------
+; - Project 22: Soilwater Content Sensor ECHO EC-5 (Decagon, Pullmann, WA, USA)
+;   AM416-1.Set15-16.H1-H2: ECHO1-2.15cm,50cm,80cm; E1-2: ECHO1-2.+2.5V
+;
+; Changes 6.9.2010 (Peter Waldner)
+; --------------------------------
+; - Projekt 22: StationsID korrigiert
+; - Projekt 2: Posititon of U_log moved to after Date/Time
+;
+; Table 1 Station and Project IDs
+
+*Table 1 Program
+  01: 30        Execution Interval (seconds)
+
+1:  Z=F (P30)
+ 1: 4        F @@0
+ 2: 0        Exponent of 10
+ 3: 1        Z Loc [ IDStation ]
+
+2:  Z=F (P30)
+ 1: 101      F  ; <> 0!
+ 2: 0        Exponent of 10
+ 3: 2        Z Loc [ IDProj101 ]
+
+;==============================================================================
+; Project 101 Status Data: Measurement
+
+3:  If (X<=>F) (P89)
+ 1: 2        X Loc [ IDProj101 ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  4:  Batt Voltage (P10)
+   1: 5        Loc [ U_log     ]
+
+  5:  Internal Temperature (P17)
+   1: 6        Loc [ T_log     ]
+;------------------------------------------------------------------------------
+; Project 101 Status Data: Calculation
+
+  6:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 120      Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  7:  Set Active Storage Area (P80)
+   1: 3        Input Storage Area
+   2: 7        Loc [ U_log_MIN ]
+
+  8:  Minimum (P74)^14918
+   1: 1        Reps
+   2: 0        Value Only
+   3: 5        Loc [ U_log     ]
+
+  9:  Maximum (P73)^21062
+   1: 1        Reps
+   2: 0        Value Only
+   3: 5        Loc [ U_log     ]
+
+  10:  Average (P71)^31615
+   1: 2        Reps
+   2: 5        Loc [ U_log     ]
+;------------------------------------------------------------------------------
+; Project 101 Status Data: Final Storage
+
+  11:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 120      Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  12:  Set Active Storage Area (P80)^5843
+   1: 2        Final Storage Area 2
+   2: 120      Array ID
+
+  13:  Sample (P70)^3555
+   1: 2        Reps
+   2: 1        Loc [ IDStation ]
+
+  14:  Real Time (P77)^7026
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  15:  Sample (P70)^22470
+   1: 4        Reps
+   2: 7        Loc [ U_log_MIN ]
+
+  16:  Sample (P70)^6979
+   1: 4        Reps
+   2: 62       Loc [ STATUS_f1 ]
+
+17:  End (P95)
+
+;==============================================================================
+; Subroutine 1: Shunt-Batterieregelung
+
+18:  Do (P86)
+ 1: 1        Call Subroutine 1
+
+
+;==============================================================================
+
+;-------------------------------------------------------------------------------
+;Dendrometerspeisung permanent einschalten bei U_log > 11.5 V
+;-------------------------------------------------------------------------------
+
+
+19:  If (X<=>F) (P89)
+ 1: 5        X Loc [ U_log     ]
+ 2: 3        >=
+ 3: 11.5     F
+ 4: 30       Then Do
+
+
+     20:  Do (P86)
+      1: 48       Set Port 8 High
+
+
+21:  Else (P94)
+
+     22:  Do (P86)
+      1: 58       Set Port 8 Low
+
+
+
+23:  End (P95)
+
+
+
+;*****************************************************************************
+
+
+24:  If (X<=>F) (P89)
+ 1: 5        X Loc [ U_log     ]
+ 2: 3        >=
+ 3: 11.5     F
+ 4: 30       Then Do
+
+25:  Do (P86)
+ 1: 10       Set Output Flag High (Flag 0)
+
+26:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 69       Loc [ Realtime  ]
+
+27:  Real Time (P77)^28826
+ 1: 20       Hour/Minute (midnight = 2400)
+
+28:  Do (P86)
+ 1: 20       Set Output Flag Low (Flag 0)
+
+
+29:  Do (P86)
+ 1: 12       Set Flag 2 High
+
+
+
+30:  If Flag/Port (P91)
+ 1: 12       Do if Flag 2 is High
+ 2: 30       Then Do
+
+  31:  Z=F (P30)
+   1: 10       F @@2
+   2: 0        Exponent of 10
+   3: 3        Z Loc [ IDProj201 ]
+
+32:  End (P95)
+
+33:  If Flag/Port (P91)
+ 1: 22       Do if Flag 2 is Low
+ 2: 30       Then Do
+
+34:  Z=F (P30)
+ 1: 0        F
+ 2: 0        Exponent of 10
+ 3: 3        Z Loc [ IDProj201 ]
+
+35:  End (P95)
+
+  36:  Z=F (P30)
+   1: 2        F @@3
+   2: 0        Exponent of 10
+   3: 4        Z Loc [ IDProj202 ]
+
+37:  Else (P94)
+
+     38:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 0        n, Exponent of 10
+      3: 3        Z Loc [ IDProj201 ]
+
+     39:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 0        n, Exponent of 10
+      3: 4        Z Loc [ IDProj202 ]
+
+40:  End (P95)
+
+;==============================================================================
+; Project 201 Sapflow Data: Block IDs (0 = inactive, 1 = active)
+;==============================================================================
+
+; Speisungsgruppen der Sapflow-Heizungen ein/aus
+
+41:  Do (P86)
+ 1: 2        Call Subroutine 2
+
+;===============================================================================
+
+42:  If (X<=>F) (P89)
+ 1: 3        X Loc [ IDProj201 ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  43:  Read Ports (P25)
+   1: 16       Mask (0..255)
+   2: 11       Loc [ IDTDP_12  ]
+
+  44:  Read Ports (P25)
+   1: 32       Mask (0..255)
+   2: 12       Loc [ IDTDP_24  ]
+
+  45:  Read Ports (P25)
+   1: 64       Mask (0..255)
+   2: 13       Loc [ IDTDP_36  ]
+
+46:  If Flag/Port (P91)
+ 1: 11       Do if Flag 1 is High
+ 2: 30       Then Do
+
+47:  Z=F (P30)
+ 1: 52       F
+ 2: 0        Exponent of 10
+ 3: 11       Z Loc [ IDTDP_12  ]
+
+48:  Z=F (P30)
+ 1: 52       F
+ 2: 0        Exponent of 10
+ 3: 12       Z Loc [ IDTDP_24  ]
+
+49:  Z=F (P30)
+ 1: 0        F
+ 2: 0        Exponent of 10
+ 3: 13       Z Loc [ IDTDP_36  ]
+
+50:  End (P95)
+
+;------------------------------------------------------------------------------
+; Project 201 Sapflow: Measurement
+
+  51:  If (X<=>F) (P89) ; Measurement Block 1: TDP50 1 - 12
+   1: 11       X Loc [ IDTDP_12  ]
+   2: 2        <>
+   3: 0        F
+   4: 30       Then Do
+
+    52:  Do (P86)
+     1: 41       Set Port 1 High
+
+    53:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 6        Loop Count
+
+      54:  Step Loop Index (P90)
+       1: 2        Step
+
+      55:  Do (P86)
+       1: 72       Pulse Port 2
+
+      56:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (units = 0.01 sec)
+       3: 5        Delay After Ex (units = 0.01 sec)
+       4: 0        mV Excitation
+
+      57:  Volt (Diff) (P2)
+       1: 2        Reps
+       2: 1        2.5 mV Slow Range
+       3: 3        DIFF Channel
+       4: 14    -- Loc [ U_01      ]
+       5: 25       Mult
+       6: 0.0      Offset
+
+    58:  End (P95)
+
+    59:  If (X<=>F) (P89) ; Measurement Block 2: TDP50 13 - 24
+     1: 12       X Loc [ IDTDP_24  ]
+     2: 2        <>
+     3: 0        F
+     4: 30       Then Do
+
+      60:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 6        Loop Count
+
+        61:  Step Loop Index (P90)
+         1: 2        Step
+
+        62:  Do (P86)
+         1: 72       Pulse Port 2
+
+        63:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0        Delay W/Ex (units = 0.01 sec)
+         3: 5        Delay After Ex (units = 0.01 sec)
+         4: 0        mV Excitation
+
+        64:  Volt (Diff) (P2)
+         1: 2        Reps
+         2: 1        2.5 mV Slow Range
+         3: 3        DIFF Channel
+         4: 26    -- Loc [ U_13      ]
+         5: 25       Mult
+         6: 0.0      Offset
+
+      65:  End (P95)
+
+      66:  If (X<=>F) (P89) ; Measurement Block 3: TDP50 25 - 36
+       1: 13       X Loc [ IDTDP_36  ]
+       2: 2        <>
+       3: 0        F
+       4: 30       Then Do
+
+        67:  Beginning of Loop (P87)
+         1: 0        Delay
+         2: 4        Loop Count
+
+          68:  Step Loop Index (P90)
+           1: 2        Step
+
+          69:  Do (P86)
+           1: 72       Pulse Port 2
+
+          70:  Excitation with Delay (P22)
+           1: 1        Ex Channel
+           2: 0        Delay W/Ex (units = 0.01 sec)
+           3: 5        Delay After Ex (units = 0.01 sec)
+           4: 0        mV Excitation
+
+          71:  Volt (Diff) (P2)
+           1: 2        Reps
+           2: 1        2.5 mV Slow Range
+           3: 3        DIFF Channel
+           4: 38    -- Loc [ U_25      ]
+           5: 25       Mult
+           6: 0.0      Offset
+
+        72:  End (P95)
+
+
+        73:  Do (P86)
+         1: 51       Set Port 1 Low
+
+        74:  Do (P86)
+         1: 41       Set Port 1 High
+
+
+        75:  Beginning of Loop (P87)
+         1: 0        Delay
+         2: 2        Loop Count
+
+          76:  Step Loop Index (P90)
+           1: 2        Step
+
+          77:  Do (P86)
+           1: 73       Pulse Port 3
+
+          78:  Excitation with Delay (P22)
+           1: 1        Ex Channel
+           2: 0        Delay W/Ex (units = 0.01 sec)
+           3: 5        Delay After Ex (units = 0.01 sec)
+           4: 0        mV Excitation
+
+
+          79:  Volt (Diff) (P2)
+           1: 2        Reps
+           2: 1        2.5 mV Slow Range
+           3: 5        DIFF Channel
+           4: 46    -- Loc [ U_33      ]
+           5: 25       Mult
+           6: 0.0      Offset
+
+
+        80:  End (P95)
+
+
+      81:  Else (P94)
+
+        82:  Beginning of Loop (P87)
+         1: 0        Delay
+         2: 12       Loop Count
+
+          83:  Z=F (P30)
+           1: -999     F
+           2: 0        Exponent of 10
+           3: 38    -- Z Loc [ U_25      ]
+
+        84:  End (P95)
+
+      85:  End (P95)
+
+    86:  Else (P94)
+
+      87:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 12       Loop Count
+
+        88:  Z=F (P30)
+         1: -999     F
+         2: 0        Exponent of 10
+         3: 26    -- Z Loc [ U_13      ]
+
+      89:  End (P95)
+
+    90:  End (P95)
+
+    91:  Do (P86)
+     1: 51       Set Port 1 Low
+
+  92:  Else (P94)
+
+    93:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 12       Loop Count
+
+      94:  Z=F (P30)
+       1: -999     F
+       2: 0        Exponent of 10
+       3: 14    -- Z Loc [ U_01      ]
+
+    95:  End (P95)
+
+  96:  End (P95)
+
+97:  End (P95)
+
+;==============================================================================
+; Project (202)-2 Dendrometer Data: Measurement
+
+98:  If (X<=>F) (P89)
+ 1: 4        X Loc [ IDProj202 ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+
+     99:  Do (P86)
+      1: 51       Set Port 1 Low
+
+     100:  If Flag/Port (P91)
+      1: 48       Do if Port 8 is High
+      2: 30       Then Do
+
+    101:  Do (P86)
+     1: 41       Set Port 1 High
+
+;--------------------------------------------------------------
+;   2 loop um die 4 Sapflow-Eingaenge am Dendrometermultiplexer zu ueberspringen
+;--------------------------------------------------------------
+
+    102:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 2        Loop Count
+
+      103:  Do (P86)
+       1: 73       Pulse Port 3
+
+      104:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (0.01 sec units)
+       3: 10       Delay After Ex (0.01 sec units)
+       4: 0        mV Excitation
+
+    105:  End (P95)
+
+    106:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 6        Loop Count
+
+      107:  Step Loop Index (P90)
+       1: 2        Step
+
+      108:  Do (P86)
+       1: 73       Pulse Port 3
+
+      109:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (units = 0.01 sec)
+       3: 10       Delay After Ex (units = 0.01 sec)
+       4: 0        mV Excitation
+
+
+      110:  Volt (Diff) (P2)
+       1: 2        Reps
+       2: 4        250 mV Slow Range
+       3: 5        DIFF Channel
+       4: 50    -- Loc [ U_37      ]
+       5: 1.0      Mult
+       6: 0.0      Offset
+
+    111:  End (P95)
+
+    112:  Do (P86)
+     1: 51       Set Port 1 Low
+
+  113:  Else (P94)
+
+    114:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 12       Loop Count
+
+      115:  Z=F (P30)
+       1: -999     F
+       2: 0        Exponent of 10
+       3: 50    -- Z Loc [ U_37      ]
+
+    116:  End (P95)
+
+  117:  End (P95)
+
+
+;------------------------------------------------------------------------------
+; Final Storage Sapflow & Dendrometer
+
+  118:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 10       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  119:  Set Active Storage Area (P80)^10798
+   1: 1        Final Storage Area 1
+   2: 10       Array ID
+
+  120:  Sample (P70)^6197
+   1: 1        Reps
+   2: 1        Loc [ IDStation ]
+
+  121:  Sample (P70)^12928
+   1: 1        Reps
+   2: 4        Loc [ IDProj202 ]
+
+
+  122:  Average (P71)^4448
+   1: 1        Reps
+   2: 5        Loc [ U_log     ]
+
+
+  123:  Real Time (P77)^19765
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  124:  Average (P71)^19807
+   1: 24       Reps
+   2: 14       Loc [ U_01      ]
+
+  125:  Average (P71)^17461
+   1: 12       Reps
+   2: 50       Loc [ U_37      ]
+
+126:  End (P95)
+
+;==============================================================================
+; Project 22 Soil water content sensors ECHO EC-5 (Decagon, Pullmann, WA, USA)
+; -----------------------------------------------------------------------------
+; Project
+
+127:  Z=F (P30)
+ 1: 22       F
+ 2: 00       Exponent of 10
+ 3: 80       Z Loc [ Proj22_ID ]
+
+;------------------------------------------------------------------------------
+; Project 22: Storage                                                60 Minutes
+
+128:  If (X<=>F) (P89)
+ 1: 80       X Loc [ Proj22_ID ]
+ 2: 1        =
+ 3: 22       F
+ 4: 30       Then Do
+
+  129:  If time is (P92)
+   1: 0000     Minutes (Seconds --) into a
+   2: 60       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+; Array ID (frequency in first column)
+  130:  Set Active Storage Area (P80)^7013
+   1: 1        Final Storage Area 1
+   2: 60       Array ID
+
+  131:  Sample (P70)^26746
+   1: 1        Reps
+   2: 1        Loc [ IDStation ]
+
+  132:  Sample (P70)^5637
+   1: 1        Reps
+   2: 80       Loc [ Proj22_ID ]
+
+  133:  Real Time (P77)^16745
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+; Soil water content [m3/m3], 6 sensors
+  134:  Average (P71)^28851
+   1: 06       Reps
+   2: 160      Loc [ ECHO_1_15 ]
+
+
+; Voltage [mV] (raw data) soil water content sensors, 6 sensors
+  135:  Average (P71)^32144
+   1: 06       Reps
+   2: 180      Loc [ ECHOU1_15 ]
+
+136:  End (P95)
+; -----------------------------------------------------------------------------
+; Project 22 Soil water content sensors ECHO: Measurement
+
+137:  If (X<=>F) (P89)
+ 1: 80       X Loc [ Proj22_ID ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+; Every 60 minutes
+    138:  If time is (P92)
+     1: 59       Minutes (Seconds --) into a
+     2: 60       Interval (same units as above)
+     3: 30       Then Do
+
+        139:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 1        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+;     AM416 activate, to Set 14
+      140:  Do (P86)
+       1: 41       Set Port 1 High
+
+
+        141:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 1        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+      142:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 14       Loop Count
+
+        143:  Do (P86)
+         1: 72       Pulse Port 2
+
+        144:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 1        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+
+      145:  End (P95)
+
+;     Measurement Set15
+        146:  Do (P86)
+         1: 72       Pulse Port 2
+
+        147:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 1        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+;       CR10X.S05 - AM416-1.Set15.H1 - ECHO1.15cm
+        148:  Excite-Delay (SE) (P4)
+         1: 1        Reps
+         2: 5        2500 mV Slow Range
+         3: 5        SE Channel
+         4: 1        Excite all reps w/Exchan 1
+         5: 1        Delay (0.01 sec units)
+         6: 2500     mV Excitation
+         7: 180   -- Loc [ ECHOU1_15 ]
+         8: 1        Multiplier
+         9: 0        Offset
+
+;       CR10X.S06 - AM416-1.Set15.L1 - ECHO1.50cm
+        149:  Excite-Delay (SE) (P4)
+         1: 1        Reps
+         2: 5        2500 mV Slow Range
+         3: 6        SE Channel
+         4: 1        Excite all reps w/Exchan 1
+         5: 1        Delay (0.01 sec units)
+         6: 2500     mV Excitation
+         7: 181   -- Loc [ ECHOU1_50 ]
+         8: 1        Multiplier
+         9: 0        Offset
+
+;       CR10X.S07 - AM416-1.Set15.H2 - ECHO1.80cm
+        150:  Excite-Delay (SE) (P4)
+         1: 1        Reps
+         2: 5        2500 mV Slow Range
+         3: 7        SE Channel
+         4: 1        Excite all reps w/Exchan 1
+         5: 1        Delay (0.01 sec units)
+         6: 2500     mV Excitation
+         7: 182   -- Loc [ ECHOU1_80 ]
+         8: 1        Multiplier
+         9: 0        Offset
+
+;     Measurement Set16
+        151:  Do (P86)
+         1: 72       Pulse Port 2
+
+        152:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 1        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+;       CR10X.S05 - AM416-2.Set16.H1 - ECHO2.15cm
+        153:  Excite-Delay (SE) (P4)
+         1: 1        Reps
+         2: 5        2500 mV Slow Range
+         3: 5        SE Channel
+         4: 2        Excite all reps w/Exchan 2
+         5: 1        Delay (0.01 sec units)
+         6: 2500     mV Excitation
+         7: 183   -- Loc [ ECHOU2_15 ]
+         8: 1        Multiplier
+         9: 0        Offset
+
+;       CR10X.S06 - AM416-1.Set16.L1 - ECHO2.50cm
+        154:  Excite-Delay (SE) (P4)
+         1: 1        Reps
+         2: 5        2500 mV Slow Range
+         3: 6        SE Channel
+         4: 2        Excite all reps w/Exchan 2
+         5: 1        Delay (0.01 sec units)
+         6: 2500     mV Excitation
+         7: 184   -- Loc [ ECHOU2_50 ]
+         8: 1        Multiplier
+         9: 0        Offset
+
+;       CR10X.S07 - AM416-1.Set16.H2 - ECHO2.80cm
+        155:  Excite-Delay (SE) (P4)
+         1: 1        Reps
+         2: 5        2500 mV Slow Range
+         3: 7        SE Channel
+         4: 2        Excite all reps w/Exchan 2
+         5: 1        Delay (0.01 sec units)
+         6: 2500     mV Excitation
+         7: 185   -- Loc [ ECHOU2_80 ]
+         8: 1        Multiplier
+         9: 0        Offset
+
+
+; AM416 deactivate
+      156:  Do (P86)
+       1: 51       Set Port 1 Low
+
+        157:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 1        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+; ---------------------------------------------------------------------------------
+; Calculation of Soil water content (linear calibration for each sensor)
+; Standard calibration Y=X*0.00119-0.4 fuer mineral soils (p., 17 in Manual, 2006)
+
+; Echo_1_15
+      158:  Z=X*F (P37)
+       1: 180      X Loc [ ECHOU1_15 ]
+       2: 0.00119  F
+       3: 160      Z Loc [ ECHO_1_15 ]
+
+      159:  Z=X+F (P34)
+       1: 160      X Loc [ ECHO_1_15 ]
+       2: -.4      F
+       3: 160      Z Loc [ ECHO_1_15 ]
+
+; Echo_1_50
+      160:  Z=X*F (P37)
+       1: 181      X Loc [ ECHOU1_50 ]
+       2: 0.00119  F
+       3: 161      Z Loc [ ECHO_1_50 ]
+
+      161:  Z=X+F (P34)
+       1: 161      X Loc [ ECHO_1_50 ]
+       2: -.4      F
+       3: 161      Z Loc [ ECHO_1_50 ]
+
+; Echo_1_80
+      162:  Z=X*F (P37)
+       1: 182      X Loc [ ECHOU1_80 ]
+       2: 0.00119  F
+       3: 162      Z Loc [ ECHO_1_80 ]
+
+      163:  Z=X+F (P34)
+       1: 162      X Loc [ ECHO_1_80 ]
+       2: -.4      F
+       3: 162      Z Loc [ ECHO_1_80 ]
+
+; Echo_2_15
+      164:  Z=X*F (P37)
+       1: 183      X Loc [ ECHOU2_15 ]
+       2: 0.00119  F
+       3: 163      Z Loc [ ECHO_2_15 ]
+
+      165:  Z=X+F (P34)
+       1: 163      X Loc [ ECHO_2_15 ]
+       2: -.4      F
+       3: 163      Z Loc [ ECHO_2_15 ]
+
+; Echo_2_50
+      166:  Z=X*F (P37)
+       1: 184      X Loc [ ECHOU2_50 ]
+       2: 0.00119  F
+       3: 164      Z Loc [ ECHO_2_50 ]
+
+      167:  Z=X+F (P34)
+       1: 164      X Loc [ ECHO_2_50 ]
+       2: -.4      F
+       3: 164      Z Loc [ ECHO_2_50 ]
+
+; Echo_2_80
+      168:  Z=X*F (P37)
+       1: 185      X Loc [ ECHOU2_80 ]
+       2: 0.00119  F
+       3: 165      Z Loc [ ECHO_2_80 ]
+
+      169:  Z=X+F (P34)
+       1: 165      X Loc [ ECHO_2_80 ]
+       2: -.4      F
+       3: 165      Z Loc [ ECHO_2_80 ]
+
+
+    170:  End (P95)
+
+
+    171:  End (P95)
+
+
+
+;******************************************************************************
+
+
+
+*Table 2 Program
+  02: 10        Execution Interval (seconds)
+
+
+
+
+*Table 3 Subroutines
+;------------------------------------------------------------------------------
+; Station Program 1: Solar Battery Charge Control
+
+1:  Beginning of Subroutine (P85)
+ 1: 1        Subroutine 1
+
+  2:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 3        >=
+   3: 13.9     F @@4
+   4: 14       Set Flag 4 High
+
+  3:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 13.5     F @@5
+   4: 24       Set Flag 4 Low
+
+  4:  If Flag/Port (P91)
+   1: 14       Do if Flag 4 is High
+   2: 44       Set Port 4 High
+
+  5:  If Flag/Port (P91)
+   1: 24       Do if Flag 4 is Low
+   2: 54       Set Port 4 Low
+
+6:  End (P95)
+;------------------------------------------------------------------------------
+; Station Program 2: Voltage-dependent Sensor Switch
+
+7:  Beginning of Subroutine (P85)
+ 1: 2        Subroutine 2
+
+  8:  If Flag/Port (P91)
+   1: 21       Do if Flag 1 is Low
+   2: 30       Then Do
+
+    9:  Z=F (P30)
+     1: 21       F
+     2: 0        Exponent of 10
+     3: 62       Z Loc [ STATUS_f1 ]
+
+  10:  If (X<=>F) (P89)
+   1: 7        X Loc [ U_log_MIN ]
+   2: 3        >=
+   3: 11.9     F @@6
+   4: 15       Set Flag 5 High
+
+  11:  If Flag/Port (P91)
+   1: 15       Do if Flag 5 is High
+   2: 30       Then Do
+
+    12:  Z=F (P30)
+     1: 15       F
+     2: 00       Exponent of 10
+     3: 63       Z Loc [ STATUS_f5 ]
+
+  13:  End (P95)
+
+  14:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 11.6     F @@7
+   4: 25       Set Flag 5 Low
+
+  15:  If Flag/Port (P91)
+   1: 25       Do if Flag 5 is Low
+   2: 30       Then Do
+
+    16:  Z=F (P30)
+     1: 25       F
+     2: 00       Exponent of 10
+     3: 63       Z Loc [ STATUS_f5 ]
+
+  17:  End (P95)
+
+  18:  If (X<=>F) (P89)
+   1: 7        X Loc [ U_log_MIN ]
+   2: 3        >=
+   3: 12.2     F @@8
+   4: 16       Set Flag 6 High
+
+  19:  If Flag/Port (P91)
+   1: 16       Do if Flag 6 is High
+   2: 30       Then Do
+
+    20:  Z=F (P30)
+     1: 16       F
+     2: 00       Exponent of 10
+     3: 64       Z Loc [ STATUS_f6 ]
+
+  21:  End (P95)
+
+  22:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 11.8     F @@9
+   4: 26       Set Flag 6 Low
+
+  23:  If Flag/Port (P91)
+   1: 26       Do if Flag 6 is Low
+   2: 30       Then Do
+
+    24:  Z=F (P30)
+     1: 26       F
+     2: 00       Exponent of 10
+     3: 64       Z Loc [ STATUS_f6 ]
+
+  25:  End (P95)
+
+  26:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 3        >=
+   3: 20.4     F @@10
+   4: 17       Set Flag 7 High
+
+  27:  If Flag/Port (P91)
+   1: 17       Do if Flag 7 is High
+   2: 30       Then Do
+
+    28:  Z=F (P30)
+     1: 17       F
+     2: 0        Exponent of 10
+     3: 65       Z Loc [ STATUS_f7 ]
+
+  29:  End (P95)
+
+  30:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 20       F @@11
+   4: 27       Set Flag 7 Low
+
+  31:  If Flag/Port (P91)
+   1: 27       Do if Flag 7 is Low
+   2: 30       Then Do
+
+    32:  Z=F (P30)
+     1: 27       F
+     2: 0        Exponent of 10
+     3: 65       Z Loc [ STATUS_f7 ]
+
+33:  End (P95)
+
+34:  End (P95)
+
+  35:  If Flag/Port (P91)
+   1: 15       Do if Flag 5 is High
+   2: 45       Set Port 5 High
+
+  36:  If Flag/Port (P91)
+   1: 25       Do if Flag 5 is Low
+   2: 55       Set Port 5 Low
+
+  37:  If (X<=>F) (P89)
+   1: 3        X Loc [ IDProj201 ]
+   2: 1        =
+   3: 0        F
+   4: 55       Set Port 5 Low
+
+  38:  If Flag/Port (P91)
+   1: 16       Do if Flag 6 is High
+   2: 46       Set Port 6 High
+
+  39:  If Flag/Port (P91)
+   1: 26       Do if Flag 6 is Low
+   2: 56       Set Port 6 Low
+
+  40:  If (X<=>F) (P89)
+   1: 3        X Loc [ IDProj201 ]
+   2: 1        =
+   3: 0        F
+   4: 56       Set Port 6 Low
+
+  41:  If Flag/Port (P91)
+   1: 17       Do if Flag 7 is High
+   2: 47       Set Port 7 High
+
+  42:  If Flag/Port (P91)
+   1: 27       Do if Flag 7 is Low
+   2: 57       Set Port 7 Low
+
+  43:  If (X<=>F) (P89)
+   1: 3        X Loc [ IDProj201 ]
+   2: 1        =
+   3: 0        F
+   4: 57       Set Port 7 Low
+
+44:  If Flag/Port (P91)
+ 1: 11       Do if Flag 1 is High
+ 2: 30       Then Do
+
+  45:  Z=F (P30)
+   1: 11       F
+   2: 00       Exponent of 10
+   3: 62       Z Loc [ STATUS_f1 ]
+
+  46:  Do (P86)
+   1: 55       Set Port 5 Low
+
+  47:  Do (P86)
+   1: 56       Set Port 6 Low
+
+  48:  Do (P86)
+   1: 57       Set Port 7 Low
+
+49:  End (P95)
+
+50:  If Flag/Port (P91)
+ 1: 45       Do if Port 5 is High
+ 2: 30       Then Do
+
+  51:  Z=F (P30)
+   1: 45       F
+   2: 0        Exponent of 10
+   3: 66       Z Loc [ STATUS_p5 ]
+
+52:  End (P95)
+
+53:  If Flag/Port (P91)
+ 1: 55       Do if Port 5 is Low
+ 2: 30       Then Do
+
+  54:  Z=F (P30)
+   1: 55       F
+   2: 00       Exponent of 10
+   3: 66       Z Loc [ STATUS_p5 ]
+
+55:  End (P95)
+
+56:  If Flag/Port (P91)
+ 1: 56       Do if Port 6 is Low
+ 2: 30       Then Do
+
+  57:  Z=F (P30)
+   1: 56       F
+   2: 0        Exponent of 10
+   3: 67       Z Loc [ STATUS_p6 ]
+
+58:  End (P95)
+
+59:  If Flag/Port (P91)
+ 1: 46       Do if Port 6 is High
+ 2: 30       Then Do
+
+  60:  Z=F (P30)
+   1: 46       F
+   2: 0        Exponent of 10
+   3: 67       Z Loc [ STATUS_p6 ]
+
+61:  End (P95)
+
+62:  If Flag/Port (P91)
+ 1: 57       Do if Port 7 is Low
+ 2: 30       Then Do
+
+  63:  Z=F (P30)
+   1: 57       F
+   2: 0        Exponent of 10
+   3: 68       Z Loc [ STATUS_p7 ]
+
+64:  End (P95)
+
+65:  If Flag/Port (P91)
+ 1: 47       Do if Port 7 is High
+ 2: 30       Then Do
+
+  66:  Z=F (P30)
+   1: 47       F
+   2: 0        Exponent of 10
+   3: 68       Z Loc [ STATUS_p7 ]
+
+67:  End (P95)
+
+68:  End (P95)
+
+;==============================================================================
+
+
+
+End Program
+
+
+
+
+
+
+
+
+
+
+
+-Input Locations-
+1 IDStation 1 3 1
+2 IDProj101 1 2 1
+3 IDProj201 1 4 3
+4 IDProj202 1 2 2
+5 U_log     1 12 1
+6 T_log     1 1 1
+7 U_log_MIN 1 3 1
+8 U_log_MAX 1 1 0
+9 U_log_Avg 1 1 0
+10 T_log_Avg 1 1 0
+11 IDTDP_12  1 1 2
+12 IDTDP_24  1 1 2
+13 IDTDP_36  1 1 2
+14 U_01      5 1 2
+15 U_02      17 1 1
+16 U_03      1 1 0
+17 U_04      1 1 0
+18 U_05      1 1 0
+19 U_06      1 1 0
+20 U_07      1 1 0
+21 U_08      1 1 0
+22 U_09      1 1 0
+23 U_10      1 1 0
+24 U_11      1 1 0
+25 U_12      1 1 0
+26 U_13      5 1 2
+27 U_14      17 1 1
+28 U_15      1 1 0
+29 U_16      1 1 0
+30 U_17      1 1 0
+31 U_18      1 1 0
+32 U_19      1 1 0
+33 U_20      1 1 0
+34 U_21      1 1 0
+35 U_22      1 1 0
+36 U_23      1 1 0
+37 U_24      1 1 0
+38 U_25      5 0 2
+39 U_26      17 0 1
+40 U_27      1 0 0
+41 U_28      1 0 0
+42 U_29      1 0 0
+43 U_30      1 0 0
+44 U_31      1 0 0
+45 U_32      1 0 0
+46 U_33      5 0 1
+47 U_34      17 0 1
+48 U_35      1 0 0
+49 U_36      1 0 0
+50 U_37      5 1 2
+51 U_38      17 1 1
+52 U_39      1 1 0
+53 U_40      1 1 0
+54 U_41      1 1 0
+55 U_42      1 1 0
+56 U_43      1 1 0
+57 U_44      1 1 0
+58 U_45      1 1 0
+59 U_46      1 1 0
+60 U_47      1 1 0
+61 U_48      1 1 0
+62 STATUS_f1 1 1 2
+63 STATUS_f5 1 0 2
+64 STATUS_f6 1 0 2
+65 STATUS_f7 1 0 2
+66 STATUS_p5 1 0 2
+67 STATUS_p6 1 0 2
+68 STATUS_p7 1 0 2
+69 Realtime  1 2 1
+70 _________ 0 0 0
+71 _________ 0 0 0
+72 _________ 0 0 0
+80 Proj22_ID 1 3 1
+81 _________ 0 0 0
+160 ECHO_1_15 7 2 2
+161 ECHO_1_50 11 2 2
+162 ECHO_1_80 11 2 2
+163 ECHO_2_15 11 2 2
+164 ECHO_2_50 11 2 2
+165 ECHO_2_80 19 2 2
+169 _________ 0 0 0
+170 _________ 0 0 0
+171 _________ 0 0 0
+172 _________ 0 0 0
+173 _________ 0 0 0
+174 _________ 0 0 0
+176 _________ 0 0 0
+177 _________ 0 0 0
+178 _________ 0 0 0
+179 _________ 0 0 0
+180 ECHOU1_15 7 2 1
+181 ECHOU1_50 11 2 1
+182 ECHOU1_80 11 2 1
+183 ECHOU2_15 11 2 1
+184 ECHOU2_50 11 2 1
+185 ECHOU2_80 19 2 1
+186 Stat_ID   1 0 0
+187 ECHOU3_15 1 0 0
+188 ECHO_3_15 1 0 0
+189 ECHOU3_50 1 0 0
+190 ECHO_3_50 1 0 0
+191 ECHOU3_80 1 0 0
+192 ECHO_3_80 1 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+0
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+-Final Storage Area 2-
+5849
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,U_log_MIN~5,14918
+1,U_log_MAX~5,21062
+2,U_log_AVG~5,31615
+2,T_log_AVG~6
+3,120,5843
+4,IDStation~1,3555
+4,IDProj101~2
+5,Year_RTM,7026
+5,Day_RTM
+5,Hour_Minute_RTM
+6,U_log_MIN~7,22470
+6,U_log_MAX~8
+6,U_log_Avg~9
+6,T_log_Avg~10
+7,STATUS_f1~62,6979
+7,STATUS_f5~63
+7,STATUS_f6~64
+7,STATUS_f7~65
+8,Hour_Minute_RTM,28826
+9,10,10798
+10,IDStation~1,6197
+11,IDProj202~4,12928
+12,Year_RTM,19765
+12,Day_RTM
+12,Hour_Minute_RTM
+13,U_log_AVG~5,4448
+14,U_01_AVG~14,19807
+14,U_02_AVG~15
+14,U_03_AVG~16
+14,U_04_AVG~17
+14,U_05_AVG~18
+14,U_06_AVG~19
+14,U_07_AVG~20
+14,U_08_AVG~21
+14,U_09_AVG~22
+14,U_10_AVG~23
+14,U_11_AVG~24
+14,U_12_AVG~25
+14,U_13_AVG~26
+14,U_14_AVG~27
+14,U_15_AVG~28
+14,U_16_AVG~29
+14,U_17_AVG~30
+14,U_18_AVG~31
+14,U_19_AVG~32
+14,U_20_AVG~33
+14,U_21_AVG~34
+14,U_22_AVG~35
+14,U_23_AVG~36
+14,U_24_AVG~37
+15,U_37_AVG~50,17461
+15,U_38_AVG~51
+15,U_39_AVG~52
+15,U_40_AVG~53
+15,U_41_AVG~54
+15,U_42_AVG~55
+15,U_43_AVG~56
+15,U_44_AVG~57
+15,U_45_AVG~58
+15,U_46_AVG~59
+15,U_47_AVG~60
+15,U_48_AVG~61
+16,60,7013
+17,IDStation~1,26746
+18,Proj22_ID~80,5637
+19,Year_RTM,16745
+19,Day_RTM
+19,Hour_Minute_RTM
+20,ECHO_1_15_AVG~160,28851
+20,ECHO_1_50_AVG~161
+20,ECHO_1_80_AVG~162
+20,ECHO_2_15_AVG~163
+20,ECHO_2_50_AVG~164
+20,ECHO_2_80_AVG~165
+21,ECHOU1_15_AVG~180,32144
+21,ECHOU1_50_AVG~181
+21,ECHOU1_80_AVG~182
+21,ECHOU2_15_AVG~183
+21,ECHOU2_50_AVG~184
+21,ECHOU2_80_AVG~185

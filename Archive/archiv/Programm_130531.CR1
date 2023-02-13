@@ -1,0 +1,291 @@
+'Projekt Walliser Wald 
+
+'Mit diesem Programm Steuert man die Heizungen fuer die Beete und wenn es anfaengt zu regnen gibt es ein
+'Signal an die SPS CPU313C2DP und diese schliesst dann mit 6 Motoren die 6 Daecher.
+
+'Created by
+ 
+'Eidg. Institut fuer Schnee- und Lawinenforschung
+'Andreas Moser
+'Flueelastrasse 11
+'7260 Davos-Dorf
+'Tel: 081 417 02 47
+
+'////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+'Declare Variables and Units
+Dim Batter_15
+Public Batt_Volt
+Public Battery24V
+Public i
+Public k
+'Public Ref_Temp
+Public Temp_K49
+Public Temp_K52
+Public Temp_K53
+Public Temp_K54
+Public Temp_K55
+Public Temp_K57
+Public Temp_K58
+Public Temp_K59
+Public Temp_K60
+
+
+Public Rain_mm(2)
+Public AirTC
+Public RH
+Public MotorSig
+Public TimerDach
+Public TimerDachStatuszu
+Public TimerDachStatusauf
+
+Public Dachstatus
+
+Public CO2
+
+Alias Rain_mm(1)=RainAct
+Alias Rain_mm(2)=RainTot
+
+Units Batt_Volt=Volts
+Units Battery24V=Volts
+'Units Ref_Temp=Deg C
+Units Temp_K49=Deg C
+Units Temp_K52=Deg C
+Units Temp_K53=Deg C
+Units Temp_K54=Deg C
+Units Temp_K55=Deg C
+Units Temp_K57=Deg C
+Units Temp_K58=Deg C
+Units Temp_K59=Deg C
+Units Temp_K60=Deg C
+Units Rain_mm(1)=mm
+Units Rain_mm(2)=mm
+Units AirTC=Deg C
+Units RH=%
+
+'////////////////////////////////////////////////////////////////////////////////////////////////////////
+'Define Data Tables
+DataTable(Temp,True,-1)
+	DataInterval(0,10,Min,10)
+	'Average(1,Ref_Temp,FP2,False)
+	Average(1,Temp_K49,FP2,False)
+	Average(1,Temp_K52,FP2,False)
+	Average(1,Temp_K53,FP2,False)
+	Average(1,Temp_K54,FP2,False)
+	Average(1,Temp_K55,FP2,False)
+	Average(1,Temp_K57,FP2,False)
+	Average(1,Temp_K58,FP2,False)
+	Average(1,Temp_K59,FP2,False)
+	Average(1,Temp_K60,FP2,False)
+	Average(1,AirTC,FP2,False)
+	Sample(1,RH,FP2)
+EndTable
+  
+DataTable(Rain,True,-1)
+	DataInterval(0,5,Min,10)
+	Totalize(1,RainAct,FP2,False)
+	Totalize(1,RainTot,FP2,False)
+	Sample(1,MotorSig,FP2)
+	Sample(1,Dachstatus,FP2)
+	Sample(1,CO2,FP2)
+EndTable
+
+DataTable(Sevice,True,-1)
+	DataInterval(0,30,Min,10)
+	Average(1,Batt_Volt,FP2,False)
+	Average(1,Battery24V,FP2,False)
+EndTable
+
+
+'////////////////////////////////////////////////////////////////////////////////////////////////////////
+'Main Program
+
+BeginProg
+	Scan(1,Sec,1,0)
+
+'Batterien ueberwachen
+	  
+		Battery(Batt_Volt)		                        'Default Datalogger Battery Voltage measurement Batt_Volt:
+		VoltSe(Battery24V,1,1,16,0,_60Hz,1.0,0.01,0)
+		If Battery24V>24 Then
+		   i=0 
+		EndIf
+
+
+
+'Referenztemperatur Beete fuer die ganze Anlage
+		'Therm107(Ref_Temp,1,1,1,0,_60Hz,1.0,0.0)                                                    
+
+'Temperatur der Kisten 		
+    Therm107(Temp_K49,1,10,3,0,_60Hz,1.0,0.0) 
+    Therm107(Temp_K52,1,9,3,0,_60Hz,1.0,0.0)	                                                  
+		Therm107(Temp_K53,1,6,2,0,_60Hz,1.0,0.0)
+		Therm107(Temp_K54,1,3,1,0,_60Hz,1.0,0.0)	
+		Therm107(Temp_K55,1,7,2,0,_60Hz,1.0,0.0)  
+		Therm107(Temp_K57,1,4,1,0,_60Hz,1.0,0.0)  	
+		Therm107(Temp_K58,1,8,2,0,_60Hz,1.0,0.0)    					 		
+		Therm107(Temp_K59,1,2,1,0,_60Hz,1.0,0.0)
+		Therm107(Temp_K60,1,5,2,0,_60Hz,1.0,0.0)                                                   			
+ 
+'***********************************************************	                                                 
+'Regensensor 
+	  
+		PulseCount(RainAct,1,1,2,0,0.1,0)               'Motorsteuerung mit Hilfe des Regensensors 
+		If (RainAct>0) Then 
+		  PortSet (1,1)                                 'Port 1 High setzen wenn der Regenmesser einen Pfupf hat
+		  Timer(101,sec,0)                              'Timer fuer, alle Daecher zu, starten
+		  Timer(102,sec,3)
+		  Timer(100,sec,3)                              'Timer stoppen und reseten
+		  PortGet(MotorSig,1)                           'Port1 auslesen
+		EndIf
+		  
+		If (MotorSig=1) Then                            'Starten wenn Motorsignal (Port1) =1
+		  If (RainAct=0) Then                           'und kein Regen mehr ist		    
+		    Timer(100,min,0)                            'Timer starten
+		  EndIf
+		EndIf  
+		
+		TimerDach=Timer(100,sec,4)                      'Timer auslesen
+		  
+		  If (TimerDach=3600) Then                       'Wenn Timer = 1stunde
+		      PortSet(1,0)                              'Port1 = 0
+		      SW12(0)		                          'Port 9 fuer Angabe wenn Daecher wegen Wind zu
+		      Timer(102,sec,0)                          'Timer fuer, alle Daecher auf, starten
+		      Timer(101,sec,3)
+		      Timer(100,sec,3)                          'Timer stoppen und reseten
+		      MotorSig=0
+		  EndIf
+		  
+'Auslesen des Ports fuer die Daecherueberwachung
+		PortGet (Dachstatus,2)
+
+'***********************************************************	
+'CO2 Steuerung 
+	  
+		PulseCount(CO2,1,2,2,0,1,0)               'Motorsteuerung mit Hilfe des Regensensors 
+		If (CO2>0) Then 
+		  PortSet (1,1)                                 'Port 1 High setzen wenn der Windmesser ueber die Schwelle geht
+		  SW12(1)                                  'Port 9 fuer Angabe wenn Daecher wegen Wind zu
+		  Timer(101,sec,0)                              'Timer fuer, alle Daecher zu, starten
+		  Timer(102,sec,3)
+		  Timer(100,sec,3)                              'Timer stoppen und reseten
+		  PortGet(MotorSig,1)                           'Port1 auslesen
+		EndIf
+		  
+		If (MotorSig=1) Then                            'Starten wenn Motorsignal (Port1) =1
+		  If (CO2=0) Then                           'und kein Wind mehr ist		    
+		    Timer(100,min,0)                            'Timer starten
+		  EndIf
+		EndIf  
+		
+		'TimerDach=Timer(100,sec,4)                      'Timer auslesen
+		  
+		  'If (TimerDach=260) Then                       'Wenn Timer = 1stunde (3600)
+		   '   PortSet(1,0)                              'Port1 = 0
+      '    SW12(0)		                          'Port 9 fuer Angabe wenn Daecher wegen Wind zu
+		  '    Timer(102,sec,0)                          'Timer fuer, alle Daecher auf, starten
+		  '    Timer(101,sec,3)
+		  '    Timer(100,sec,3)                          'Timer stoppen und reseten
+		  '    MotorSig=0
+		  'EndIf	
+	
+	
+'***********************************************************			  
+'SMS senden wenn nicht alle Daecher zufahren		  
+		  TimerDachStatuszu=Timer(101,sec,4)
+	  If (TimerDachStatuszu=120) Then
+		      If Dachstatus<1 Then
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41797961684"+CHR(13),"",0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Nicht alle Daecher zugefahren"+CHR(26),"",0,100) 'Andis Natelnummer(Geschaeft)
+		          Delay(1,2,sec)
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41796996164"+CHR(13),"",0,100) 'Barbara Moser's Natelnummer(Geschaeft)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Nicht alle Daecher zugefahren"+CHR(26),"",0,100)	
+		          Delay(1,2,sec)			          
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41767069716"+CHR(13),"",0,100) 'Regendachanlagen Natelnummer
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Nicht alle Daecher zugefahren"+CHR(26),"",0,100)	     		      
+		      EndIf                                
+	      
+		  EndIf
+'***********************************************************			  
+'SMS senden wenn nicht alle Daecher auffahren		  
+		  TimerDachStatusauf=Timer(102,sec,4)
+ 	  If (TimerDachStatusauf=120) Then
+		      If Dachstatus>0 Then
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41797961684"+CHR(13),"",0,100) 'Andis Natelnummer(Geschaeft)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Nicht alle Daecher aufgefahren"+CHR(26),"",0,100)	
+		          Delay(1,2,sec)
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41796996164"+CHR(13),"",0,100) 'Barbara Moser's Natelnummer(Geschaeft)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Nicht alle Daecher aufgefahren"+CHR(26),"",0,100)	
+		          Delay(1,2,sec)		          
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41767069716"+CHR(13),"",0,100) 'Regendachanlage Natelnummer
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Nicht alle Daecher aufgefahren"+CHR(26),"",0,100)       
+ 	      EndIf                                
+		      
+		  EndIf
+'***********************************************************			  
+'SMS senden wenn Stromunterbruch
+
+		      If Battery24V<24 Then
+		        i=i+1
+		        If i=1 Then
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41797961684"+CHR(13),"",0,100) 'Andis Natelnummer(Geschaeft)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Stromunterbruch"+CHR(26),"",0,100)	
+		          Delay(1,2,sec)
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41796996164"+CHR(13),"",0,100) 'Barbara Moser's Natelnummer(Geschaeft)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Stromunterbruch"+CHR(26),"",0,100)	
+		          Delay(1,2,sec)		          
+		          SerialOpen (COMRS232,9600,0,0,100)
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"AT+CMGS=+41767069716"+CHR(13),"",0,100) 'Regendachanlage Natelnummer
+		          Delay(1,2,sec)
+		          SerialOut (COMRS232,"Walliser Wald: Stromunterbruch"+CHR(26),"",0,100)
+		        EndIf		          
+		      EndIf
+		                                      
+		 If Battery24V>24 Then
+		   i=0 
+		 EndIf     
+
+'Gesamtniederschlag 
+		RainTot = RainAct+RainTot
+		
+'Rotronic Temperature & Relative Humidity Sensor measurements AirTC and RH:
+		VoltSe(AirTC,1,mV2500,11,0,0,_60Hz,0.1,-40.0)
+		VoltSe(RH,1,mV2500,12,0,0,_60Hz,0.1,0)
+		If (RH>100) AND (RH<108) Then RH=100
+			
+'Call Data Tables and Store 
+		CallTable(Rain)
+		CallTable(Temp)
+		CallTable(Sevice)
+						
+	NextScan
+EndProg
+
+
+		
+

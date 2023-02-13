@@ -1,0 +1,250 @@
+'**********************************************************************
+'* Langfristige Waldoekosystem-Forschung LWF / WSL, Meteostation      *
+'**********************************************************************
+' Station:               WSL Messturm Laegeren Zindlen, ID 124
+' Telefonnummer:         neu: +41 056 430 07 40, IP: 213.3.6.182 > ...
+' Inventarnummer/PakBus: 002023, 40 (aktuell vielleicht noch 101)
+'
+' Angeschlossene Projekte:
+' Projekt 4: Technische Daten
+' Projekt 23: Ozon
+' Projekt 32: Stammabfluss
+
+'----------------------------------------------------------------------
+'- S T A T I O N   C O N F I G                                        -
+'----------------------------------------------------------------------
+Const StatName = "002023" 
+Const StatFull = "LAE_H"
+Const StatID = 122  
+Const StatL = StatName + "_" + StatFull
+
+' The time window of the modem are different, when developing:
+Public TestMode As Boolean = 1
+' The modem will be open, camera will take pictures every ten minutes:
+Public HasElectricity As Boolean = 1 : Public HasCam As Boolean = 0
+
+'----------------------------------------------------------------------
+'- D E F I N I T I O N   O F   V A R I A B L E S                      -
+'----------------------------------------------------------------------
+'*** Connection
+Public Start As Boolean : Public HasInt As Boolean : Public Ping
+Public WithinWSL As Boolean : Public PingWSL
+
+'*** FTP connections
+Public Transferred As Boolean = 0 : Public FTPSuccess, FTPSuccesso
+' Const FTPUser = "lwfcr1000"
+' Const FTPPassword = "01.yto.9ae"
+' Const RemoteFolder = "/data/ftp/lwfcr1000/"
+Const FTPSrvr = "ftp.wsl.ch" : 
+Const FTPUser = "lwf_gprs"
+Const FTPPassword = "rpg08.wl"
+Const RemoteFolder = "/data/ftp/lwf_gprs/"
+Public Tstamp As String 
+Public Filename As String * 100
+
+'*** Miscellaneous
+Const SensorOff = "NAN" : Const PortMdm = 9 : Const PortUVBTARH = 6
+Const PortMUXCLK = 4 : Const PortMUX1RES = 7 : Const PortMUX2RES = 8
+Dim Offset As Float : Public CRDPresent As Boolean : Dim CRDStat
+Public P4Batt, PTemp : Units P4Batt = Volts : Units PTemp = Deg C
+
+'----------------------------------------------------------------------
+'- S U B R O U T I N E S                                              -
+'----------------------------------------------------------------------
+'*** Connect: check whether we are connected to the Internet/WSL
+Sub IsOnline()
+  Start = 1 : HasInt = 0 : Ping = PingIP ("8.8.8.8",200)
+  If Ping = 0 Then Ping = PingIP ("8.8.8.8",400)
+  If Ping = 0 Then Ping = PingIP ("8.8.8.8",2000)
+  If Ping <> 0 Then HasInt = 1
+  WithinWSL = 0 : PingWSL = PingIP ("10.30.1.20",200)
+  If PingWSL = 0 Then PingWSL = PingIP ("10.30.1.20",400)
+  If PingWSL = 0 Then PingWSL = PingIP ("10.30.1.20",2000)
+  If PingWSL <> 0 Then WithinWSL = 1
+EndSub
+
+
+'*** Send all files on drive to the WSL internal ftp server
+Sub SubSendToFTP ()
+  Transferred = 0
+  Tstamp = Public.TimeStamp(1,1)
+  Tstamp = Mid(Tstamp,7,4)+Mid(Tstamp,1,2)+Mid(Tstamp,4,2)+ Mid(Tstamp,12,2)+Mid(Tstamp,15,2)+Mid(Tstamp,18,2)
+  ' 0 NumRecs = Alle Daten werden gesendet, je nach Interval
+  ' Wenn Intervall auch 0, dann alle neue Daten geschickt:
+  '   -> am besten fuer uns!
+  ' Wenn Intervall unter 0, dann immer in dem Interval geschickt:
+  '   -> interessant, wenn man zBsp. stuendlich immer die letzten
+  '      drei Stunden schicken moechte (0,-3,Hour?)
+  ' Wenn Intervall ueber 0, dann immer in dem Abstand geschickt
+  '   -> interessant, wenn man nur 60 Minuten die 10 Minuten-
+  '      Werte uebertragen moechte (0,60,min)
+  Filename = StatFull + "_Test_" + Tstamp + ".crd"    
+  
+  FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, "P23Ozone10",Filename,2,0,1,min,-1012)
+  ' FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, "DeviceStatus",Filename,2)
+ ' Filename = RemoteFolder + StatFull + "_P23Ozone10_" + Tstamp + ".crd"
+ ' FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, "P23Ozone10",Filename,2,0,0,min,-1012)
+ ' FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, "P23Ozone10",Filename,2)
+ ' Filename = RemoteFolder + StatFull + "_P32Stammabfluss10_" + Tstamp + ".crd"
+ ' FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, "PP32Stammabfluss10",Filename,2,0,0,min,-1012)
+ ' FTPSuccess = FTPClient (FTPSrvr,FTPUser,FTPPassword, "PP32Stammabfluss10",Filename,2)
+  If FTPSuccess = -1 Then Transferred = 1
+EndSub
+
+'*** Correct some data by minimum and maximum limits
+Sub SUBCheckRange (LVal,LMin,LMax)
+  If (LVal > LMax) OR (LVal < LMin) Then LVal = SensorOff
+EndSub
+
+'----------------------------------------------------------------------
+'- P R O J E C T S                                                    -
+'----------------------------------------------------------------------
+'**********************************************************************
+
+
+'**********************************************************************
+'*** Project 04: Device status
+Public LithiumBatt : Units LithiumBatt = Volts
+Public Tuere: Units Tuere= Counts
+Public Licht: Units Licht= Counts
+
+DataTable (DeviceStatus,1,-1)
+  DataInterval (0,1,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,4,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Device status data
+  Minimum (1,P4Batt,FP2,0,0) : FieldNames ("BattVolt")
+  Average (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp")
+  Average (1,LithiumBatt,FP2,0) : FieldNames ("AvgLithiumBatt")
+  Totalize (1,Tuere,FP2,0) : FieldNames ("Tuere")
+  Totalize (1,Licht,FP2,0) : FieldNames ("Licht")
+EndTable
+
+Sub SubP04 ()
+  PanelTemp (PTemp,250) 
+  Battery (P4Batt)
+  LithiumBatt = Status.LithiumBattery (1,1)
+  Scan (10,Sec,0,0)
+    If TimeIntoInterval(0,1,Min) Then
+     PulseCount (Tuere,1,1 ,2,0,1.0,0)
+     PulseCount (Licht,1,2 ,2,0,1.0,0)
+    EndIf
+  NextScan
+EndSub
+
+
+'**********************************************************************
+'*** Project 23: Ozon
+' Ganzes Projekt entweder an-/abschalten, nicht einzeln wie bei Meteo
+Public OzonMess, OzonVolt, OzonConc ' Default is float
+Units OzonMess = ppbv : Units OzonVolt = Volts : Units OzonConc = ppbv
+
+DataTable (P23Ozone10,1,-1)
+  DataInterval (0,1,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,23,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Diff channel 1
+  Average (1,OzonMess,FP2,0) : FieldNames ("OzonKonzentration") '1
+EndTable
+
+Sub SubP23 ()
+  If TimeIntoInterval (0,1,Min) Then
+    ' Ozonkonzentration in ppb (1 ppb pro mV) messen
+    VoltDiff (OzonMess,1,mV2500,1,0,10000,250,1,0)
+  EndIf
+EndSub
+
+'**********************************************************************
+'*** Project 32: Stammabflusswippen
+Public SW8AC (8) : Units SW8AC = Counts : Public i32
+
+DataTable (P32Stammabfluss10,1,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,32,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Data
+  Totalize (1,SW8AC (1),FP2,0)
+  FieldNames ("Stammabfluss_Counts_1") '1
+  ' Totalize (1,SW8AC (2),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_2") '2
+  ' Totalize (1,SW8AC (3),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_3") '3
+  ' Totalize (1,SW8AC (4),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_4") '4
+  ' Totalize (1,SW8AC (5),FP2,0)
+  ' FieldNames ("Stammabfluss_Counts_5") '5
+EndTable
+
+'Sub SubP32 ()
+'  If TimeIntoInterval (0,1,Min) Then
+'    SDMSW8A (SW8AC (),1,0,2,1,1,0)
+'    For i32=2 To 8
+'      SW8AC (i32) = SensorOff
+'    Next i32
+'  EndIf
+'EndSub
+'Declare Public Variables
+Public Batt_volt
+Public FTPResult
+
+'Define Data Tables.
+DataTable (Test,1,-1) 'Set table size to # of records, or -1 to autoallocate.
+	DataInterval (0,15,Sec,10)
+	Minimum (1,Batt_volt,FP2,False,False)
+	Sample (1,PTemp,FP2)
+EndTable
+
+
+
+
+'----------------------------------------------------------------------
+'-  M A I N   P R O G R A M                                           -
+'----------------------------------------------------------------------
+'SequentialMode ' is needed to make sure that Scan and SlowSequence run
+               ' after each other, not in a pipeline
+BeginProg
+  'SetStatus ("StationName",StatL) : SetStatus ("USRDriveSize",10000)
+  'SetStatus ("HTTPEnabled",True) : SetStatus ("FTPEnabled",True)
+  'SetStatus ("FTPUserName",FTPUser)
+  'SetStatus ("FTPPassword",FTPPassword)
+  'SetStatus ("TelnetEnabled",True) : SetStatus ("PingEnabled",True)
+
+ 
+  ' Main Scan
+  ' Buffer in SequentialMode always 0. Also, count = 0 to loop forever
+  Scan (10,Sec,0,0)
+
+    Call SubP04 ()
+    CallTable DeviceStatus
+   
+    Call SubP23 ()
+    CallTable P23Ozone10
+    
+    'Call SubP32 ()
+    'CallTable P32Stammabfluss10
+		PanelTemp (PTemp,60)
+		Battery (Batt_volt)
+		CallTable Test
+	NextScan
+	
+  SlowSequence
+  Do
+    Delay(1,10,Sec)
+    FTPResult=FTPClient("ftp.wsl.ch","lwf_gprs","rpg08.wl","Test","Test",2,0,1,Min,-1012)
+  Loop
+
+  ' SlowScan 1
+  SlowSequence
+  Do
+    Delay(1,10,Sec)
+      Call SubSendToFTP ()
+      Call IsOnline ()
+  Loop
+
+EndProg

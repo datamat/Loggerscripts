@@ -1,0 +1,50 @@
+Program Trace Information File for:  SDM-SW8A_Test2.csi
+Date: 11/21/2013
+Time: 18:41:26
+
+T = Program Table Number
+N = Sequential Program Instruction Location Number
+Instruction = Instruction Number and Name
+
+Inst ExTm = Individual Instruction Execution Time
+Block ExTm = Cumulative Execution Time for program block,
+             i.e., subroutine
+Prog ExTm = Cumulative Total Program Execution Time
+
+                                                          Output Flag High
+                                   Inst  Block   Prog     Inst  Block   Prog
+                                   ExTm   ExTm   ExTm     ExTm   ExTm   ExTm
+T|N|Instruction                   (msec) (msec) (msec)   (msec) (msec) (msec)
+---------------                   ------ ------ ------   ------ ------ ------
+1|1|102 SDM-SW8A                    4.0    4.0    4.0      4.0    4.0    4.0
+1|2|102 SDM-SW8A                    5.0    9.0    9.0      5.0    9.0    9.0
+1|3|89 If (X<=>F)                   0.6    9.6    9.6      0.6    9.6    9.6
+1|4|91 If Flag/Port                 0.4   10.0   10.0      0.4   10.0   10.0
+1|5|102 SDM-SW8A                   20.0   30.0   30.0     20.0   30.0   30.0
+1|6|102 SDM-SW8A                   20.0   50.0   50.0     20.0   50.0   50.0
+1|7|102 SDM-SW8A                   12.0   62.0   62.0     12.0   62.0   62.0
+1|8|32 Z=Z+1                        0.8   62.8   62.8      0.8   62.8   62.8
+1|9|86 Do                           0.3   63.1   63.1      0.3   63.1   63.1
+1|10|95 End                         0.2   63.3   63.3      0.2   63.3   63.3
+1|11|91 If Flag/Port                0.4   63.7   63.7      0.4   63.7   63.7
+1|12|32 Z=Z+1                       0.8   64.5   64.5      0.8   64.5   64.5
+1|13|102 SDM-SW8A                  14.0   78.5   78.5     14.0   78.5   78.5
+1|14|95 End                         0.2   78.7   78.7      0.2   78.7   78.7
+1|15|92 If time is                  0.7   79.4   79.4      0.7   79.4   79.4
+ Output Flag Set @ 115 for Array 115
+1|16|77 Real Time                   0.2   79.6   79.6      3.8   83.2   83.2
+ Output Data 2 Values
+1|17|72 Totalize                    5.6   85.2   85.2      9.5   92.7   92.7
+ Output Data 5 Values
+1|18|70 Sample                      0.2   85.4   85.4      0.9   93.6   93.6
+ Output Data 1 Values
+
+Program Table 1 Execution Interval    1.000 Seconds
+
+Table 1 Estimated Total Program Execution Time in msec   85.4 w/Output   93.6
+
+Table 1 Estimated Total Final Storage Locations used per day 77760
+
+
+
+Estimated Total Final Storage Locations used per day 77760

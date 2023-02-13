@@ -1,0 +1,255 @@
+;{CR10X}
+; ===================================================
+;{CR10X}
+;  Testprogramm SDM-SW8A
+;  Flag 1: 0=just after compilation, 1=sdm-sw8a ready
+;  Flag 9: 0=do not reset, 1=reset
+
+; ===================================================
+*Table 1 Program
+  01: 5         Execution Interval (seconds)
+
+; If SDM-SW8A was just programmed, set intermediate processing disable flag.
+
+1:  If Flag/Port (P91)
+ 1: 21       Do if Flag 1 is Low
+ 2: 19       Set Intermed. Proc. Disable Flag High (Flag 9)
+
+2:  If (X<=>F) (P89)
+ 1: 16       X Loc [ sf_stat_1 ]
+ 2: 4        <
+ 3: 0        F
+ 4: 19       Set Intermed. Proc. Disable Flag High (Flag 9)
+
+; measure or reset
+
+3:  If Flag/Port (P91)
+ 1: 19       Do if Flag 9 is High
+ 2: 30       Then Do
+
+
+     4:  Z=Z+1 (P32)
+      1: 33       Z Loc [ n1        ]
+
+
+     5:  If Flag/Port (P91)
+      1: 11       Do if Flag 1 is High
+      2: 30       Then Do
+          ; reset routine
+
+          6:  Do (P86)
+           1: 1        Call Subroutine 1
+
+
+          7:  Z=Z+1 (P32)
+           1: 27       Z Loc [ n_reset   ]
+
+
+          8:  Do (P86)
+           1: 10       Set Output Flag High (Flag 0)
+
+          9:  Real Time (P77)^10608
+           1: 110      Day,Hour/Minute (midnight = 0000)
+
+          10:  Sample (P70)^9747
+           1: 1        Reps
+           2: 27       Loc [ n_reset   ]
+
+          11:  Do (P86)
+           1: 21       Set Flag 1 Low
+
+ 
+     12:  Else (P94)
+
+          ; first scan routine
+
+
+          13:  Z=Z+1 (P32)
+           1: 34       Z Loc [ n2        ]
+
+
+          14:  Do (P86)
+           1: 11       Set Flag 1 High
+
+
+     15:  End (P95)
+
+
+16:  End (P95)
+
+
+
+
+; output
+
+17:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 5        Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+18:  Real Time (P77)^19385
+ 1: 110      Day,Hour/Minute (midnight = 0000)
+
+
+19:  Totalize (P72)^17635
+ 1: 5        Reps
+ 2: 11       Loc [ sf_1      ]
+
+20:  Sample (P70)^10005
+ 1: 5        Reps
+ 2: 16       Loc [ sf_stat_1 ]
+
+21:  Sample (P70)^21845
+ 1: 5        Reps
+ 2: 21       Loc [ sf_duty_1 ]
+
+; starting trapping routines
+
+
+; ===================================================
+*Table 2 Program
+  02: 1         Execution Interval (seconds)
+
+
+
+
+; ===================================================
+*Table 3 Subroutines
+
+; Subroutine Messen Stammabflusszaehler
+1:  Beginning of Subroutine (P85)
+ 1: 1        Subroutine 1
+
+     2:  SDM-SW8A (P102)
+      1: 5        Reps
+      2: 00       SDM Address
+      3: 00       Function Option
+      4: 1        SDM-SW8A Starting Channel
+      5: 16       Loc [ sf_stat_1 ]
+      6: 1.0      Multiplier
+      7: 0.0      Offset
+
+
+     3:  SDM-SW8A (P102)
+      1: 5        Reps
+      2: 00       SDM Address
+      3: 1        Duty cycle function
+      4: 1        SDM-SW8A Starting Channel
+      5: 21       Loc [ sf_duty_1 ]
+      6: 1.0      Multiplier
+      7: 0.0      Offset
+
+
+     4:  SDM-SW8A (P102)
+      1: 5        Reps
+      2: 00       SDM Address
+      3: 2        Counts function
+      4: 1        SDM-SW8A Starting Channel
+      5: 11       Loc [ sf_1      ]
+      6: 1.0      Multiplier
+      7: 0.0      Offset
+
+
+     5:  SDM-SW8A (P102)
+      1: 5        Reps
+      2: 00       SDM Address
+      3: 3        Signature
+      4: 1        SDM-SW8A Starting Channel
+      5: 28       Loc [ epr_1     ]
+      6: 1.0      Multiplier
+      7: 0.0      Offset
+
+
+6:  End (P95)
+
+End Program
+
+
+
+-Input Locations-
+1 Statnr    0 0 0
+2 Projnr    0 0 0
+3 _________ 0 0 0
+4 _________ 0 0 0
+5 _________ 0 0 0
+6 _________ 0 0 0
+7 _________ 0 0 0
+8 _________ 0 0 0
+9 _________ 0 0 0
+10 _________ 0 0 0
+11 sf_1      7 1 1
+12 sf_2      11 1 1
+13 sf_3      11 1 1
+14 sf_4      11 1 1
+15 sf_5      19 1 1
+16 sf_stat_1 3 2 1
+17 sf_stat_2 3 1 1
+18 sf_stat_3 3 1 1
+19 sf_stat_4 3 1 1
+20 sf_stat_5 3 1 1
+21 sf_duty_1 7 1 1
+22 sf_duty_2 11 1 1
+23 sf_duty_3 11 1 1
+24 sf_duty_4 11 1 1
+25 sf_duty_5 19 1 1
+26 sf_reset  0 0 0
+27 n_reset   1 1 1
+28 epr_1     7 0 1
+29 epr_2     11 0 1
+30 epr_3     11 0 1
+31 epr_4     11 0 1
+32 epr_5     19 0 1
+33 n1        1 0 1
+34 n2        1 0 1
+35 _________ 0 0 0
+36 _________ 0 0 0
+37 _________ 0 0 0
+38 _________ 0 0 0
+39 _________ 0 0 0
+40 _________ 0 0 0
+41 _________ 0 0 0
+42 _________ 0 0 0
+43 _________ 0 0 0
+44 _________ 0 0 0
+45 _________ 0 0 0
+46 _________ 0 0 0
+47 _________ 0 0 0
+48 _________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-Final Storage Area 2-
+0
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,Day_RTM,19385
+0,Hour_Minute_RTM
+1,sf_duty_1~21,21845
+1,sf_duty_2~22
+1,sf_duty_3~23
+1,sf_duty_4~24
+1,sf_duty_5~25
+2,sf_stat_1~16,10005
+2,sf_stat_2~17
+2,sf_stat_3~18
+2,sf_stat_4~19
+2,sf_stat_5~20
+3,sf_1_TOT~11,17635
+3,sf_2_TOT~12
+3,sf_3_TOT~13
+3,sf_4_TOT~14
+3,sf_5_TOT~15
+4,Day_RTM,10608
+4,Hour_Minute_RTM
+5,n_reset~27,9747

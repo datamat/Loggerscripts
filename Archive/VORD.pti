@@ -1,0 +1,70 @@
+Program Trace Information File for:  VORD.csi
+Date: 8/18/2008
+Time: 11:43:18
+
+T = Program Table Number
+N = Sequential Program Instruction Location Number
+Instruction = Instruction Number and Name
+
+Inst ExTm = Individual Instruction Execution Time
+Block ExTm = Cumulative Execution Time for program block,
+             i.e., subroutine
+Prog ExTm = Cumulative Total Program Execution Time
+
+                                                          Output Flag High
+                                   Inst  Block   Prog     Inst  Block   Prog
+                                   ExTm   ExTm   ExTm     ExTm   ExTm   ExTm
+T|N|Instruction                   (msec) (msec) (msec)   (msec) (msec) (msec)
+---------------                   ------ ------ ------   ------ ------ ------
+1|1|30 Z=F x 10^n                   1.0    1.0    1.0      1.0    1.0    1.0
+1|2|30 Z=F x 10^n                   1.0    2.0    2.0      1.0    2.0    2.0
+1|3|91 If Flag/Port                 0.4    2.4    2.4      0.4    2.4    2.4
+  ----Subroutine 80---------------
+  3|1|85 Beginning of Subroutine    0.0    0.0    2.4      0.0    0.0    2.4
+  3|2|86 Do                         0.3    0.3    2.7      0.3    0.3    2.7
+  3|3|20 Set Port(s)               11.3   11.6   14.0     11.3   11.6   14.0
+  3|4|95 End                        0.2   11.8   14.2      0.2   11.8   14.2
+  -----End Subroutine 80 ---------
+1|4|86 Do                           0.3    2.7   14.5      0.3    2.7   14.5
+1|5|87 Beginning of Loop            0.3    3.0   14.8      0.3    3.0   14.8
+ Execution times in the loop are calculated for one pass only.
+1|6|86 Do                           0.3    3.3   15.1      0.3    3.3   15.1
+1|7|90 Step Loop Index              0.7    4.0   15.8      0.7    4.0   15.8
+1|8|4 Excite-Delay (SE)           154.8  158.8  170.6    154.8  158.8  170.6
+1|9|4 Excite-Delay (SE)           154.8  313.6  325.4    154.8  313.6  325.4
+1|10|95 End                         0.2  313.8  325.6      0.2  313.8  325.6
+1|11|86 Do                          0.3  314.1  325.9      0.3  314.1  325.9
+1|12|22 Excitation with Delay    1000.5 1314.6 1326.4   1000.5 1314.6 1326.4
+1|13|87 Beginning of Loop           0.3 1314.9 1326.7      0.3 1314.9 1326.7
+ Execution times in the loop are calculated for one pass only.
+1|14|86 Do                          0.3 1315.2 1327.0      0.3 1315.2 1327.0
+1|15|90 Step Loop Index             0.7 1315.9 1327.7      0.7 1315.9 1327.7
+1|16|2 Volt (Diff)                 29.6 1345.5 1357.3     29.6 1345.5 1357.3
+1|17|2 Volt (Diff)                 29.6 1375.1 1386.9     29.6 1375.1 1386.9
+1|18|95 End                         0.2 1375.3 1387.1      0.2 1375.3 1387.1
+1|19|86 Do                          0.3 1375.6 1387.4      0.3 1375.6 1387.4
+1|20|86 Do                          0.3 1375.9 1387.7      0.3 1375.9 1387.7
+1|21|17 Internal Temperature        6.2 1382.1 1393.9      6.2 1382.1 1393.9
+1|22|10 Batt Voltage                8.3 1390.4 1402.2      8.3 1390.4 1402.2
+1|23|92 If time is                  0.7 1391.1 1402.9      0.7 1391.1 1402.9
+ Output Flag Set @ 123 for Array 60
+1|24|80 Set Active Storage Area     0.3 1391.4 1403.2      0.3 1391.4 1403.2
+1|25|70 Sample                      0.2 1391.6 1403.4      0.9 1392.3 1404.1
+ Output Data 1 Values
+1|26|70 Sample                      0.2 1391.8 1403.6      0.9 1393.2 1405.0
+ Output Data 1 Values
+1|27|77 Real Time                   0.2 1392.0 1403.8      3.8 1397.0 1408.8
+ Output Data 3 Values
+1|28|71 Average                    38.0 1430.0 1441.8    151.1 1548.1 1559.9
+ Output Data 34 Values
+1|29|96 Serial Out                  0.5 1430.5 1442.3      0.5 1548.6 1560.4
+
+Program Table 1 Execution Interval  600.000 Seconds
+
+Table 1 Estimated Total Program Execution Time in msec 1442.3 w/Output 1560.4
+
+Table 1 Estimated Total Final Storage Locations used per day 960
+
+
+
+Estimated Total Final Storage Locations used per day 960

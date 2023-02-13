@@ -1,0 +1,250 @@
+'**********************************************************************
+'*                                     Loggerprogramm Campbell CR1000
+'* Langfristige Waldoekosystem-Forschung LWF 
+'* Test 3 EC-5 und 2 MPS-6 Sensoren im Labor
+'*    Peter Waldner, Katrin Meusburger 18.6.2018
+'**********************************************************************
+'
+' Angeschlossene Projekte:
+' Projekt 22 EC-5 
+' Projekt 30 Eco
+
+' PORT CONFIGURATION:
+' ******************
+'
+' INPUT CHANNELS:
+' --------------
+' SE1: EC-5 1       
+' SE2: EC-5 2  
+' SE3: EC-5 3 
+' SE4: TensioMark-Analog
+'   
+'
+' CONTROL PORTS:
+' -------------
+' C1:  C2:   C3:   C4: 
+' C5: MPS-6  C6:   C7: TensioMark-Digital  C8: 
+'
+' Switched 12V: MPS-6, TensioMark-Digital und TensioMark-Analog
+'
+' EXCITATION CHANNELS:
+' -------------------
+' Vx1: EC-5 1         Vx2: EC-5 2    Vx3: EC-5 3
+'
+' Energieversorgung:
+' ******************
+' Batterie
+'
+'----------------------------------------------------------------------
+'- S T A T I O N   C O N F I G                                        -
+'----------------------------------------------------------------------
+Const StatNameFull = "Labor"
+Const StatID=999
+
+'* Projects
+Public HasProject04 As Boolean = 1 ' Techn. Daten Station
+Public HasProject22 As Boolean = 1 ' EC-5 (Decagon)
+Public HasProject30 As Boolean = 1 ' MPS-6 (Decagon)
+Public HasProject35 As Boolean = 1 ' TensioMark (EcoTech, Bonn)
+
+'*** Miscellaneous
+Const SensorOff = "NAN" 
+
+'----------------------------------------------------------------------
+'- S U B R O U T I N E S                                              -
+'----------------------------------------------------------------------
+
+'----------------------------------------------------------------------
+'- P R O J E C T S                                                    -
+'----------------------------------------------------------------------
+'**********************************************************************
+'*** Project 04: Device status
+Public BattV : Units BattV = Volts
+Public PTemp : Units PTemp=Deg C
+Public LithiumBatt : Units LithiumBatt=Volts
+Public Pluvioring(3)
+
+DataTable (P04_Tech,HasProject04,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,4,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Device status data
+  Minimum (1,BattV,FP2,0,0) : FieldNames ("MinBattVolt")
+  Average (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp")
+  Average (1,LithiumBatt,FP2,0) : FieldNames ("AvgLithiumBatt")
+EndTable
+
+Sub SubP04 ()
+  PanelTemp (PTemp,250)
+  Battery (BattV)
+  LithiumBatt=Status.LithiumBattery (1,1)
+EndSub
+
+'**********************************************************************
+'*** Project 22: Echo EC-5 Soil volumetric water content
+      ' Logger.E1 - weiss.EC-5 1
+      ' Logger.S1 -   rot.EC-5 1
+      ' Logger.AG - blank.EC-5 1
+      ' Logger.E2 - weiss.EC-5 2
+      ' Logger.S2 -   rot.EC-5 2
+      ' Logger.AG - blank.EC-5 2
+      ' Logger.E3 - weiss.EC-5 3
+      ' Logger.S3 -   rot.EC-5 3
+      ' Logger.AG - blank.EC-5 3
+Public EC5(3), ECU (3)
+Units EC5=m3 m-3 : Units ECU=mV
+
+DataTable (P22_EC5,HasProject22,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,22,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Soil water data
+  Average (1,EC5 (1),FP2,0) : FieldNames ("EC5_1")  
+  Average (1,EC5 (2),FP2,0) : FieldNames ("EC5_2")
+  Average (1,EC5 (3),FP2,0) : FieldNames ("EC5_3")
+  Average (1,ECU (1),FP2,0) : FieldNames ("EC5_1_mV")
+  Average (1,ECU (2),FP2,0) : FieldNames ("EC5_2_mV")
+  Average (1,ECU (3),FP2,0) : FieldNames ("EC5_3_mV")  
+EndTable
+Sub SubP22 ()
+  If TimeIntoInterval (9,10,Min) Then
+    ' Messen Spannung Echo EC-5 Bodenwassergehalt direkt am Logger
+    BrHalf (ECU (1),1,mV2500,1,Vx1,1,2500,0,10000,250,2500,0) 
+    BrHalf (ECU (2),1,mV2500,2,Vx2,1,2500,0,10000,250,2500,0)
+    BrHalf (ECU (3),1,mV2500,3,Vx3,1,2500,0,10000,250,2500,0)
+    ' Umrechung in Bodenwassergehalt (Lineare Kalibration pro Sensor)
+    ' Standardkalibration Y=X*0.00119-0.4 fuer Mineralboeden 
+    ' (p., 17 in Manual, 2006)
+    EC5 (1) = (ECU (1) * 0.00119) - 0.4
+    EC5 (2) = (ECU (2) * 0.00119) - 0.4
+    EC5 (3) = (ECU (3) * 0.00119) - 0.4
+  EndIf
+EndSub
+
+'**********************************************************************
+'*** Project 30: MPS-6 
+'   Logger.Sw-12V -   weiss.MPS-6 1
+'   Logger.C5     -     rot.MPS-6 1
+'   Logger.GND    -   blank.MPS-6 1
+Public MPmeas(2)
+Public MPS(1)
+Public MPT(1)
+Units MPS=hPa
+Units MPT=C
+DataTable(P30_MPS,HasProject30,-1)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,30,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Soil water data
+  Average (1,MPS (1),FP2,0) : FieldNames ("MPS")  
+  Average (1,MPT (1),FP2,0) : FieldNames ("MPT")  
+EndTable
+Sub SubP30()
+  If TimeIntoInterval (9,10,Min) Then
+    ' Messen
+     SDI12Recorder(MPmeas(),5,0,"M!",1,0)
+    ' Keine Messung
+     MPS(1)=MPmeas(1)
+     MPT(2)=MPmeas(2)
+  EndIf
+EndSub
+'**********************************************************************
+
+'**********************************************************************
+'*** Project 35: TensioMark (EcoTech, Bonn)
+'    Logger.Sw-12V -   braun.TensioMark-Digital
+'    Logger.C7     -    rosa.TensioMark-Digital
+'    Logger.GND    -    grau.TensioMark-Digital
+
+'    Logger.12V    -   braun.TensioMark-Analog
+'    Logger.SE4    -   weiss.TensioMark-Analog
+'    Logger.GND    -    grau.TensioMark-Analog
+Public TMmeas(2)
+Public TMS(1)
+Public TMT(2)
+Public pF(1)
+Public TMA(1)
+Units TMS=hPa
+Units TMT=C
+Units TMA=hPa
+DataTable(P35_TM,HasProject35,-1)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,35,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Soil water data
+  Average (1,TMS (1),FP2,0) : FieldNames ("TMS")  
+  Average (1,TMT (1),FP2,0) : FieldNames ("TMT")  
+  Average (1,TMA (1),FP2,0) : FieldNames ("TMAnalog")  
+  ' Data table format
+EndTable
+Sub SubP35()
+  If TimeIntoInterval (9,10,Min) Then
+    ' Digitaler Sensor
+    ' Einheit Matrixpotential auf hPa=mBar stellen
+    SDI12Recorder(TMmeas(),7,0,"aXF=128!",1,0)
+    ' Matrixpotential und Temperatur messen
+    SDI12Recorder(TMmeas(),7,0,"aM!",1,0)
+    ' Keine Messung
+    TMS(1)=TMmeas(1)
+    TMT(2)=TMmeas(2)
+    ' Analoger Sensor messen, 0 mV=pF 0, 2500 mV = pF 7, Ausgabe in 0..7
+    BrHalf(pF(1),1,mV2500,4,Vx1,1,30,False,10000,_50Hz,7,0)
+    ' Umrechnung von pF in hPa: pF=log10(-hPa), d.h. hPa = -10^(pF)
+    TMA(1)=-10^(pF)
+  EndIf
+EndSub
+'******************************************************************
+
+'**********************************************************************
+
+'----------------------------------------------------------------------
+'-  M A I N   P R O G R A M                                           -
+'----------------------------------------------------------------------
+SequentialMode ' is needed to make sure that Scan and SlowSequence run
+               ' after each other,not in a pipeline
+BeginProg
+  SetStatus ("USRDriveSize",200000) ' needed for calibration files
+
+  ' Main Scan
+  ' Buffer in SequentialMode always 0. Also, count=0 to loop forever
+  Scan (5,Sec,0,0)
+    Call SubP04 ()
+    If HasProject04 Then
+      CallTable P04_Tech
+    EndIf
+    Call SubP22 ()
+    If HasProject22 Then
+      CallTable P22_EC5 
+    EndIf    
+
+    ' SW-12V und Sensoren einschalten
+    SW12(1)
+    ' 20 Sekunden warten
+    Delay(1,20,Sec)
+
+    Call SubP30 ()
+    If HasProject30 Then   
+      CallTable P30_MPS 
+    EndIf
+    Call SubP35 ()
+    If HasProject35 Then   
+      CallTable P35_TM 
+    EndIf
+    ' SW-12V und Sensoren ausschalten
+    SW12(0)
+	NextScan
+
+  ' SlowScan 1
+  SlowSequence
+    Scan (60,Sec,0,0)
+      Battery (BattV)
+    NextScan
+  EndSequence
+
+EndProg

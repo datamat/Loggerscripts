@@ -1,0 +1,58 @@
+Peter Waldner, 30.7.2009
+
+Bemerkungen zu den UVB-Sensoren
+-------------------------------
+
+
+-  Die UVB Strahlung ist im Bereich bis ca. 2300 milliWm-2
+
+-  Die Kalibrationskonstanten der Sensoren liegen im Bereich 4 bis 12 milliWm-2/mV
+
+-  Im Loggerprogramm wird mit der Instruktion P2 
+   eine Spannungsdifferenz im Bereich +- 250 mV gemessen
+   (4 = 250 mV Slow Range)
+
+-  Bei hoher UVB Strahlung liefern Sensoren mit einer tiefen Kalibrationskonstanten 
+   eine Spannung > 250 mV
+
+-  Der Datenlogger gibt dann den Wert -6999 heraus. 
+
+-  In der Datenbank entsteht eine Datenluecke. 
+
+-->In den Datenloggerprogramme muss der Range von 
+   4 (250 mV Slow range) auf 
+   5 (2500 mV Slow range) ggeaendert werden: 
+
+Beispiel Auszug Dataloggerprogramm OTH_F.CSI (Othmarsingen)
+---
+
+BISHER
+    24:  Volt (Diff) (P2)
+     1: 1        Reps
+     2: 4        250 mV Slow Range     <-----
+     3: 3        DIFF Channel
+     4: 24       Loc [ UVB_mWm2  ]
+     5: 9.90     Mult @@9 
+     6: 0.0      Offset @@19
+
+NEU
+    24:  Volt (Diff) (P2)
+     1: 1        Reps
+     2: 5        2500 mV Slow Range    <------
+     3: 3        DIFF Channel
+     4: 24       Loc [ UVB_mWm2  ]
+     5: 9.90     Mult @@9 
+     6: 0.0      Offset @@19
+
+
+-  Vorteil:  keine Datenluecken mehr (wichtig!).
+-  Nachteil: etwas weniger hohe Aufloesung :
+             bisher: 0.033 mV
+             neu:    0.333 mV
+             (unbedeutend!)
+             
+Vorschlag (Peter Jakob, Peter Waldner)
+---------
+-  Entwuerfe geaenderter Datenloggerprogramme erstellen
+-  Bei naehchsten Stationsbesuchen ersetzen. 
+

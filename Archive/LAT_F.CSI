@@ -1,0 +1,3410 @@
+;{CR10X}
+;{CR10X}Programm: LAT_F: Bodenwassergehaltsensoren kalibriert,
+;{CR10X}zusaetzlich zur Meteostation (Projekt 1):
+;Projekt 12: Messen im 10-Min.-Intervall, 107-Messung fuer lange Leitungslaengen.
+;Speichern im 1-Stunden-Intervall fuer 6 Bodentemperatur-, 6 Lufttemperaturfuehler
+;und 6 Bodenwassergehaltsensoren CS616, Multiplexer AM16/32 im 4 x 16 Mode,
+;Temp.-Korrektur des CS616, P.Pluess, 24.03.2003
+;--------------------------------------------------------------------------------
+; Stationsname:                                  LWF 40 - SV02013
+; Stationsstandort:                             Lattecaldo Freiland
+; Datenkommunikation:                            M1 079 770 83 69
+;  Kommunikation (Loggerzeit):              10:15 - 10:30
+;                                           05:45 - 06:00
+;  Servicefenster (Vbat > 12.7 V):          13:30 - 14:30
+; Table 1 - Projekt 1: MP103A, SK1110, SKP215, SKU430, A100R, W200P, ARG100
+; Table 1 - Projekt 2: {DMS/Dial-Dendrometer (AM416, Set 7 - 11)}
+; Table 1 - Projekt 3: {CS505, CS205 (AM416, Set 5, 6)}
+; Table 1 - Projekt 4: Service
+; Table 1 - Projekt 5: Clip S3, 107 (AM416, Set 1 - 4)
+; Table 1 - Projekt 6: frei
+; Table 1 - Projekt 7: frei
+; Table 1 - Projekt 23: Ozonmessung
+; Table 2 - Projekt 1: frei
+; Table 2 - Projekt 2: frei
+; Table 12- Projekt12: 12 Stk. TB107 und 6 Stk. CS616, mit + 1 Stk. AM16/32
+; Stationsprogramm 7:  Batterie-Ladesteuerung
+; Stationsprogramm 8:  Datenkommunikation via M20T
+; Stationsprogramm 9:  SMS-Warnung Batterieunterspannung
+; Autor:               markasub ag (sw/cf/mk)
+; Version:             20000828-1
+; Flag / Port Usage:
+; Flag 1: Erzwungene Entladung      Port 1: AM416 Reset
+; Flag 2: GSM ein/aus               Port 2: AM416 Clock
+; Flag 3:                           Port 3: Dendrometer/Projekt 2 - Speisung ein/aus
+;                                           GSM-Switch
+; Flag 4:                           Post 4: Shunt ein/aus
+; Flag 5:                           Port 5: GSM ein/aus
+; Flag 6: GSM-Alarm enable off/on   Port 6: T/rF ein/aus
+; Flag 7: Switch controle           Port 7: UV B ein/aus
+; Flag 8: X-Min Switch Controle     Port 8: Streufeuchte (ein/aus)
+;
+; Anpassungen 12.07.02
+; 1. Windspitze:   ueber 1 s
+;                  Hauptprogramm in Table 2 (10 s), da total Execution 5,7 s
+;                  Kennungen und Windmessung in Table 1
+;                  Speicherung alle 10 min
+;
+; 2. Lithium Batterie:  Speicherung alle 240 Min
+;
+; 3. Alle Sensoren der fakultativen Projekte bei "Projekt aktiv", jedoch "Sensor aus" (-999).
+;    Sensoren werden gemessen, jedoch wird der Messwert bei "deaktivierten" Sensoren mit -999
+;    ueberschrieben.
+;
+; 4. GSM-Schalter Port 3 / Flag 7/8 - Maximal 30 Minuten
+;
+; 5. Service-Fenster 13.30 - 14.30
+;
+; 6. SMS-Alarm:  retry 2 / 60s - Fenster 21:29 bis 21:40 / 11.7 - 12.00 V
+;                Alarmfenster wird nur aufgemacht, wenn Batterie 12-11.7 V
+;
+;   - UVB Voltage Range auf 2500 mV geaendert.
+
+; Anpassungen 15.3.2012 Peter Waldner, Christian Hug
+; ----
+; - Projekt 23 (Ozonmessung, alle 10 Min) eingefuegt:
+;   Anschlussschema (Differentialmessung in mV):
+;      CR10X.H6 - pos.Ozonmonitor (braun)
+;      CR10X.L6 - neg.Ozonmonitor (weiss)
+;   Ozonkonzentration [ppb] = 0.2 * mV + 0.0 (gemaess C.Hug/R.Zweifel)
+;   Speichern in Array 10, Projekt 23, alle 10 Min.
+;
+; Anpassungen 16.5.2013 (Roman Lim)
+; ----
+; - 10 Min.-Werte fuer relative Luftfeuchtigkeit und Niederschlag (Projekt 1).
+;
+;==============================================================================
+*Table 1 Program
+  01: 1         Execution Interval (seconds)
+;------------------------------------------------------------------------------
+; Stations- und Projektkennungen
+
+1:  Z=F (P30)
+ 1: 40       F @@1
+ 2: 00       Exponent of 10
+ 3: 1        Z Loc [ Stat_ID   ]
+
+2:  Z=F (P30)
+ 1: 1        F @@2
+ 2: 00       Exponent of 10
+ 3: 2        Z Loc [ Proj1_ID  ]
+
+3:  Z=F (P30)
+ 1: 0        F @@3
+ 2: 00       Exponent of 10
+ 3: 3        Z Loc [ Proj2_ID  ]
+
+4:  Z=F (P30)
+ 1: 0        F @@4
+ 2: 00       Exponent of 10
+ 3: 4        Z Loc [ Proj3_ID  ]
+
+5:  Z=F (P30)
+ 1: 4        F @@5
+ 2: 00       Exponent of 10
+ 3: 5        Z Loc [ Proj4_ID  ]
+
+6:  Z=F (P30)
+ 1: 0        F @@6
+ 2: 00       Exponent of 10
+ 3: 6        Z Loc [ Proj5_ID  ]
+
+7:  Z=F (P30)
+ 1: 0        F @@7
+ 2: 00       Exponent of 10
+ 3: 7        Z Loc [ Proj6_ID  ]
+
+8:  Z=F (P30)
+ 1: 0        F @@8
+ 2: 00       Exponent of 10
+ 3: 8        Z Loc [ Proj7_ID  ]
+
+9:  Z=F (P30)
+ 1: 0        F @@17
+ 2: 00       Exponent of 10
+ 3: 9        Z Loc [ Proj12_ID ]
+
+
+10:  Z=F (P30)
+ 1: 23       F
+ 2: 00       Exponent of 10
+ 3: 243      Z Loc [ Proj23_ID ]
+
+;------------------------------------------------------------------------------
+; Projekt 1: Sensorkennungen (0 = nicht vorhanden, 1 = vorhanden)
+; MP103A, SK1110, SKP215, SKU430, A100R, W200P, ARG100
+
+11:  If (X<=>F) (P89)
+ 1: 2        X Loc [ Proj1_ID  ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+  12:  Z=F (P30)
+   1: 1        F @@10
+   2: 00       Exponent of 10
+   3: 10       Z Loc [ K_TrF     ]
+
+  13:  Z=F (P30)
+   1: 1        F @@11
+   2: 00       Exponent of 10
+   3: 11       Z Loc [ K_Pyr     ]
+
+  14:  Z=F (P30)
+   1: 1        F @@12
+   2: 00       Exponent of 10
+   3: 12       Z Loc [ K_PAR     ]
+
+  15:  Z=F (P30)
+   1: 1        F @@13
+   2: 00       Exponent of 10
+   3: 13       Z Loc [ K_UV      ]
+
+  16:  Z=F (P30)
+   1: 1        F @@14
+   2: 00       Exponent of 10
+   3: 14       Z Loc [ K_WG      ]
+
+  17:  Z=F (P30)
+   1: 1        F @@15
+   2: 00       Exponent of 10
+   3: 15       Z Loc [ K_WR      ]
+
+  18:  Z=F (P30)
+   1: 1        F @@16
+   2: 00       Exponent of 10
+   3: 16       Z Loc [ K_Ns      ]
+;------------------------------------------------------------------------------
+;Projekt 1a: Windsensormessungen
+; Windgeschwindigkeit [m/s]
+  19:  If (X<=>F) (P89)
+   1: 14       X Loc [ K_WG      ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    20:  Pulse (P3)
+     1: 1        Reps
+     2: 1        Pulse Channel 1
+     3: 22       Switch Closure, Output Hz
+     4: 25       Loc [ WS_ms     ]
+     5: 1.25     Mult
+     6: 0.0      Offset
+
+  21:  Else (P94)
+
+    22:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 25       Z Loc [ WS_ms     ]
+
+  23:  End (P95)
+
+; Windrichtung [Grad]
+  24:  If (X<=>F) (P89)
+   1: 15       X Loc [ K_WR      ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    25:  Excite-Delay (SE) (P4)
+     1: 1        Reps
+     2: 5        2500 mV Slow Range
+     3: 4        SE Channel
+     4: 2        Excite all reps w/Exchan 2
+     5: 1        Delay (units 0.01 sec)
+     6: 1000     mV Excitation
+     7: 26       Loc [ WR_Grad   ]
+     8: 0.36     Mult
+     9: 0.0      Offset
+
+  26:  Else (P94)
+
+    27:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 26       Z Loc [ WR_Grad   ]
+
+  28:  End (P95)
+
+29:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+30:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 36       Loc [ WS_mean   ]
+
+31:  Wind Vector (P69)^24150
+ 1: 1        Reps
+ 2: 0        Samples per Sub-Interval
+ 3: 0        S, é1, & å(é1) Polar
+ 4: 25       Wind Speed/East Loc [ WS_ms     ]
+ 5: 26       Wind Direction/North Loc [ WR_Grad   ]
+
+32:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 152      Loc [ Wi_Spitze ]
+
+33:  Maximum (P73)^6888
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 25       Loc [ WS_ms     ]
+
+34:  Wind Vector (P69)^10981
+ 1: 1        Reps
+ 2: 0        Samples per Sub-Interval
+ 3: 01       S, é1 Polar
+ 4: 25       Wind Speed/East Loc [ WS_ms     ]
+ 5: 26       Wind Direction/North Loc [ WR_Grad   ]
+
+35:  End (P95)
+
+36:  If (X<=>F) (P89)
+ 1: 15       X Loc [ K_WR      ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+37:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 37       Z Loc [ WR_mean   ]
+
+38:  Z=F (P30)
+ 1: -999     F
+ 2: 00       Exponent of 10
+ 3: 38       Z Loc [ WR_std    ]
+
+39:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 154      Z Loc [ WR_D1_WVT ]
+
+40:  End (P95)
+
+;--------------------------------------------------------------------
+; Projekt 1: Berechnungen
+
+  41:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 10       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  42:  Set Active Storage Area (P80)
+   1: 3        Input Storage Area
+   2: 31       Loc [ Lutmp_std ]
+
+  43:  Standard Deviation (P82)^946
+   1: 5        Reps
+   2: 21       Sample Loc [ Lutemp_C  ]
+
+  44:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 60       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  45:  Set Active Storage Area (P80)
+   1: 3        Input Storage Area
+   2: 30       Loc [ rF_std    ]
+
+  46:  Standard Deviation (P82)^15286
+   1: 1        Reps
+   2: 20       Sample Loc [ rF_Proz   ]
+
+; Niederschlag [mm]
+  47:  If (X<=>F) (P89)
+   1: 16       X Loc [ K_Ns      ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    48:  Pulse (P3)
+     1: 1        Reps
+     2: 2        Pulse Channel 2
+     3: 2        Switch Closure, All Counts
+     4: 27       Loc [ Regen_mm  ]
+     5: 0.2      Mult
+     6: 0.0      Offset
+
+  49:  Else (P94)
+
+    50:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 27       Z Loc [ Regen_mm  ]
+
+  51:  End (P95)
+
+52:  Z=X (P31)
+ 1: 27       X Loc [ Regen_mm  ]
+ 2: 78       Z Loc [ regen10   ]
+
+53:  Z=X (P31)
+ 1: 20       X Loc [ rF_Proz   ]
+ 2: 93       Z Loc [ rF10      ]
+
+54:  Z=X (P31)
+ 1: 30       X Loc [ rF_std    ]
+ 2: 95       Z Loc [ rFstd10   ]
+
+;------------------------------------------------------------------------------
+; Projekt 1: Speichern                                          alle 10 Minuten
+
+55:  If (X<=>F) (P89)
+ 1: 2        X Loc [ Proj1_ID  ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+  56:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 10       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  57:  Set Active Storage Area (P80)^28382
+   1: 1        Final Storage Area 1
+   2: 10       Array ID
+
+  58:  Sample (P70)^140
+   1: 1        Reps
+   2: 1        Loc [ Stat_ID   ]
+
+  59:  Sample (P70)^1803
+   1: 1        Reps
+   2: 2        Loc [ Proj1_ID  ]
+
+  60:  Real Time (P77)^21846
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  61:  Average (P71)^18003
+   1: 4        Reps
+   2: 21       Loc [ Lutemp_C  ]
+
+62:  Sample (P70)^16595
+ 1: 2        Reps
+ 2: 153      Loc [ WS_S_WVT  ]
+
+  63:  Sample (P70)^12097
+   1: 5        Reps
+   2: 31       Loc [ Lutmp_std ]
+
+  64:  Sample (P70)^4061
+   1: 1        Reps
+   2: 38       Loc [ WR_std    ]
+
+65:  Sample (P70)^20248
+ 1: 1        Reps
+ 2: 152      Loc [ Wi_Spitze ]
+
+66:  Average (P71)^16838
+     1: 1        Reps
+     2: 93       Loc [ rF10      ]
+
+67:  Totalize (P72)^16226
+     1: 1        Reps
+     2: 78       Loc [ regen10   ]
+
+68:  Sample (P70)^703
+     1: 1        Reps
+     2: 95       Loc [ rFstd10   ]
+
+;------------------------------------------------------------------------------
+; Projekt 1: Speichern                                          alle 60 Minuten
+
+  69:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 60       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  70:  Set Active Storage Area (P80)^18321
+   1: 1        Final Storage Area 1
+   2: 60       Array ID
+
+  71:  Sample (P70)^2256
+   1: 1        Reps
+   2: 1        Loc [ Stat_ID   ]
+
+  72:  Sample (P70)^13784
+   1: 1        Reps
+   2: 2        Loc [ Proj1_ID  ]
+
+  73:  Real Time (P77)^30407
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  74:  Average (P71)^3923
+   1: 1        Reps
+   2: 20       Loc [ rF_Proz   ]
+
+  75:  Totalize (P72)^5584
+   1: 1        Reps
+   2: 27       Loc [ Regen_mm  ]
+
+  76:  Sample (P70)^7129
+   1: 1        Reps
+   2: 30       Loc [ rF_std    ]
+
+77:  End (P95)
+;===============================================================================
+;------------------------------------------------------------------------------
+; Projekt 2: Speichern                                          alle 60 Minuten
+
+78:  If (X<=>F) (P89)
+ 1: 3        X Loc [ Proj2_ID  ]
+ 2: 1        =
+ 3: 2        F
+ 4: 30       Then Do
+
+  79:  If time is (P92)
+   1: 0000     Minutes (Seconds --) into a
+   2: 60       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  80:  Set Active Storage Area (P80)^11074
+   1: 1        Final Storage Area 1
+   2: 60       Array ID
+
+  81:  Sample (P70)^6368
+   1: 1        Reps
+   2: 1        Loc [ Stat_ID   ]
+
+  82:  Sample (P70)^5072
+   1: 1        Reps
+   2: 3        Loc [ Proj2_ID  ]
+
+  83:  Real Time (P77)^20725
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  84:  Average (P71)^1975
+   1: 10       Reps @@35
+   2: 50       Loc [ Dendro01  ]
+
+  85:  Average (P71)^31369
+   1: 4        Reps @@36
+   2: 60       Loc [ Drehpot1  ]
+
+86:  End (P95)
+
+;==============================================================================
+;------------------------------------------------------------------------------
+; Projekt 3: Speichern                                          alle 60 Minuten
+
+87:  If (X<=>F) (P89)
+ 1: 4        X Loc [ Proj3_ID  ]
+ 2: 1        =
+ 3: 3        F
+ 4: 30       Then Do
+
+  88:  If time is (P92)
+   1: 0000     Minutes (Seconds --) into a
+   2: 60       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  89:  Set Active Storage Area (P80)^9566
+   1: 1        Final Storage Area 1
+   2: 60       Array ID
+
+  90:  Sample (P70)^24774
+   1: 1        Reps
+   2: 1        Loc [ Stat_ID   ]
+
+  91:  Sample (P70)^93
+   1: 1        Reps
+   2: 4        Loc [ Proj3_ID  ]
+
+  92:  Real Time (P77)^31852
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  93:  Average (P71)^8831
+   1: 2        Reps @@51
+   2: 84       Loc [ CS505_1   ]
+
+  94:  Average (P71)^4284
+   1: 2        Reps @@52
+   2: 82       Loc [ CS205_1   ]
+
+95:  End (P95)
+
+;==============================================================================
+;------------------------------------------------------------------------------
+; Projekt 23: Ozonmessung
+
+; Sensorkennung
+96:  If (X<=>F) (P89)
+ 1: 243      X Loc [ Proj23_ID ]
+ 2: 1        =
+ 3: 23       F
+ 4: 30       Then Do
+
+     97:  Z=F x 10^n (P30)
+      1: 1        F
+      2: 00       n, Exponent of 10
+      3: 244      Z Loc [ K_Oz      ]
+
+98:  End (P95)
+
+; Ozonmessung
+99:  If (X<=>F) (P89)
+ 1: 244      X Loc [ K_Oz      ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+     100:  Volt (Diff) (P2)
+      1: 1        Reps
+      2: 35       2500 mV 50 Hz Rejection Range
+      3: 6        DIFF Channel
+      4: 245      Loc [ Ozon_ppbv ]
+      5: 0.2      Multiplier
+      6: 0.0      Offset
+
+101:  Else (P94)
+
+     102:  Z=F x 10^n (P30)
+      1: -999     F
+      2: 00       n, Exponent of 10
+      3: 245      Z Loc [ Ozon_ppbv ]
+
+103:  End (P95)
+; Ende der Ozonmessung
+
+; Speichern der Ozonmessewrte in Array Nr. 10
+104:  If (X<=>F) (P89)
+ 1: 243      X Loc [ Proj23_ID ]
+ 2: 1        =
+ 3: 23       F
+ 4: 30       Then Do
+
+     105:  If time is (P92)
+      1: 0000     Minutes (Seconds --) into a
+      2: 10       Interval (same units as above)
+      3: 10       Set Output Flag High (Flag 0)
+
+     106:  Set Active Storage Area (P80)^4884
+      1: 1        Final Storage Area 1
+      2: 10       Array ID
+
+     107:  Sample (P70)^8591
+      1: 1        Reps
+      2: 1        Loc [ Stat_ID   ]
+
+     108:  Sample (P70)^15941
+      1: 1        Reps
+      2: 243      Loc [ Proj23_ID ]
+
+     109:  Real Time (P77)^29702
+      1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+     110:  Average (P71)^25365
+      1: 1        Reps
+      2: 245      Loc [ Ozon_ppbv ]
+
+111:  End (P95)
+; Ende des Speichervorgangs
+;==============================================================================
+;------------------------------------------------------------------------------
+; Projekt 4: Speichern                                         alle 240 Minuten
+
+  112:  If time is (P92)
+   1: 0000     Minutes (Seconds --) into a
+   2: 240      Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  113:  Set Active Storage Area (P80)^18971
+   1: 2        Final Storage Area 2
+   2: 240      Array ID
+
+  114:  Sample (P70)^10758
+   1: 1        Reps
+   2: 1        Loc [ Stat_ID   ]
+
+  115:  Sample (P70)^29614
+   1: 1        Reps
+   2: 5        Loc [ Proj4_ID  ]
+
+  116:  Real Time (P77)^6450
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  117:  Average (P71)^11461
+   1: 2        Reps
+   2: 90       Loc [ Batt_V    ]
+
+118:  Average (P71)^27696
+ 1: 1        Reps
+ 2: 149      Loc [ LiBatt_V  ]
+
+;==============================================================================
+; Projekt 5: Speichern                                          alle 60 Minuten
+
+119:  If (X<=>F) (P89)
+ 1: 6        X Loc [ Proj5_ID  ]
+ 2: 1        =
+ 3: 5        F
+ 4: 30       Then Do
+
+  120:  If time is (P92)
+   1: 0000     Minutes (Seconds --) into a
+   2: 60       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  121:  Set Active Storage Area (P80)^22710
+   1: 1        Final Storage Area 1
+   2: 60       Array ID
+
+  122:  Sample (P70)^20156
+   1: 1        Reps
+   2: 1        Loc [ Stat_ID   ]
+
+  123:  Sample (P70)^1343
+   1: 1        Reps
+   2: 6        Loc [ Proj5_ID  ]
+
+  124:  Real Time (P77)^16580
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  125:  Average (P71)^1652
+   1: 1        Reps
+   2: 110      Loc [ ST1_C     ]
+
+  126:  Average (P71)^26894
+   1: 1        Reps
+   2: 111      Loc [ SF1_proz  ]
+
+  127:  Average (P71)^30175
+   1: 1        Reps
+   2: 112      Loc [ ST2_C     ]
+
+  128:  Average (P71)^31077
+   1: 1        Reps
+   2: 113      Loc [ SF2_proz  ]
+
+  129:  Average (P71)^13045
+   1: 2        Reps @@69
+   2: 114      Loc [ BT1_5     ]
+
+130:  Average (P71)^27565
+ 1: 2        Reps
+ 2: 118      Loc [ BT1_20    ]
+
+131:  End (P95)
+;==============================================================================
+;------------------------------------------------------------------------------
+; Projekt 12: Speichern                                        1 mal pro Stunde
+
+  132:  If (X<=>F) (P89)
+   1: 9        X Loc [ Proj12_ID ]
+   2: 1        =
+   3: 12       F
+   4: 30       Then Do
+
+       133:  If time is (P92)
+        1: 0        Minutes (Seconds --) into a
+        2: 60       Interval (same units as above)
+        3: 10       Set Output Flag High (Flag 0)
+
+       134:  Set Active Storage Area (P80)^14939
+        1: 1        Final Storage Area 1
+        2: 60       Array ID
+
+       135:  Sample (P70)^29461
+        1: 1        Reps
+        2: 1        Loc [ Stat_ID   ]
+
+       136:  Sample (P70)^2964
+        1: 1        Reps
+        2: 9        Loc [ Proj12_ID ]
+
+       137:  Real Time (P77)^26386
+        1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+       138:  Average (P71)^27045
+        1: 6        Reps
+        2: 188      Loc [ BTemp_P1  ]
+
+       139:  Average (P71)^22406
+        1: 6        Reps
+        2: 223      Loc [ WCont_P1  ]
+
+       140:  Average (P71)^21410
+        1: 6        Reps
+        2: 237      Loc [ LTemp_P1  ]
+
+  141:  End (P95)
+;==============================================================================
+; Aufruf der Stationsprogramme
+
+; Solarladeregelung
+142:  Do (P86)
+ 1: 7        Call Subroutine 7
+
+; Natel D Datenuebertragung
+143:  Do (P86)
+ 1: 8        Call Subroutine 8
+
+; SMS-Batteriewarnung
+144:  If time is (P92)
+ 1: 1290     Minutes (Seconds --) into a
+ 2: 1440     Interval (same units as above)
+ 3: 30       Then Do
+
+  145:  If (X<=>F) (P89)
+   1: 90       X Loc [ Batt_V    ]
+   2: 3        >=
+   3: 11.5     F @@98
+   4: 30       Then Do
+
+    146:  If (X<=>F) (P89)
+     1: 90       X Loc [ Batt_V    ]
+     2: 4        <
+     3: 12.0     F @@99
+     4: 9        Call Subroutine 9
+
+  147:  End (P95)
+
+148:  End (P95)
+
+;------------------------------------------------------------------------------
+;==============================================================================
+*Table 2 Program
+  02: 10        Execution Interval (seconds)
+;-------------------------------------------------------------------------------
+;Projekt 12: Sensorkennungen (0=nicht vorhanden, 1=vorhanden)
+
+1:  If (X<=>F) (P89)
+ 1: 9        X Loc [ Proj12_ID ]
+ 2: 1        =
+ 3: 12       F
+ 4: 30       Then Do
+
+     2:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 160      Z Loc [ BOTem_P1  ]
+
+     3:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 161      Z Loc [ BOTem_P2  ]
+
+     4:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 162      Z Loc [ BOTem_P6  ]
+
+     5:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 163      Z Loc [ BOTem_P7  ]
+
+     6:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 164      Z Loc [ BOTem_P8  ]
+
+     7:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 165      Z Loc [ BOTem_P10 ]
+
+     8:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 166      Z Loc [ LUTem_P1  ]
+
+     9:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 167      Z Loc [ LUTem_P2  ]
+
+     10:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 168      Z Loc [ LUTem_P6  ]
+
+     11:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 169      Z Loc [ LUTem_P7  ]
+
+     12:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 170      Z Loc [ LUTem_P8  ]
+
+     13:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 171      Z Loc [ LUTem_P10 ]
+
+     14:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 172      Z Loc [ BOFeu_P1  ]
+
+     15:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 173      Z Loc [ BOFeu_P2  ]
+
+     16:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 174      Z Loc [ BOFeu_P6  ]
+
+     17:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 175      Z Loc [ BOFeu_P7  ]
+
+     18:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 176      Z Loc [ BOFeu_P8  ]
+
+     19:  Z=F (P30)
+      1: 1        F
+      2: 00       Exponent of 10
+      3: 177      Z Loc [ BOFeu_P10 ]
+
+;-------------------------------------------------------------------------------
+;Projekt 12: Sensormessungen im 10-Min.-Intervall
+;Boden- und Lufttemperatur und Bodenwassergehalt:
+
+     20:  Z=F (P30)
+      1: 20       F
+      2: 00       Exponent of 10
+      3: 180      Z Loc [ Tref      ]
+
+     21:  If time is (P92) ;Messintervall festlegen
+      1: 0000     Minutes (Seconds --) into a
+      2: 10       Interval (same units as above)
+      3: 30       Then Do
+
+          22:  Do (P86)
+           1: 48       Set Port 8 High ;Einschalten der CS616-Sonden
+
+     23:  Do (P86)
+      1: 41       Set Port 1 High ;Reset Multiplexer
+
+     24:  Beginning of Loop (P87) ;Beginne 6 Loops fuer 6 Bodentemp.- und 6 Wassergehalt-Sonden
+      1: 0000     Delay
+      2: 6        Loop Count
+
+          25:  Do (P86)
+           1: 72       Pulse Port 2 ;Clock Impuls
+
+          26:  Excitation with Delay (P22) ;Delay von 10ms
+           1: 1        Ex Channel
+           2: 0000     Delay W/Ex (units = 0.01 sec)
+           3: 1        Delay After Ex (units = 0.01 sec)
+           4: 0000     mV Excitation
+
+          27:  Excite-Delay (SE) (P4) ;Messung der Bodentemperatur ohne Korrektur, 50ms Delay
+           1: 1        Reps
+           2: 2        7.5 mV Slow Range
+           3: 10       SE Channel
+           4: 3        Excite all reps w/Exchan 3
+           5: 5        Delay (units 0.01 sec)
+           6: 2000     mV Excitation
+           7: 181   -- Loc [ BTempOK_1 ]
+           8: 0.40000  Mult
+           9: 0.0      Offset
+
+          28:  CS616 Water Content Reflectometer (P138) ;Messung der CS616-Periode in us
+           1: 1        Reps
+           2: 11       SE Channel
+           3: 8        C8 is first of sequential Control Ports used
+           4: 195   -- Loc [ CS616us_1 ]
+           5: 1.0      Mult
+           6: 0.0      Offset
+
+          29:  Polynomial (P55)
+           1: 1        Reps
+           2: 195   -- X Loc [ CS616us_1 ]
+           3: 202   -- F(X) Loc [ TCS616_1  ]
+           4: 0.526    C0
+           5: -0.052   C1
+           6: 0.00136  C2
+           7: 0.0      C3
+           8: 0.0      C4
+           9: 0.0      C5
+
+     30:  End (P95) ;Ende des Loops fuer Bodentemp. und Wassergehalt
+
+     31:  Beginning of Loop (P87) ;Beginne 6 Loops fuer 6 Lufttemperatur-Sonden
+      1: 0000     Delay
+      2: 6        Loop Count
+
+          32:  Do (P86)
+           1: 72       Pulse Port 2 ;Clock Impuls
+
+          33:  Excitation with Delay (P22) ;Delay von 10ms
+           1: 1        Ex Channel
+           2: 0000     Delay W/Ex (units = 0.01 sec)
+           3: 1        Delay After Ex (units = 0.01 sec)
+           4: 0000     mV Excitation
+
+          34:  Excite-Delay (SE) (P4) ;Messung der Lufttemperatur ohne Korrektur, 50ms Delay
+           1: 1        Reps
+           2: 2        7.5 mV Slow Range
+           3: 10       SE Channel
+           4: 3        Excite all reps w/Exchan 3
+           5: 5        Delay (units 0.01 sec)
+           6: 2000     mV Excitation
+           7: 230   -- Loc [ LTempOK_1 ]
+           8: 0.4      Mult
+           9: 0.0      Offset
+
+     35:  End (P95) ;Ende des Loops fuer Lufttemperatur
+
+     36:  Do (P86)
+      1: 51       Set Port 1 Low
+
+     37:  Do (P86)
+      1: 58       Set Port 8 Low
+;--------------------------------------------------------------------------------
+;Projekt 12:       Berechnungen
+
+     38:  Polynomial (P55) ;fuer Sensor BTemp_Plot1
+      1: 1        Reps
+      2: 181      X Loc [ BTempOK_1 ]
+      3: 188      F(X) Loc [ BTemp_P1  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     39:  Polynomial (P55) ;fuer Sensor BTemp_Plot2
+      1: 1        Reps
+      2: 182      X Loc [ BTempOK_2 ]
+      3: 189      F(X) Loc [ BTemp_P2  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     40:  Polynomial (P55) ;fuer Sensor BTemp_Plot6
+      1: 1        Reps
+      2: 183      X Loc [ BTempOK_3 ]
+      3: 190      F(X) Loc [ BTemp_P6  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     41:  Polynomial (P55) ;fuer Sensor BTemp_Plot7
+      1: 1        Reps
+      2: 184      X Loc [ BTempOK_4 ]
+      3: 191      F(X) Loc [ BTemp_P7  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     42:  Polynomial (P55) ;fuer Sensor BTemp_Plot8
+      1: 1        Reps
+      2: 185      X Loc [ BTempOK_5 ]
+      3: 192      F(X) Loc [ BTemp_P8  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     43:  Polynomial (P55) ;fuer Sensor BTemp_Plot10
+      1: 1        Reps
+      2: 186      X Loc [ BTempOK_6 ]
+      3: 193      F(X) Loc [ BTemp_P10 ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     44:  Polynomial (P55) ;fuer Sensor LTemp_Plot1
+      1: 1        Reps
+      2: 230      X Loc [ LTempOK_1 ]
+      3: 237      F(X) Loc [ LTemp_P1  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     45:  Polynomial (P55) ;fuer Sensor LTemp_Plot2
+      1: 1        Reps
+      2: 231      X Loc [ LTempOK_2 ]
+      3: 238      F(X) Loc [ LTemp_P2  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     46:  Polynomial (P55) ;fuer Sensor LTemp_Plot6
+      1: 1        Reps
+      2: 232      X Loc [ LTempOK_3 ]
+      3: 239      F(X) Loc [ LTemp_P6  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     47:  Polynomial (P55) ;fuer Sensor LTemp_Plot7
+      1: 1        Reps
+      2: 233      X Loc [ LTempOK_4 ]
+      3: 240      F(X) Loc [ LTemp_P7  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     48:  Polynomial (P55) ;fuer Sensor LTemp_Plot8
+      1: 1        Reps
+      2: 234      X Loc [ LTempOK_5 ]
+      3: 241      F(X) Loc [ LTemp_P8  ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     49:  Polynomial (P55) ;fuer Sensor LTemp_Plot10
+      1: 1        Reps
+      2: 235      X Loc [ LTempOK_6 ]
+      3: 242      F(X) Loc [ LTemp_P10 ]
+      4: -53.4601 C0
+      5: 90.8067  C1
+      6: -83.2569 C2
+      7: 52.2829  C3
+      8: -16.7234 C4
+      9: 2.21098  C5
+
+     50:  Z=X-Y (P35) ;fuer Sensor CS616-Plot1
+      1: 180      X Loc [ Tref      ]
+      2: 188      Y Loc [ BTemp_P1  ]
+      3: 209      Z Loc [ TFact_P1  ]
+
+     51:  Z=X*Y (P36) ;fuer Sensor CS616-Plot1
+      1: 209      X Loc [ TFact_P1  ]
+      2: 202      Y Loc [ TCS616_1  ]
+      3: 202      Z Loc [ TCS616_1  ]
+
+     52:  Z=X+Y (P33) ;fuer Sensor CS616-Plot1
+      1: 195      X Loc [ CS616us_1 ]
+      2: 202      Y Loc [ TCS616_1  ]
+      3: 216      Z Loc [ NS616_P1  ]
+
+     53:  Polynomial (P55) ;fuer Sensor CS616-Plot1, kalibriert
+      1: 1        Reps
+      2: 216      X Loc [ NS616_P1  ]
+      3: 223      F(X) Loc [ WCont_P1  ]
+      4: 0.0608   C0
+      5: -0.0087  C1
+      6: 0.0006   C2
+      7: 0.0      C3
+      8: 0.0      C4
+      9: 0.0      C5
+
+     54:  Z=X-Y (P35) ;fuer Sensor CS616-Plot2
+      1: 180      X Loc [ Tref      ]
+      2: 189      Y Loc [ BTemp_P2  ]
+      3: 210      Z Loc [ TFact_P2  ]
+
+     55:  Z=X*Y (P36) ;fuer Sensor CS616-Plot2
+      1: 210      X Loc [ TFact_P2  ]
+      2: 203      Y Loc [ TCS616_2  ]
+      3: 203      Z Loc [ TCS616_2  ]
+
+     56:  Z=X+Y (P33) ;fuer Sensor CS616-Plot2
+      1: 196      X Loc [ CS616us_2 ]
+      2: 203      Y Loc [ TCS616_2  ]
+      3: 217      Z Loc [ NS616_P2  ]
+
+     57:  Polynomial (P55) ;fuer Sensor CS616-Plot2, kalibriert
+      1: 1        Reps
+      2: 217      X Loc [ NS616_P2  ]
+      3: 224      F(X) Loc [ WCont_P2  ]
+      4: -0.6364  C0
+      5: 0.0466   C1
+      6: -0.0004  C2
+      7: 0.0      C3
+      8: 0.0      C4
+      9: 0.0      C5
+
+
+     58:  Z=X-Y (P35) ;fuer Sensor CS616-Plot6
+      1: 180      X Loc [ Tref      ]
+      2: 190      Y Loc [ BTemp_P6  ]
+      3: 211      Z Loc [ TFact_P6  ]
+
+     59:  Z=X*Y (P36) ;fuer Sensor CS616-Plot6
+      1: 211      X Loc [ TFact_P6  ]
+      2: 204      Y Loc [ TCS616_3  ]
+      3: 204      Z Loc [ TCS616_3  ]
+
+     60:  Z=X+Y (P33) ;fuer Sensor CS616-Plot6
+      1: 197      X Loc [ CS616us_3 ]
+      2: 204      Y Loc [ TCS616_3  ]
+      3: 218      Z Loc [ NS616_P6  ]
+
+     61:  Polynomial (P55) ;fuer Sensor CS616-Plot6, kalibriert
+      1: 1        Reps
+      2: 218      X Loc [ NS616_P6  ]
+      3: 225      F(X) Loc [ WCont_P6  ]
+      4: 0.5276   C0
+      5: -.0536   C1
+      6: 0.0017   C2
+      7: 0.0      C3
+      8: 0.0      C4
+      9: 0.0      C5
+
+
+     62:  Z=X-Y (P35) ;fuer Sensor CS616-Plot7
+      1: 180      X Loc [ Tref      ]
+      2: 191      Y Loc [ BTemp_P7  ]
+      3: 212      Z Loc [ TFact_P7  ]
+
+     63:  Z=X*Y (P36) ;fuer Sensor CS616-Plot7
+      1: 212      X Loc [ TFact_P7  ]
+      2: 205      Y Loc [ TCS616_4  ]
+      3: 205      Z Loc [ TCS616_4  ]
+
+     64:  Z=X+Y (P33) ;fuer Sensor CS616-Plot7
+      1: 198      X Loc [ CS616us_4 ]
+      2: 205      Y Loc [ TCS616_4  ]
+      3: 219      Z Loc [ NS616_P7  ]
+
+     65:  Polynomial (P55) ;fuer Sensor CS616-Plot7, kalibriert
+      1: 1        Reps
+      2: 219      X Loc [ NS616_P7  ]
+      3: 226      F(X) Loc [ WCont_P7  ]
+      4: -0.0629  C0
+      5: -0.0025  C1
+      6: 0.0006   C2
+      7: 0.0      C3
+      8: 0.0      C4
+      9: 0.0      C5
+
+
+     66:  Z=X-Y (P35) ;fuer Sensor CS616-Plot8
+      1: 180      X Loc [ Tref      ]
+      2: 192      Y Loc [ BTemp_P8  ]
+      3: 213      Z Loc [ TFact_P8  ]
+
+     67:  Z=X*Y (P36) ;fuer Sensor CS616-Plot8
+      1: 213      X Loc [ TFact_P8  ]
+      2: 206      Y Loc [ TCS616_5  ]
+      3: 206      Z Loc [ TCS616_5  ]
+
+     68:  Z=X+Y (P33) ;fuer Sensor CS616-Plot8
+      1: 199      X Loc [ CS616us_5 ]
+      2: 206      Y Loc [ TCS616_5  ]
+      3: 220      Z Loc [ NS616_P8  ]
+
+     69:  Polynomial (P55) ;fuer Sensor CS616-Plot8, kalibriert
+      1: 1        Reps
+      2: 220      X Loc [ NS616_P8  ]
+      3: 227      F(X) Loc [ WCont_P8  ]
+      4: -0.7022  C0
+      5: 0.0554   C1
+      6: -0.0006  C2
+      7: 0.0      C3
+      8: 0.0      C4
+      9: 0.0      C5
+
+
+     70:  Z=X-Y (P35) ;fuer Sensor CS616-Plot10
+      1: 180      X Loc [ Tref      ]
+      2: 193      Y Loc [ BTemp_P10 ]
+      3: 214      Z Loc [ TFact_P10 ]
+
+     71:  Z=X*Y (P36) ;fuer Sensor CS616-Plot10
+      1: 214      X Loc [ TFact_P10 ]
+      2: 207      Y Loc [ TCS616_6  ]
+      3: 207      Z Loc [ TCS616_6  ]
+
+     72:  Z=X+Y (P33) ;fuer Sensor CS616-Plot10
+      1: 200      X Loc [ CS616us_6 ]
+      2: 207      Y Loc [ TCS616_6  ]
+      3: 221      Z Loc [ NS616_P10 ]
+
+     73:  Polynomial (P55) ;fuer Sensor CS616-Plot10, kalibriert
+      1: 1        Reps
+      2: 221      X Loc [ NS616_P10 ]
+      3: 228      F(X) Loc [ WCont_P10 ]
+      4: 0.1197   C0
+      5: -0.0136  C1
+      6: 0.0008   C2
+      7: 0.0      C3
+      8: 0.0      C4
+      9: 0.0      C5
+
+74:  End (P95)
+
+75:  If (X<=>F) (P89)
+ 1: 160      X Loc [ BOTem_P1  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     76:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 188      Z Loc [ BTemp_P1  ]
+
+77:  End (P95)
+
+78:  If (X<=>F) (P89)
+ 1: 161      X Loc [ BOTem_P2  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     79:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 189      Z Loc [ BTemp_P2  ]
+
+80:  End (P95)
+
+81:  If (X<=>F) (P89)
+ 1: 162      X Loc [ BOTem_P6  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     82:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 190      Z Loc [ BTemp_P6  ]
+
+83:  End (P95)
+
+84:  If (X<=>F) (P89)
+ 1: 163      X Loc [ BOTem_P7  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     85:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 191      Z Loc [ BTemp_P7  ]
+
+86:  End (P95)
+
+87:  If (X<=>F) (P89)
+ 1: 164      X Loc [ BOTem_P8  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     88:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 192      Z Loc [ BTemp_P8  ]
+
+89:  End (P95)
+
+90:  If (X<=>F) (P89)
+ 1: 165      X Loc [ BOTem_P10 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     91:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 193      Z Loc [ BTemp_P10 ]
+
+92:  End (P95)
+
+93:  If (X<=>F) (P89)
+ 1: 166      X Loc [ LUTem_P1  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     94:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 237      Z Loc [ LTemp_P1  ]
+
+95:  End (P95)
+
+96:  If (X<=>F) (P89)
+ 1: 167      X Loc [ LUTem_P2  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     97:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 238      Z Loc [ LTemp_P2  ]
+
+98:  End (P95)
+
+99:  If (X<=>F) (P89)
+ 1: 168      X Loc [ LUTem_P6  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     100:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 239      Z Loc [ LTemp_P6  ]
+
+101:  End (P95)
+
+102:  If (X<=>F) (P89)
+ 1: 169      X Loc [ LUTem_P7  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     103:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 240      Z Loc [ LTemp_P7  ]
+
+104:  End (P95)
+
+105:  If (X<=>F) (P89)
+ 1: 170      X Loc [ LUTem_P8  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     106:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 241      Z Loc [ LTemp_P8  ]
+
+107:  End (P95)
+
+108:  If (X<=>F) (P89)
+ 1: 171      X Loc [ LUTem_P10 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     109:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 242      Z Loc [ LTemp_P10 ]
+
+110:  End (P95)
+
+111:  If (X<=>F) (P89)
+ 1: 172      X Loc [ BOFeu_P1  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     112:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 223      Z Loc [ WCont_P1  ]
+
+113:  End (P95)
+
+114:  If (X<=>F) (P89)
+ 1: 173      X Loc [ BOFeu_P2  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     115:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 224      Z Loc [ WCont_P2  ]
+
+116:  End (P95)
+
+117:  If (X<=>F) (P89)
+ 1: 174      X Loc [ BOFeu_P6  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     118:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 225      Z Loc [ WCont_P6  ]
+
+119:  End (P95)
+
+120:  If (X<=>F) (P89)
+ 1: 175      X Loc [ BOFeu_P7  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     121:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 226      Z Loc [ WCont_P7  ]
+
+122:  End (P95)
+
+123:  If (X<=>F) (P89)
+ 1: 176      X Loc [ BOFeu_P8  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     124:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 227      Z Loc [ WCont_P8  ]
+
+125:  End (P95)
+
+126:  If (X<=>F) (P89)
+ 1: 177      X Loc [ BOFeu_P10 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     127:  Z=F (P30)
+      1: -999     F
+      2: 00       Exponent of 10
+      3: 228      Z Loc [ WCont_P10 ]
+
+128:  End (P95)
+
+129:  End (P95)
+
+;-------------------------------------------------------------------------------
+; Projekt 1: Sensormessungen
+; MP103A, SK1110, SKP215, SKU430, A100R, W200P, ARG100
+
+; Lufttemperatur [Grad C], rel. Luftfeuchtigkeit [%]
+  130:  If (X<=>F) (P89)
+   1: 10       X Loc [ K_TrF     ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    131:  Do (P86)
+     1: 46       Set Port 6 High
+
+    132:  Excitation with Delay (P22)
+     1: 3        Ex Channel
+     2: 0        Delay W/Ex (units = 0.01 sec)
+     3: 10       Delay After Ex (units = 0.01 sec)
+     4: 0        mV Excitation
+
+    133:  Volts (SE) (P1)
+     1: 1        Reps
+     2: 5        2500 mV Slow Range
+     3: 2        SE Channel
+     4: 20       Loc [ rF_Proz   ]
+     5: 0.1      Mult
+     6: 0        Offset
+
+    134:  Volt (SE) (P1)
+     1: 1        Reps
+     2: 5        2500 mV Slow Range
+     3: 3        SE Channel
+     4: 21       Loc [ Lutemp_C  ]
+     5: 0.1      Mult
+     6: -40      Offset
+
+    135:  Do (P86)
+     1: 56       Set Port 6 Low
+
+  136:  Else (P94)
+
+    137:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 20       Z Loc [ rF_Proz   ]
+
+    138:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 21       Z Loc [ Lutemp_C  ]
+
+  139:  End (P95)
+
+; Globalstrahlung [W/m2]
+  140:  If (X<=>F) (P89)
+   1: 11       X Loc [ K_Pyr     ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    141:  Volt (SE) (P1)
+     1: 1        Reps
+     2: 3        25 mV Slow Range
+     3: 7        SE Channel
+     4: 22       Loc [ GS_Wm2    ]
+     5: 100.0    Mult
+     6: 0.0      Offset
+
+  142:  Else (P94)
+
+    143:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 22       Z Loc [ GS_Wm2    ]
+
+  144:  End (P95)
+
+; PAR [umol/m2/s]
+  145:  If (X<=>F) (P89)
+   1: 12       X Loc [ K_PAR     ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    146:  Volt (SE) (P1)
+     1: 1        Reps
+     2: 3        25 mV Slow Range
+     3: 8        SE Channel
+     4: 23       Loc [ PAR_umol  ]
+     5: 100.0    Mult
+     6: 0.0      Offset
+
+  147:  Else (P94)
+
+    148:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 23       Z Loc [ PAR_umol  ]
+
+  149:  End (P95)
+
+; UVB [mW/m2]
+  150:  If (X<=>F) (P89)
+   1: 13       X Loc [ K_UV      ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    151:  Do (P86)
+     1: 47       Set Port 7 High
+
+    152:  Excitation with Delay (P22)
+     1: 3        Ex Channel
+     2: 0000     Delay W/Ex (units = 0.01 sec)
+     3: 10       Delay After Ex (units = 0.01 sec)
+     4: 0000     mV Excitation
+
+    153:  Volt (Diff) (P2)
+     1: 1        Reps
+     2: 5        2500 mV Slow Range
+     3: 3        DIFF Channel
+     4: 24       Loc [ UVB_mWm2  ]
+     5: 13.41    Mult @@9
+     6: -0.002   Offset @@19
+
+    154:  Do (P86)
+     1: 57       Set Port 7 Low
+
+  155:  Else (P94)
+
+    156:  Z=F (P30)
+     1: -999     F
+     2: 00       Exponent of 10
+     3: 24       Z Loc [ UVB_mWm2  ]
+
+  157:  End (P95)
+
+
+
+;==============================================================================
+; Projekt 2: Sensorkennungen (0 = nicht vorhanden, 1 = vorhanden)         AM416
+
+158:  If (X<=>F) (P89)
+ 1: 3        X Loc [ Proj2_ID  ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  159:  Z=F (P30)
+   1: 1        F @@70
+   2: 00       Exponent of 10
+   3: 40       Z Loc [ K_Dendr01 ]
+
+160:  Z=F (P30)
+ 1: 1        F @@71
+ 2: 0        Exponent of 10
+ 3: 42       Z Loc [ K_Dendr02 ]
+
+161:  Z=F (P30)
+ 1: 1        F @@72
+ 2: 0        Exponent of 10
+ 3: 43       Z Loc [ K_Dendr03 ]
+
+162:  Z=F (P30)
+ 1: 1        F @@73
+ 2: 0        Exponent of 10
+ 3: 44       Z Loc [ K_Dendr04 ]
+
+163:  Z=F (P30)
+ 1: 1        F @@74
+ 2: 0        Exponent of 10
+ 3: 45       Z Loc [ K_Dendr05 ]
+
+164:  Z=F (P30)
+ 1: 1        F @@75
+ 2: 0        Exponent of 10
+ 3: 46       Z Loc [ K_Dendr06 ]
+
+165:  Z=F (P30)
+ 1: 1        F @@76
+ 2: 0        Exponent of 10
+ 3: 47       Z Loc [ K_Dendr07 ]
+
+166:  Z=F (P30)
+ 1: 1        F @@77
+ 2: 0        Exponent of 10
+ 3: 48       Z Loc [ K_Dendr08 ]
+
+167:  Z=F (P30)
+ 1: 1        F @@78
+ 2: 0        Exponent of 10
+ 3: 49       Z Loc [ K_Dendr09 ]
+
+168:  Z=F (P30)
+ 1: 1        F @@79
+ 2: 0        Exponent of 10
+ 3: 39       Z Loc [ K_Dendr10 ]
+
+  169:  Z=F (P30)
+   1: 1        F @@94
+   2: 00       Exponent of 10
+   3: 41       Z Loc [ K_Drehp1  ]
+
+170:  Z=F (P30)
+ 1: 1        F @@95
+ 2: 0        Exponent of 10
+ 3: 64       Z Loc [ K_Drehp2  ]
+
+171:  Z=F (P30)
+ 1: 1        F @@96
+ 2: 0        Exponent of 10
+ 3: 65       Z Loc [ K_Drehp3  ]
+
+172:  Z=F (P30)
+ 1: 1        F @@97
+ 2: 0        Exponent of 10
+ 3: 66       Z Loc [ K_Drehp4  ]
+
+;------------------------------------------------------------------------------
+; Projekt 2: Sensormessungen Dendrometer (DMS), Drehpotentiometer (Dial)
+
+    173:  If time is (P92)
+     1: 0000     Minutes (Seconds --) into a
+     2: 60       Interval (same units as above)
+     3: 30       Then Do
+
+; Sensorspeisung via LWE1R einschalten
+      174:  Do (P86)
+       1: 53       Set Port 3 Low
+
+      175:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (units = 0.01 sec)
+       3: 100      Delay After Ex (units = 0.01 sec)
+       4: 0        mV Excitation
+
+; AM416 aktivieren, auf Gruppe 6 schalten, messen
+      176:  Do (P86)
+       1: 41       Set Port 1 High
+
+      177:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 6        Loop Count
+
+        178:  Do (P86)
+         1: 72       Pulse Port 2
+
+      179:  End (P95)
+
+      180:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 5        Loop Count
+
+        181:  Do (P86)
+         1: 72       Pulse Port 2
+
+        182:  Step Loop Index (P90)
+         1: 2        Step
+
+        183:  Volt (Diff) (P2)
+         1: 2        Reps
+         2: 4        250 mV Slow Range
+         3: 5        DIFF Channel
+         4: 50    -- Loc [ Dendro01  ]
+         5: 1.0      Mult
+         6: 0.0      Offset
+
+      184:  End (P95)
+
+; AM416 und Sensorspeisung ausschalten
+      185:  Do (P86)
+       1: 51       Set Port 1 Low
+
+      186:  Do (P86)
+       1: 43       Set Port 3 High
+
+; AM416 aktivieren, auf Gruppe 6 schalten, messen
+      187:  Do (P86)
+       1: 41       Set Port 1 High
+
+      188:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 6        Loop Count
+
+        189:  Do (P86)
+         1: 72       Pulse Port 2
+
+      190:  End (P95)
+
+      191:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 1        Loop Count
+
+        192:  Do (P86)
+         1: 72       Pulse Port 2
+
+        193:  Step Loop Index (P90)
+         1: 4        Step
+
+        194:  Excite-Delay (SE) (P4)
+         1: 4        Reps
+         2: 5        2500 mV Slow Range
+         3: 9        SE Channel
+         4: 1        Excite all reps w/Exchan 1
+         5: 15       Delay (units 0.01 sec)
+         6: 2500     mV Excitation
+         7: 60    -- Loc [ Drehpot1  ]
+         8: 1.0      Mult
+         9: 0.0      Offset
+
+      195:  End (P95)
+
+; AM416 ausschalten
+      196:  Do (P86)
+       1: 51       Set Port 1 Low
+
+197:  If (X<=>F) (P89)
+ 1: 40       X Loc [ K_Dendr01 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+198:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 50       Z Loc [ Dendro01  ]
+
+199:  End (P95)
+200:  If (X<=>F) (P89)
+ 1: 42       X Loc [ K_Dendr02 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+201:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 51       Z Loc [ Dendro02  ]
+
+202:  End (P95)
+
+203:  If (X<=>F) (P89)
+ 1: 43       X Loc [ K_Dendr03 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+204:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 52       Z Loc [ Dendro03  ]
+
+205:  End (P95)
+
+206:  If (X<=>F) (P89)
+ 1: 44       X Loc [ K_Dendr04 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+207:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 53       Z Loc [ Dendro04  ]
+
+208:  End (P95)
+
+209:  If (X<=>F) (P89)
+ 1: 45       X Loc [ K_Dendr05 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+210:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 54       Z Loc [ Dendro05  ]
+
+211:  End (P95)
+
+212:  If (X<=>F) (P89)
+ 1: 46       X Loc [ K_Dendr06 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+213:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 55       Z Loc [ Dendro06  ]
+
+214:  End (P95)
+
+215:  If (X<=>F) (P89)
+ 1: 47       X Loc [ K_Dendr07 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+216:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 56       Z Loc [ Dendro07  ]
+
+217:  End (P95)
+
+218:  If (X<=>F) (P89)
+ 1: 48       X Loc [ K_Dendr08 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+219:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 57       Z Loc [ Dendro08  ]
+
+220:  End (P95)
+
+221:  If (X<=>F) (P89)
+ 1: 49       X Loc [ K_Dendr09 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+222:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 58       Z Loc [ Dendro09  ]
+
+223:  End (P95)
+
+224:  If (X<=>F) (P89)
+ 1: 39       X Loc [ K_Dendr10 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+225:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 59       Z Loc [ Dendro10  ]
+
+226:  End (P95)
+
+227:  If (X<=>F) (P89)
+ 1: 41       X Loc [ K_Drehp1  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+228:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 60       Z Loc [ Drehpot1  ]
+
+229:  End (P95)
+
+230:  If (X<=>F) (P89)
+ 1: 64       X Loc [ K_Drehp2  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+231:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 61       Z Loc [ Drehpot2  ]
+
+232:  End (P95)
+
+
+233:  If (X<=>F) (P89)
+ 1: 65       X Loc [ K_Drehp3  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+234:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 62       Z Loc [ Drehpot3  ]
+
+235:  End (P95)
+
+236:  If (X<=>F) (P89)
+ 1: 66       X Loc [ K_Drehp4  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+237:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 63       Z Loc [ Drehpot4  ]
+
+238:  End (P95)
+
+  239:  End (P95)
+
+240:  End (P95)
+;==============================================================================
+; Projekt 3: Sensorkennungen (0 = nicht vorhanden, 1 = vorhanden)         AM416
+
+241:  If (X<=>F) (P89)
+ 1: 4        X Loc [ Proj3_ID  ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  242:  Z=F (P30)
+   1: 1        F @@39
+   2: 00       Exponent of 10
+   3: 70       Z Loc [ K_CS505_1 ]
+
+  243:  Z=F (P30)
+   1: 1        F @@40
+   2: 00       Exponent of 10
+   3: 71       Z Loc [ K_CS205_1 ]
+
+244:  Z=F (P30)
+ 1: 1        F @@41
+ 2: 00       Exponent of 10
+ 3: 72       Z Loc [ K_CS505_2 ]
+
+245:  Z=F (P30)
+ 1: 1        F @@42
+ 2: 00       Exponent of 10
+ 3: 73       Z Loc [ K_CS205_2 ]
+
+;------------------------------------------------------------------------------
+; Projekt 3: Sensormessungen CS505 (Streufeuchte), CS205 (Streutemperatur)
+
+; Streufeuchte messen
+    246:  If time is (P92)
+     1: 0000     Minutes (Seconds --) into a
+     2: 60       Interval (same units as above)
+     3: 30       Then Do
+
+      247:  Do (P86)
+       1: 48       Set Port 8 High
+
+      248:  Do (P86)
+       1: 43       Set Port 3 High
+
+; AM416 aktivieren, auf Gruppe 4 schalten, messen
+      249:  Do (P86)
+       1: 41       Set Port 1 High
+
+      250:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 4        Loop Count
+
+        251:  Do (P86)
+         1: 72       Pulse Port 2
+
+      252:  End (P95)
+
+      253:  Beginning of Loop (P87)
+       1: 0000     Delay
+       2: 1        Loop Count
+
+        254:  Do (P86)
+         1: 72       Pulse Port 2
+
+        255:  Step Loop Index (P90)
+         1: 2        Step
+
+        256:  Period Average (SE) (P27)
+         1: 2        Reps
+         2: 4        200 kHz Max Freq @ 2 V Peak to Peak, Period Output
+         3: 9        SE Channel
+         4: 10       No. of Cycles
+         5: 5        Timeout (units = 0.01 seconds)
+         6: 80    -- Loc [ pCS505_1  ]
+         7: 0.001    Mult
+         8: 0.0      Offset
+
+      257:  End (P95)
+
+; AM416 ausschalten
+      258:  Do (P86)
+       1: 53       Set Port 3 Low
+
+      259:  Do (P86)
+       1: 51       Set Port 1 Low
+
+      260:  Do (P86)
+       1: 58       Set Port 8 Low
+
+    261:  End (P95)
+
+  262:  End (P95)
+
+; Streutemperatur messen
+  263:  If (X<=>F) (P89)
+   1: 71       X Loc [ K_CS205_1 ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    264:  If time is (P92)
+     1: 0000     Minutes (Seconds --) into a
+     2: 60       Interval (same units as above) @@46
+     3: 30       Then Do
+
+; AM416 aktivieren, auf Gruppe 5 schalten, messen
+      265:  Do (P86)
+       1: 41       Set Port 1 High
+
+      266:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 5        Loop Count
+
+        267:  Do (P86)
+         1: 72       Pulse Port 2
+
+      268:  End (P95)
+
+      269:  Beginning of Loop (P87)
+       1: 0000     Delay
+       2: 1        Loop Count
+
+        270:  Do (P86)
+         1: 72       Pulse Port 2
+
+        271:  Step Loop Index (P90)
+         1: 2        Step
+
+        272:  Temp (107) (P11)
+         1: 2        Reps
+         2: 9        SE Channel
+         3: 1        Excite all reps w/E1
+         4: 82    -- Loc [ CS205_1   ]
+         5: 1.0      Mult
+         6: 0.0      Offset
+
+      273:  End (P95)
+
+      274:  Do (P86)
+       1: 51       Set Port 1 Low
+
+  275:  End (P95)
+;------------------------------------------------------------------------------
+; Projekt 3: Berechnungen
+
+  276:  If (X<=>F) (P89)
+   1: 70       X Loc [ K_CS505_1 ]
+   2: 1        =
+   3: 1        F
+   4: 30       Then Do
+
+    277:  Polynomial (P55)
+     1: 2        Reps
+     2: 80       X Loc [ pCS505_1  ]
+     3: 84       F(X) Loc [ CS505_1   ]
+     4: -220.14  C0
+     5: 365.89   C1
+     6: -114.96  C2
+     7: 0.0      C3
+     8: 0.0      C4
+     9: 0.0      C5
+
+  278:  End (P95)
+
+279:  If (X<=>F) (P89)
+ 1: 70       X Loc [ K_CS505_1 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+280:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 84       Z Loc [ CS505_1   ]
+
+281:  End (P95)
+
+282:  If (X<=>F) (P89)
+ 1: 71       X Loc [ K_CS205_1 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+283:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 82       Z Loc [ CS205_1   ]
+
+284:  End (P95)
+
+285:  If (X<=>F) (P89)
+ 1: 72       X Loc [ K_CS505_2 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+286:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 85       Z Loc [ CS505_2   ]
+
+287:  End (P95)
+
+288:  If (X<=>F) (P89)
+ 1: 73       X Loc [ K_CS205_2 ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+289:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 83       Z Loc [ CS205_2   ]
+
+290:  End (P95)
+
+291:  End (P95)
+
+;==============================================================================
+; Projekt 4: Service
+
+292:  If (X<=>F) (P89)
+ 1: 5        X Loc [ Proj4_ID  ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  293:  Batt Voltage (P10)
+   1: 90       Loc [ Batt_V    ]
+
+  294:  Internal Temperature (P17)
+   1: 91       Loc [ CR10Tmp_C ]
+
+295:  Status Monitor (P130)
+ 1: 3        Lithium Battery (volts)
+ 2: 149      Loc [ LiBatt_V  ]
+
+296:  End (P95)
+;==============================================================================
+; Projekt 5: Sensorkennungen (0 = nicht vorhanden, 1 = vorhanden)
+
+297:  If (X<=>F) (P89)
+ 1: 6        X Loc [ Proj5_ID  ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+298:  Z=F (P30)
+ 1: 1        F @@57
+ 2: 0        Exponent of 10
+ 3: 97       Z Loc [ K_ST1_C   ]
+
+299:  Z=F (P30)
+ 1: 1        F @@58
+ 2: 0        Exponent of 10
+ 3: 98       Z Loc [ K_ST2_C   ]
+
+300:  Z=F (P30)
+ 1: 1        F @@59
+ 2: 0        Exponent of 10
+ 3: 99       Z Loc [ K_SF1_pro ]
+
+  301:  Z=F (P30)
+   1: 1        F @@60
+   2: 00       Exponent of 10
+   3: 100      Z Loc [ K_SF2_pro ]
+
+  302:  Z=F (P30)
+   1: 1        F @@80
+   2: 00       Exponent of 10
+   3: 101      Z Loc [ K_BT1_5   ]
+
+303:  Z=F (P30)
+ 1: 1        F @@81
+ 2: 0        Exponent of 10
+ 3: 102      Z Loc [ K_BT2_5   ]
+
+304:  Z=F (P30)
+ 1: 1        F @@82
+ 2: 0        Exponent of 10
+ 3: 103      Z Loc [ K_BT1_10  ]
+
+305:  Z=F (P30)
+ 1: 1        F @@83
+ 2: 0        Exponent of 10
+ 3: 104      Z Loc [ K_BT2_10  ]
+
+306:  Z=F (P30)
+ 1: 1        F @@84
+ 2: 0        Exponent of 10
+ 3: 105      Z Loc [ K_BT1_20  ]
+
+307:  Z=F (P30)
+ 1: 1        F @@85
+ 2: 0        Exponent of 10
+ 3: 106      Z Loc [ K_BT2_20  ]
+;------------------------------------------------------------------------------
+; Projekt 5: Sensormessungen rF Clip S3 (Bodenfeuchte), 107 (Bodentemperatur)
+
+; Bodennah messen
+    308:  If time is (P92)
+     1: 0000     Minutes (Seconds --) into a
+     2: 60       Interval (same units as above)
+     3: 30       Then Do
+
+; AM416 aktivieren, messen
+      309:  Do (P86)
+       1: 41       Set Port 1 High
+
+      310:  Do (P86)
+       1: 43       Set Port 3 High
+
+      311:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0000     Delay W/Ex (units = 0.01 sec)
+       3: 300      Delay After Ex (units = 0.01 sec)
+       4: 0000     mV Excitation
+
+      312:  Beginning of Loop (P87)
+       1: 0000     Delay
+       2: 1        Loop Count @@63
+
+        313:  Do (P86)
+         1: 72       Pulse Port 2
+
+        314:  Volt (SE) (P1)
+         1: 1        Reps
+         2: 35       2500 mV 50 Hz Rejection Range
+         3: 9        SE Channel
+         4: 110      Loc [ ST1_C     ]
+         5: 0.1      Mult
+         6: -40      Offset
+
+        315:  Volt (SE) (P1)
+         1: 1        Reps
+         2: 35       2500 mV 50 Hz Rejection Range
+         3: 10       SE Channel
+         4: 111      Loc [ SF1_proz  ]
+         5: 0.1      Mult
+         6: 0.0      Offset
+
+        316:  Volt (SE) (P1)
+         1: 1        Reps
+         2: 35       2500 mV 50 Hz Rejection Range
+         3: 11       SE Channel
+         4: 112      Loc [ ST2_C     ]
+         5: 0.1      Mult
+         6: -40      Offset
+
+        317:  Volt (SE) (P1)
+         1: 1        Reps
+         2: 35       2500 mV 50 Hz Rejection Range
+         3: 12       SE Channel
+         4: 113      Loc [ SF2_proz  ]
+         5: 0.1      Mult
+         6: 0.0      Offset
+
+      318:  End (P95)
+
+      319:  Do (P86)
+       1: 53       Set Port 3 Low
+
+; AM416 deaktivieren
+      320:  Do (P86)
+       1: 51       Set Port 1 Low
+
+
+321:  If (X<=>F) (P89)
+ 1: 97       X Loc [ K_ST1_C   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+322:  Z=F (P30)
+ 1: -999     F
+ 2: 00       Exponent of 10
+ 3: 110      Z Loc [ ST1_C     ]
+
+323:  End (P95)
+
+324:  If (X<=>F) (P89)
+ 1: 99       X Loc [ K_SF1_pro ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+325:  Z=F (P30)
+ 1: -999     F
+ 2: 00       Exponent of 10
+ 3: 111      Z Loc [ SF1_proz  ]
+
+326:  End (P95)
+
+327:  If (X<=>F) (P89)
+ 1: 98       X Loc [ K_ST2_C   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+328:  Z=F (P30)
+ 1: -999     F
+ 2: 00       Exponent of 10
+ 3: 112      Z Loc [ ST2_C     ]
+
+329:  End (P95)
+
+330:  If (X<=>F) (P89)
+ 1: 100      X Loc [ K_SF2_pro ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+331:  Z=F (P30)
+ 1: -999     F
+ 2: 00       Exponent of 10
+ 3: 113      Z Loc [ SF2_proz  ]
+
+332:  End (P95)
+
+; AM416 aktivieren, auf Gruppe 1 schalten, messen
+      333:  Do (P86)
+       1: 41       Set Port 1 High
+
+      334:  Beginning of Loop (P87)
+       1: 0000     Delay
+       2: 1        Loop Count
+
+        335:  Do (P86)
+         1: 72       Pulse Port 2
+
+      336:  End (P95)
+
+      337:  Beginning of Loop (P87)
+       1: 0000     Delay
+       2: 2        Loop Count
+
+        338:  Do (P86)
+         1: 72       Pulse Port 2
+
+
+339:  Step Loop Index (P90)
+ 1: 1        Step
+
+        340:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0000     Delay W/Ex (units = 0.01 sec)
+         3: 6        Delay After Ex (units = 0.01 sec)
+         4: 0000     mV Excitation
+
+        341:  Temp (107) (P11)
+         1: 1        Reps
+         2: 9        SE Channel
+         3: 33       Excite all reps w/E3, 50Hz, 10ms delay
+         4: 114   -- Loc [ BT1_5     ]
+         5: 1.0      Mult
+         6: 0.0      Offset
+
+
+        342:  Temp (107) (P11)
+         1: 1        Reps
+         2: 10       SE Channel
+         3: 33       Excite all reps w/E3, 50Hz, 10ms delay
+         4: 118   -- Loc [ BT1_20    ]
+         5: 1.0      Mult
+         6: 0.0      Offset
+
+      343:  End (P95)
+
+; AM416 deaktivieren
+      344:  Do (P86)
+       1: 51       Set Port 1 Low
+
+345:  If (X<=>F) (P89)
+ 1: 101      X Loc [ K_BT1_5   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+346:  Z=F (P30)
+ 1: -999     F
+ 2: 00       Exponent of 10
+ 3: 114      Z Loc [ BT1_5     ]
+
+347:  End (P95)
+
+348:  If (X<=>F) (P89)
+ 1: 102      X Loc [ K_BT2_5   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+349:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 115      Z Loc [ BT2_5     ]
+
+350:  End (P95)
+
+351:  If (X<=>F) (P89)
+ 1: 103      X Loc [ K_BT1_10  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+352:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 116      Z Loc [ BT1_10    ]
+
+353:  End (P95)
+
+354:  If (X<=>F) (P89)
+ 1: 104      X Loc [ K_BT2_10  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+355:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 117      Z Loc [ BT2_10    ]
+
+356:  End (P95)
+
+357:  If (X<=>F) (P89)
+ 1: 105      X Loc [ K_BT1_20  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+358:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 118      Z Loc [ BT1_20    ]
+
+359:  End (P95)
+
+360:  If (X<=>F) (P89)
+ 1: 106      X Loc [ K_BT2_20  ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+361:  Z=F (P30)
+ 1: -999     F
+ 2: 0        Exponent of 10
+ 3: 119      Z Loc [ BT2_20    ]
+
+362:  End (P95)
+
+  363:  End (P95)
+
+364:  End (P95)
+;------------------------------------------------------------------------------
+
+
+*Table 3 Subroutines
+;------------------------------------------------------------------------------
+; Stationsprogramm 7
+
+1:  Beginning of Subroutine (P85)
+ 1: 7        Subroutine 7
+
+; Korrektur fuer Ladespannung
+  2:  Z=X*F (P37)
+   1: 91       X Loc [ CR10Tmp_C ]
+   2: -0.03    F
+   3: 128      Z Loc [ korBatt_V ]
+
+; Sollreduktion wenn Shunt ein
+  3:  If Flag/Port (P91)
+   1: 44       Do if Port 4 is High
+   2: 30       Then Do
+
+    4:  Z=X+F (P34)
+     1: 128      X Loc [ korBatt_V ]
+     2: -0.6     F
+     3: 128      Z Loc [ korBatt_V ]
+
+  5:  End (P95)
+
+; Hysterese kompensieren
+  6:  Z=X+F (P34)
+   1: 128      X Loc [ korBatt_V ]
+   2: 14.2     F
+   3: 129      Z Loc [ Ladsoll_V ]
+
+; Limitierung der Ladespannung
+  7:  If (X<=>F) (P89)
+   1: 129      X Loc [ Ladsoll_V ]
+   2: 3        >=
+   3: 14       F
+   4: 30       Then Do
+
+    8:  Z=F (P30)
+     1: 14       F
+     2: 0        Exponent of 10
+     3: 129      Z Loc [ Ladsoll_V ]
+
+  9:  End (P95)
+
+; erzwungene Batterieentladung ueber Flag 1
+  10:  If Flag/Port (P91)
+   1: 11       Do if Flag 1 is High
+   2: 30       Then Do
+
+    11:  Do (P86)
+     1: 44       Set Port 4 High
+
+; erzwungene Entladung waehrend max. 4 Stunden
+    12:  If time is (P92)
+     1: 0        Minutes (Seconds --) into a
+     2: 240      Interval (same units as above)
+     3: 21       Set Flag 1 Low
+
+  13:  Else (P94)
+
+; Shunt ein wenn Batt_V >= Ladsoll_V
+    14:  IF (X<=>Y) (P88)
+     1: 90       X Loc [ Batt_V    ]
+     2: 3        >=
+     3: 129      Y Loc [ Ladsoll_V ]
+     4: 30       Then Do
+
+      15:  Do (P86)
+       1: 44       Set Port 4 High
+
+    16:  Else (P94)
+
+; Shunt aus wenn Batt_V < Ladsoll_V
+      17:  Do (P86)
+       1: 54       Set Port 4 Low
+
+    18:  End (P95)
+
+  19:  End (P95)
+
+20:  End (P95)
+;------------------------------------------------------------------------------
+; Stationsprogramm 8
+
+21:  Beginning of Subroutine (P85)
+ 1: 8        Subroutine 8
+
+  22:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 1        Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  23:  Set Active Storage Area (P80)
+   1: 3        Input Storage Area
+   2: 138      Loc [ Zeit_HHMM ]
+
+  24:  Real Time (P77)^18957
+   1: 20       Hour/Minute (midnight = 2400)
+;-----------------------------------------------------------------
+;GSM-Zeitfenster
+  25:  IF (X<=>F) (P89)
+   1: 138      X Loc [ Zeit_HHMM ]
+   2: 3        >=
+   3: 545      F @@92
+   4: 12       Set Flag 2 High
+
+  26:  IF (X<=>F) (P89)
+   1: 138      X Loc [ Zeit_HHMM ]
+   2: 3        >=
+   3: 600      F @@93
+   4: 22       Set Flag 2 Low
+
+  27:  IF (X<=>F) (P89)
+   1: 138      X Loc [ Zeit_HHMM ]
+   2: 3        >=
+   3: 1015     F @@90
+   4: 12       Set Flag 2 High
+
+  28:  IF (X<=>F) (P89)
+   1: 138      X Loc [ Zeit_HHMM ]
+   2: 3        >=
+   3: 1030     F @@91
+   4: 22       Set Flag 2 Low
+
+
+;--------------------------------------------------------------
+;GSM-Service-Fenster
+
+29:  If (X<=>F) (P89)
+ 1: 138      X Loc [ Zeit_HHMM ]
+ 2: 3        >=
+ 3: 1330     F
+ 4: 30       Then Do
+
+30:  If (X<=>F) (P89)
+ 1: 90       X Loc [ Batt_V    ]
+ 2: 3        >=
+ 3: 11       F
+ 4: 12       Set Flag 2 High
+
+31:  End (P95)
+
+32:  If (X<=>F) (P89)
+ 1: 138      X Loc [ Zeit_HHMM ]
+ 2: 3        >=
+ 3: 1430     F
+ 4: 22       Set Flag 2 Low
+
+
+;--------------------------------------------------------------
+;SMS-Alarm aktivieren
+
+33:  If (X<=>F) (P89)
+ 1: 90       X Loc [ Batt_V    ]
+ 2: 4        <
+ 3: 12       F
+ 4: 30       Then Do
+
+34:  If (X<=>F) (P89)
+ 1: 90       X Loc [ Batt_V    ]
+ 2: 3        >=
+ 3: 11.7     F
+ 4: 30       Then Do
+
+  35:  If (X<=>F) (P89)
+   1: 138      X Loc [ Zeit_HHMM ]
+   2: 3        >=
+   3: 2129     F
+   4: 30       Then Do
+
+    36:  Do (P86)
+     1: 12       Set Flag 2 High
+
+    37:  Do (P86)
+     1: 26       Set Flag 6 Low
+
+  38:  End (P95)
+
+  39:  If (X<=>F) (P89)
+   1: 138      X Loc [ Zeit_HHMM ]
+   2: 3        >=
+   3: 2140     F ;statt 2131 (12.7.02)
+   4: 30       Then Do
+
+    40:  Do (P86)
+     1: 16       Set Flag 6 High
+
+    41:  Do (P86)
+     1: 22       Set Flag 2 Low
+
+  42:  End (P95)
+
+43:  End (P95)
+
+44:  End (P95)
+
+  45:  If Flag/Port (P91)
+   1: 12       Do if Flag 2 is High
+   2: 45       Set Port 5 High
+
+  46:  If Flag/Port (P91)
+   1: 22       Do if Flag 2 is Low
+   2: 55       Set Port 5 Low
+
+
+;--------------------------------------------------------------
+; Schalter für temporären GSM-Einsatz 30 Minuten
+
+47:  If Flag/Port (P91)
+ 1: 22       Do if Flag 2 is Low
+ 2: 30       Then Do
+
+48:  If Flag/Port (P91)
+ 1: 53       Do if Port 3 is Low
+ 2: 30       Then Do
+
+49:  Do (P86)
+ 1: 27       Set Flag 7 Low
+
+50:  Do (P86)
+ 1: 28       Set Flag 8 Low
+
+51:  If Flag/Port (P91)
+ 1: 28       Do if Flag 8 is Low
+ 2: 30       Then Do
+
+52:  Z=F (P30)
+ 1: 0        F
+ 2: 0        Exponent of 10
+ 3: 150      Z Loc [ ZahlerMin ]
+
+53:  End (P95)
+
+54:  End (P95)
+
+55:  If Flag/Port (P91)
+ 1: 43       Do if Port 3 is High
+ 2: 17       Set Flag 7 High
+
+56:  If Flag/Port (P91)
+ 1: 17       Do if Flag 7 is High
+ 2: 30       Then Do
+
+57:  If Flag/Port (P91)
+ 1: 28       Do if Flag 8 is Low
+ 2: 30       Then Do
+
+58:  Z=F (P30)
+ 1: -30      F
+ 2: 0        Exponent of 10
+ 3: 150      Z Loc [ ZahlerMin ]
+
+59:  Do (P86)
+ 1: 18       Set Flag 8 High
+
+60:  End (P95)
+
+61:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 1        Interval (same units as above)
+ 3: 30       Then Do
+
+62:  Z=Z+1 (P32)
+ 1: 150      Z Loc [ ZahlerMin ]
+
+63:  End (P95)
+
+64:  If (X<=>F) (P89)
+ 1: 150      X Loc [ ZahlerMin ]
+ 2: 3        >=
+ 3: -60      F
+ 4: 45       Set Port 5 High
+
+65:  If (X<=>F) (P89)
+ 1: 150      X Loc [ ZahlerMin ]
+ 2: 3        >=
+ 3: 0        F
+ 4: 55       Set Port 5 Low
+
+66:  End (P95)
+
+67:  End (P95)
+
+68:  End (P95)
+;------------------------------------------------------------------------------
+
+
+;------------------------------------------------------------------------------
+; Stationsprogramm 9
+
+69:  Beginning of Subroutine (P85)
+ 1: 9        Subroutine 9
+
+  70:  Initiate Telecommunications (P97)
+   1: 72       Generic Modem/9600 Baud
+   2: 06       Disabled when User Flag 6 is High
+   3: 20       Seconds Call Time Limit
+   4: 60       Seconds Before Fast Retry
+   5: 2        Fast Retries
+   6: 0000     Minutes before Slow Retry
+   7: 148      Failures Loc [ SMS_Fail  ]
+   8: 0000     Call-back ID
+
+  71:  Extended Parameters 4 Digit (P68)
+   1: 87       Option  ; W
+   2: 10       Option  ; ^J
+   3: 69       Option  ; E
+   4: 10       Option  ; ^J
+   5: 65       Option  ; A
+   6: 84       Option  ; T
+   7: 43       Option  ; +
+   8: 67       Option  ; C
+
+  72:  Extended Parameters 4 Digit (P68)
+   1: 77       Option  ; M
+   2: 71       Option  ; G
+   3: 70       Option  ; F
+   4: 61       Option  ; =
+   5: 49       Option  ; 1
+   6: 13       Option  ; ^M
+   7: 87       Option  ; W
+   8: 20       Option  ; ^T
+
+  73:  Extended Parameters 4 Digit (P68)
+   1: 87       Option  ; W
+   2: 10       Option  ; ^J
+   3: 69       Option  ; E
+   4: 23       Option  ; ^W
+   5: 65       Option  ; A
+   6: 84       Option  ; T
+   7: 43       Option  ; +
+   8: 67       Option  ; C
+
+  74:  Extended Parameters 4 Digit (P68)
+   1: 77       Option  ; M
+   2: 71       Option  ; G
+   3: 83       Option  ; S
+   4: 61       Option  ; =
+   5: 34       Option  ; "
+   6: 43       Option  ; +
+   7: 52       Option  ; 4
+   8: 49       Option  ; 1
+
+  75:  Extended Parameters 4 Digit (P68)
+   1: 55       Option  ; 7
+   2: 57       Option  ; 9
+   3: 50       Option  ; 2
+   4: 48       Option  ; 0
+   5: 56       Option  ; 8
+   6: 51       Option  ; 3
+   7: 54       Option  ; 6
+   8: 50       Option  ; 2
+
+  76:  Extended Parameters 4 Digit (P68)
+   1: 55       Option  ; 7
+   2: 34       Option  ; "
+   3: 13       Option  ; ^M
+   4: 82       Option  ; R
+   5: 3        Option  ; ^C
+   6: 10       Option  ; ^J
+   7: 62       Option  ; >
+   8: 32       Option  ; Space
+
+  77:  Extended Parameters 4 Digit (P68)
+   1: 69       Option  ; E
+   2: 17       Option  ; ^Q
+   3: 66       Option  ; B
+   4: 97       Option  ; a
+   5: 116      Option  ; t
+   6: 116      Option  ; t
+   7: 101      Option  ; e
+   8: 114      Option  ; r
+
+  78:  Extended Parameters 4 Digit (P68)
+   1: 105      Option  ; i
+   2: 101      Option  ; e
+   3: 32       Option  ; Space
+   4: 76       Option  ; L
+   5: 87       Option  ; W
+   6: 70       Option  ; F
+   7: 48       Option  ; 0
+   8: 50       Option  ; 2
+
+  79:  Extended Parameters 4 Digit (P68)
+   1: 32       Option  ; Space
+   2: 61       Option  ; =
+   3: 32       Option  ; Space
+   4: 73       Option  ; I
+   5: 90       Option  ; Z
+   6: 69       Option  ; E
+   7: 2        Option  ; ^B
+   8: 86       Option  ; V
+
+  80:  Extended Parameters 4 Digit (P68)
+   1: 26       Option  ; ^2
+   2: 68       Option  ; D
+   3: 100      Option  ; d
+   4: 0000     Option
+   5: 0000     Option
+   6: 0000     Option
+   7: 0000     Option
+   8: 0000     Option
+
+81:  End (P95)
+;------------------------------------------------------------------------------
+End Program
+
+
+
+
+
+
+-Input Locations-
+1 Stat_ID   1 8 1
+2 Proj1_ID  1 4 1
+3 Proj2_ID  1 3 1
+4 Proj3_ID  1 3 1
+5 Proj4_ID  1 2 1
+6 Proj5_ID  1 3 1
+7 Proj6_ID  1 0 1
+8 Proj7_ID  1 0 1
+9 Proj12_ID 1 3 1
+10 K_TrF     1 1 0
+11 K_Pyr     1 1 1
+12 K_PAR     1 1 1
+13 K_UV      1 1 1
+14 K_WG      1 1 1
+15 K_WR      1 2 1
+16 K_Ns      1 1 1
+17 _________ 0 0 0
+18 _________ 0 0 0
+19 _________ 0 0 0
+20 rF_Proz   1 3 2
+21 Lutemp_C  1 2 2
+22 GS_Wm2    1 2 2
+23 PAR_umol  1 2 2
+24 UVB_mWm2  1 2 2
+25 WS_ms     1 4 2
+26 WR_Grad   1 2 2
+27 Regen_mm  1 2 2
+28 _________ 0 0 0
+29 _________ 0 0 0
+30 rF_std    1 3 1
+31 Lutmp_std 1 1 1
+32 GS_std    9 1 0
+33 PAR_std   9 1 0
+34 UVB_std   9 1 0
+35 WS_std    17 1 0
+36 WS_mean   1 0 1
+37 WR_mean   1 0 1
+38 WR_std    1 1 1
+39 K_Dendr10 1 1 1
+40 K_Dendr01 1 1 1
+41 K_Drehp1  1 1 1
+42 K_Dendr02 1 1 1
+43 K_Dendr03 1 1 1
+44 K_Dendr04 1 1 1
+45 K_Dendr05 1 1 1
+46 K_Dendr06 1 1 1
+47 K_Dendr07 1 1 1
+48 K_Dendr08 1 1 1
+49 K_Dendr09 1 1 1
+50 Dendro01  5 1 2
+51 Dendro02  17 1 2
+52 Dendro03  1 1 1
+53 Dendro04  1 1 1
+54 Dendro05  1 1 1
+55 Dendro06  1 1 1
+56 Dendro07  1 1 1
+57 Dendro08  1 1 1
+58 Dendro09  1 1 1
+59 Dendro10  1 1 1
+60 Drehpot1  1 1 0
+61 Drehpot2  9 1 2
+62 Drehpot3  9 1 2
+63 Drehpot4  17 1 2
+64 K_Drehp2  1 1 1
+65 K_Drehp3  1 1 1
+66 K_Drehp4  1 1 1
+67 _________ 1 0 0
+68 _________ 0 0 0
+69 _________ 0 0 0
+70 K_CS505_1 1 2 1
+71 K_CS205_1 1 2 1
+72 K_CS505_2 1 1 1
+73 K_CS205_2 1 1 1
+74 _________ 0 0 0
+75 _________ 0 0 0
+76 _________ 0 0 0
+77 _________ 0 0 0
+78 regen10   1 1 1
+79 _________ 0 0 0
+80 pCS505_1  5 1 1
+81 pCS505_2  17 1 1
+82 CS205_1   5 1 2
+83 CS205_2   17 1 2
+84 CS505_1   5 1 2
+85 CS505_2   17 1 2
+86 _________ 1 0 0
+87 _________ 1 0 0
+88 _________ 0 0 0
+89 _________ 0 0 0
+90 Batt_V    1 7 1
+91 CR10Tmp_C 1 2 1
+92 _________ 0 0 0
+93 rF10      1 1 1
+94 _________ 0 0 0
+95 rFstd10   1 1 1
+96 _________ 0 0 0
+97 K_ST1_C   1 1 1
+98 K_ST2_C   1 1 1
+99 K_SF1_pro 1 1 1
+100 K_SF2_pro 1 1 1
+101 K_BT1_5   1 1 1
+102 K_BT2_5   1 1 1
+103 K_BT1_10  1 1 1
+104 K_BT2_10  1 1 1
+105 K_BT1_20  1 1 1
+106 K_BT2_20  1 1 1
+107 _________ 0 0 0
+108 _________ 0 0 0
+109 _________ 0 0 0
+110 ST1_C     1 1 2
+111 SF1_proz  1 1 2
+112 ST2_C     1 1 2
+113 SF2_proz  1 1 2
+114 BT1_5     5 1 2
+115 BT2_5     17 1 1
+116 BT1_10    13 0 1
+117 BT2_10    25 0 1
+118 BT1_20    5 1 2
+119 BT2_20    1 1 1
+120 _________ 1 0 0
+121 _________ 1 0 0
+122 _________ 0 0 0
+123 _________ 0 0 0
+124 _________ 0 0 0
+125 _________ 0 0 0
+126 _________ 0 0 0
+127 _________ 0 0 0
+128 korBatt_V 1 2 2
+129 Ladsoll_V 1 2 2
+130 _________ 0 0 0
+131 _________ 0 0 0
+132 _________ 1 0 0
+133 _________ 1 0 0
+134 _________ 1 0 0
+135 _________ 1 0 0
+138 Zeit_HHMM 1 8 1
+148 SMS_Fail  1 0 1
+149 LiBatt_V  1 1 1
+150 ZahlerMin 1 2 3
+151 Dendro061 1 0 0
+152 Wi_Spitze 1 1 1
+153 WS_S_WVT  1 1 0
+154 WR_D1_WVT 1 1 1
+160 BOTem_P1  1 1 1
+161 BOTem_P2  1 1 1
+162 BOTem_P6  1 1 1
+163 BOTem_P7  1 1 1
+164 BOTem_P8  1 1 1
+165 BOTem_P10 1 1 1
+166 LUTem_P1  1 1 1
+167 LUTem_P2  1 1 1
+168 LUTem_P6  1 1 1
+169 LUTem_P7  1 1 1
+170 LUTem_P8  1 1 1
+171 LUTem_P10 1 1 1
+172 BOFeu_P1  1 1 1
+173 BOFeu_P2  1 1 1
+174 BOFeu_P6  1 1 1
+175 BOFeu_P7  1 1 1
+176 BOFeu_P8  1 1 1
+177 BOFeu_P10 1 1 1
+178 _________ 0 0 0
+179 _________ 0 0 0
+180 Tref      1 6 1
+181 BTempOK_1 7 1 1
+182 BTempOK_2 11 1 0
+183 BTempOK_3 11 1 0
+184 BTempOK_4 11 1 0
+185 BTempOK_5 11 1 0
+186 BTempOK_6 19 1 0
+187 _________ 0 0 0
+188 BTemp_P1  1 2 2
+189 BTemp_P2  1 2 2
+190 BTemp_P6  1 2 2
+191 BTemp_P7  1 2 2
+192 BTemp_P8  1 2 2
+193 BTemp_P10 1 2 2
+194 _________ 0 0 0
+195 CS616us_1 7 6 1
+196 CS616us_2 11 1 0
+197 CS616us_3 11 1 0
+198 CS616us_4 11 1 0
+199 CS616us_5 11 1 0
+200 CS616us_6 19 1 0
+201 _________ 0 0 0
+202 TCS616_1  7 2 2
+203 TCS616_2  11 2 1
+204 TCS616_3  11 2 1
+205 TCS616_4  11 2 1
+206 TCS616_5  11 2 1
+207 TCS616_6  19 2 1
+208 _________ 0 0 0
+209 TFact_P1  1 1 1
+210 TFact_P2  1 1 1
+211 TFact_P6  1 1 1
+212 TFact_P7  1 1 1
+213 TFact_P8  1 1 1
+214 TFact_P10 1 1 1
+215 _________ 0 0 0
+216 NS616_P1  1 1 1
+217 NS616_P2  1 1 1
+218 NS616_P6  1 1 1
+219 NS616_P7  1 1 1
+220 NS616_P8  1 1 1
+221 NS616_P10 1 1 1
+222 _________ 0 0 0
+223 WCont_P1  1 1 2
+224 WCont_P2  1 1 2
+225 WCont_P6  1 1 2
+226 WCont_P7  1 1 2
+227 WCont_P8  1 1 2
+228 WCont_P10 1 1 2
+229 _________ 0 0 0
+230 LTempOK_1 7 1 1
+231 LTempOK_2 11 1 0
+232 LTempOK_3 11 1 0
+233 LTempOK_4 11 1 0
+234 LTempOK_5 11 1 0
+235 LTempOK_6 19 1 0
+236 _________ 0 0 0
+237 LTemp_P1  1 1 2
+238 LTemp_P2  1 1 2
+239 LTemp_P6  1 1 2
+240 LTemp_P7  1 1 2
+241 LTemp_P8  1 1 2
+242 LTemp_P10 1 1 2
+243 Proj23_ID 1 3 1
+244 K_Oz      1 1 1
+245 Ozon_ppbv 1 1 2
+-Program Security-
+9044
+9045
+0000
+-Mode 4-
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+19
+35
+36
+39
+40
+41
+42
+46
+51
+52
+57
+58
+59
+60
+63
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+-Final Storage Area 2-
+1024
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,Proj1_ID~2,6580
+1,LTemp_P1_AVG~237,335
+1,LTemp_P2_AVG~238
+1,LTemp_P6_AVG~239
+1,LTemp_P7_AVG~240
+1,LTemp_P8_AVG~241
+1,LTemp_P10_AVG~242
+2,WS_ms_S_WVT~25,24150
+2,WR_Grad_D1_WVT~26
+2,WR_Grad_SD1_WVT~26
+3,WS_ms_MAX~25,6888
+4,WS_ms_S_WVT~25,10981
+4,WR_Grad_D1_WVT~26
+5,Lutemp_C_STD~21,946
+5,GS_Wm2_STD~22
+5,PAR_umol_STD~23
+5,UVB_mWm2_STD~24
+5,WS_ms_STD~25
+6,rF_Proz_STD~20,15286
+7,10,28382
+8,Stat_ID~1,140
+9,Proj1_ID~2,1803
+10,Year_RTM,21846
+10,Day_RTM
+10,Hour_Minute_RTM
+11,Lutemp_C_AVG~21,18003
+11,GS_Wm2_AVG~22
+11,PAR_umol_AVG~23
+11,UVB_mWm2_AVG~24
+12,WS_S_WVT~153,16595
+12,WR_D1_WVT~154
+13,Lutmp_std~31,12097
+13,GS_std~32
+13,PAR_std~33
+13,UVB_std~34
+13,WS_std~35
+14,WR_std~38,4061
+15,Wi_Spitze~152,20248
+16,rF10_AVG~93,16838
+17,regen10_TOT~78,16226
+18,rFstd10~95,703
+19,60,18321
+20,Stat_ID~1,2256
+21,Proj1_ID~2,13784
+22,Year_RTM,30407
+22,Day_RTM
+22,Hour_Minute_RTM
+23,rF_Proz_AVG~20,3923
+24,Regen_mm_TOT~27,5584
+25,rF_std~30,7129
+26,60,11074
+27,Stat_ID~1,6368
+28,Proj2_ID~3,5072
+29,Year_RTM,20725
+29,Day_RTM
+29,Hour_Minute_RTM
+30,Dendro01_AVG~50,1975
+30,Dendro02_AVG~51
+30,Dendro03_AVG~52
+30,Dendro04_AVG~53
+30,Dendro05_AVG~54
+30,Dendro06_AVG~55
+30,Dendro07_AVG~56
+30,Dendro08_AVG~57
+30,Dendro09_AVG~58
+30,Dendro10_AVG~59
+31,Drehpot1_AVG~60,31369
+31,Drehpot2_AVG~61
+31,Drehpot3_AVG~62
+31,Drehpot4_AVG~63
+32,60,9566
+33,Stat_ID~1,24774
+34,Proj3_ID~4,93
+35,Year_RTM,31852
+35,Day_RTM
+35,Hour_Minute_RTM
+36,CS505_1_AVG~84,8831
+36,CS505_2_AVG~85
+37,CS205_1_AVG~82,4284
+37,CS205_2_AVG~83
+38,10,4884
+39,Stat_ID~1,8591
+40,Proj23_ID~243,15941
+41,Year_RTM,29702
+41,Day_RTM
+41,Hour_Minute_RTM
+42,Ozon_ppbv_AVG~245,25365
+43,240,18971
+44,Stat_ID~1,10758
+45,Proj4_ID~5,29614
+46,Year_RTM,6450
+46,Day_RTM
+46,Hour_Minute_RTM
+47,Batt_V_AVG~90,11461
+47,CR10Tmp_C_AVG~91
+48,LiBatt_V_AVG~149,27696
+49,60,22710
+50,Stat_ID~1,20156
+51,Proj5_ID~6,1343
+52,Year_RTM,16580
+52,Day_RTM
+52,Hour_Minute_RTM
+53,ST1_C_AVG~110,1652
+54,SF1_proz_AVG~111,26894
+55,ST2_C_AVG~112,30175
+56,SF2_proz_AVG~113,31077
+57,BT1_5_AVG~114,13045
+57,BT2_5_AVG~115
+58,BT1_20_AVG~118,27565
+58,BT2_20_AVG~119
+59,60,14939
+60,Stat_ID~1,29461
+61,Proj12_ID~9,2964
+62,Year_RTM,26386
+62,Day_RTM
+62,Hour_Minute_RTM
+63,BTemp_P1_AVG~188,27045
+63,BTemp_P2_AVG~189
+63,BTemp_P6_AVG~190
+63,BTemp_P7_AVG~191
+63,BTemp_P8_AVG~192
+63,BTemp_P10_AVG~193
+64,WCont_P1_AVG~223,22406
+64,WCont_P2_AVG~224
+64,WCont_P6_AVG~225
+64,WCont_P7_AVG~226
+64,WCont_P8_AVG~227
+64,WCont_P10_AVG~228
+65,LTemp_P1_AVG~237,21410
+65,LTemp_P2_AVG~238
+65,LTemp_P6_AVG~239
+65,LTemp_P7_AVG~240
+65,LTemp_P8_AVG~241
+65,LTemp_P10_AVG~242
+66,Hour_Minute_RTM,18957

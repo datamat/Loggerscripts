@@ -1,0 +1,87 @@
+'CR1000 Series Datalogger
+'To create a different opening program template, type in new
+'instructions and select Template | Save as Default Template
+'date:
+'program author:
+
+' Declare Public Variables
+Public PTemp, batt_volt
+
+' Declare Communication Variables
+Public FlagFTP As Long
+Public DataLine As String * 1000
+Public DataFile As Long
+Public pppIPAddress As String * 30
+Public pppCloseSuccess As Boolean
+Public pppOpenState As Boolean
+Public pppOpenCount As Long
+Public FTPSendSuccess As Boolean
+Public NTPOffset As Long
+Public FTPCount As Long
+
+' Declare GSM-Modem Konfiguration variables
+Public FlagConfigGSM As Long
+Public GSMCommandString As String * 100
+Public GSMAnswer As String * 1000
+Dim    SerialInput As String * 100
+
+' Declare Ftp Variables
+Const cFTP_IP       =   "ftp.wsl.ch"
+Const cFTP_User     =   "lwf_gprs"
+Const cFTP_Pwd      =   "rpg08.wl"
+Const cDataFileName =   "USR:LocalData.dat"
+Const cFTPFileName  =   "Test.txt"
+
+'Define Data Tables
+DataTable (Test,1,1000)
+	DataInterval (0,10,Sec,10)
+	Minimum (1,batt_volt,FP2,0,False)
+	Sample (1,PTemp,FP2)
+EndTable
+
+
+'Define Subroutines
+' DataRecord an File auf USR: auf Logger anhaengen  (Peter Waldner, 14.9.2015)
+Sub SubAppend
+        ' "2014-09-14 00:00:00",RecordNr="1",DataTable
+        DataLine=Mid(DataLine,1,21)&","&"1"&Mid(DataLine,22,Len(DataLine)-22)&CHR(10)
+        DataFile=FileOpen(cDataFileName,"a",-1)
+        FileWrite(DataFile,DataLine,0)
+        FileClose(DataFile)
+EndSub
+
+'Main Program
+BeginProg
+	Scan (10,Sec,0,0)
+		PanelTemp (PTemp,250)
+		Battery (batt_volt)
+		'Enter other measurement instructions
+		'Call Output Tables
+		'Example:
+		If TimeIntoInterval(0,10,Sec) Then
+  		CallTable Test
+      GetRecord(DataLine,Test,1)
+ 		  Call SubAppend
+    EndIf
+    
+    ' Communication
+     ' a) Programme
+     'SerialOpen(ComRS232,9600,0,100,100)
+     'Delay(1,200,mSec)
+     'SerialFlush(ComRS232)
+     'SerialOut(ComRS232,"AT+CGDCONT=1,""IP"",""wsl.swisscom.ch"";" & CHR(13),"",1,100)
+     'SerialClose(ComRS232)
+     
+     ' Open PPP
+     pppIPAddress = PPPOpen
+
+     ' ftp
+     FTPClient(cFTP_IP,cFTP_User,cFTP_Pwd,cDataFileName,cFTPFileName,0)
+     FileManage(cDataFileName,8)
+
+     ' Close PPP
+     PPPClose
+
+	NextScan
+EndProg
+

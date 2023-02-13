@@ -1,0 +1,1469 @@
+;{CR10X}
+;------------------------------------------------------------------------------
+; Stationsname:            LWF 70 - Novaggio Physiologie - NOV_S
+; Standort:                Novaggio Bestand
+; In Betrieb:              Von 22.08.2008 bis ............
+;
+; Kommunikation:           079 209 50 76 (xx:10 - xx:20, xx= 9 - 18)
+;
+; Stationsstatus
+; Table 1 - Projekt 21:                               alle 10 Min.
+;    - 10 Saftflusssensoren (Multiplexer),
+;    - 10 Dendrometer (Multiplexer),
+;    - Range Check Sapflow und Dendrometer-Messungen
+;    - Mittelwertbildung alle 10 Minuten
+;
+; Table 1 - Projekt 22:                               alle 60 Min.
+;    - 10 Bodenfeuchtesensoren (CR10X))
+;    - Mittelwertbildung alle 60 Minuten
+;
+;========================================================================
+; Station:
+; --------
+;   o Serial Number:       Z20081 - Nova29
+;   o Location:            Novaggio
+;   o Call Number:         079 209 50 76
+;   o Connection:
+;   o Service Window:
+;
+; Program:
+; --------
+;   + Station Program 1:     Port 1: AM16/32A reset
+;                            Port 2: AM16/32A clock
+;                            Port 3: leer
+;                            Port 4: GSM Ignition (high = ON)
+;                            Port 5: SOL (12V):
+;                            Port 6: SOL (12V): ECHO-Speisung
+;                            Port 7: SOL (GND): Dendro-Speisung (5V Logger)
+;                            Port 8: SOL (GND): Sapflow-Speisung
+;
+;                            Flag 1:
+;                            Flag 2:
+;                            Flag 3:
+;                            Flag 4: High = GSM ON (Zeitfenster verlaenger)
+;                            Flag 5:
+;                            Flag 6: high = ECHO AUS
+;                            Flag 7: high = Dendrometerspeisung AUS
+;                            Flag 8: high = Sapflowspeisung AUS
+;
+;
+;   o Source Code:         Nova29.CSI
+;   o Author:              Roman Zweifel / WSL
+;   o Version:             2.9 (22. August 2008)
+;
+; Table 4 Parameters:
+; -------------------
+; @@00  Station ID = Speicherintervall [10]
+; @@01  Execution Interval Table 1 [10s]
+; @@02  Stationsnummer [..]
+; @@03  Projektnummer [..]
+; @@04
+; @@05
+; @@06
+;========================================================================
+; Aenderungen 29.08.2008 (P. Waldner)
+; -  Aufteilen Projekt 21 und 22, Bodenfeuchtesensoren alle 60 Min. 
+;
+;========================================================================
+
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+
+;----------------------- Stations- und Projektkennung ---------------
+1:  Z=F x 10^n (P30)
+ 1: 70       F
+ 2: 00       n, Exponent of 10
+ 3: 1        Z Loc [ Stat_Nr__ ]
+
+
+2:  Z=F x 10^n (P30)
+ 1: 21       F
+ 2: 00       n, Exponent of 10
+ 3: 2        Z Loc [ Proj_21   ]
+
+3:  Z=F x 10^n (P30)
+ 1: 22       F
+ 2: 00       n, Exponent of 10
+ 3: 3        Z Loc [ Proj_22   ]
+
+;-------------------------- Stationsstatus ---------------------------
+
+; Batteriespannung und Loggertemperatur messen
+
+4:  Batt Voltage (P10)
+ 1: 36       Loc [ BattVolt  ]
+
+
+5:  Internal Temperature (P17)
+ 1: 37       Loc [ CR10XTemp ]
+
+; Minimale Batteriespannung
+
+6:  If (X<=>Y) (P88)
+ 1: 36       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 38       Y Loc [ Batt_Min  ]
+ 4: 30       Then Do
+
+     7:  Z=X (P31)
+      1: 36       X Loc [ BattVolt  ]
+      2: 38       Z Loc [ Batt_Min  ]
+
+8:  End (P95)
+
+; Stationsstatus speichern alle 1440 Minuten
+
+9:  If time is (P92)
+ 1: 5        Minutes (Seconds --) into a
+ 2: 1440     Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+
+10:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 38       Loc [ Batt_Min  ]
+
+11:  Minimum (P74)^23980
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 36       Loc [ BattVolt  ]
+
+12:  Maximum (P73)^7352
+ 1: 1        Reps
+ 2: 00       Time Option
+ 3: 36       Loc [ BattVolt  ]
+
+; Ports -> InLocs
+
+13:  Read Ports (P25)
+ 1: 1        Mask (0..255)
+ 2: 43       Loc [ Ctr1      ]
+
+
+14:  Read Ports (P25)
+ 1: 2        Mask (0..255)
+ 2: 44       Loc [ Ctr2      ]
+
+
+15:  Read Ports (P25)
+ 1: 4        Mask (0..255)
+ 2: 45       Loc [ Ctr3      ]
+
+
+16:  Read Ports (P25)
+ 1: 8        Mask (0..255)
+ 2: 46       Loc [ Ctr4      ]
+
+17:  Read Ports (P25)
+ 1: 16       Mask (0..255)
+ 2: 47       Loc [ Ctr5      ]
+
+
+18:  Read Ports (P25)
+ 1: 32       Mask (0..255)
+ 2: 48       Loc [ Ctr6      ]
+
+
+19:  Read Ports (P25)
+ 1: 64       Mask (0..255)
+ 2: 49       Loc [ Ctr7      ]
+
+20:  Read Ports (P25)
+ 1: 128      Mask (0..255)
+ 2: 50       Loc [ Ctr8      ]
+
+
+
+;--------------------------- Programmsteuerung -----------------------------
+;---------------------- Batt- und Flag-abhaengige Speisungssteuerung ------------------
+
+; ---- Schwellenwerte ----
+
+; LowBat8 (Sappflow) < 11.9 V
+
+21:  If (X<=>F) (P89)
+ 1: 36       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 11.9     F
+ 4: 30       Then Do
+
+     22:  Z=F x 10^n (P30)
+      1: 1        F
+      2: 00       n, Exponent of 10
+      3: 53       Z Loc [ LowBat8   ]
+
+23:  End (P95)
+
+; LowBat8 (Sappflow) > 12 V
+
+24:  If (X<=>F) (P89)
+ 1: 38       X Loc [ Batt_Min  ]
+ 2: 3        >=
+ 3: 12.0     F
+ 4: 30       Then Do
+
+
+     25:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 00       n, Exponent of 10
+      3: 53       Z Loc [ LowBat8   ]
+
+26:  End (P95)
+
+
+
+; LowBat6 (Echo) < 11.8 V
+
+27:  If (X<=>F) (P89)
+ 1: 36       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 11.8     F
+ 4: 30       Then Do
+
+     28:  Z=F x 10^n (P30)
+      1: 1        F
+      2: 00       n, Exponent of 10
+      3: 51       Z Loc [ LowBat6   ]
+
+29:  End (P95)
+
+; LowBat6 (Echo) > 11.9 V
+
+30:  If (X<=>F) (P89)
+ 1: 38       X Loc [ Batt_Min  ]
+ 2: 3        >=
+ 3: 11.9     F
+ 4: 30       Then Do
+
+
+     31:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 00       n, Exponent of 10
+      3: 51       Z Loc [ LowBat6   ]
+
+32:  End (P95)
+
+
+
+; LowBat7 (Dendro) < 11.6 V
+
+33:  If (X<=>F) (P89)
+ 1: 36       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 11.6     F
+ 4: 30       Then Do
+
+     34:  Z=F x 10^n (P30)
+      1: 1        F
+      2: 00       n, Exponent of 10
+      3: 52       Z Loc [ LowBat7   ]
+
+35:  End (P95)
+
+; LowBat7 (Dendro) > 11.8 V
+
+36:  If (X<=>F) (P89)
+ 1: 38       X Loc [ Batt_Min  ]
+ 2: 3        >=
+ 3: 11.8     F
+ 4: 30       Then Do
+
+
+     37:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 00       n, Exponent of 10
+      3: 52       Z Loc [ LowBat7   ]
+
+38:  End (P95)
+
+
+; ---- Schaltung ----
+
+; Sappflow-Speisung ein, falls Flag8=Low AND LowBat8=0, sonst aus
+
+39:  If Flag/Port (P91)
+ 1: 18       Do if Flag 8 is High
+ 2: 58       Set Port 8 Low
+
+40:  If (X<=>F) (P89)
+ 1: 53       X Loc [ LowBat8   ]
+ 2: 1        =
+ 3: 1        F
+ 4: 58       Set Port 8 Low
+
+41:  If (X<=>F) (P89)
+ 1: 53       X Loc [ LowBat8   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     42:  If Flag/Port (P91)
+      1: 28       Do if Flag 8 is Low
+      2: 48       Set Port 8 High
+
+    43:  End (P95)
+
+
+
+; Dendrometer-Speisung ein, falls Flag7=Low AND LowBat7=0, sonst aus
+
+44:  If Flag/Port (P91)
+ 1: 17       Do if Flag 7 is High
+ 2: 57       Set Port 7 Low
+
+
+45:  If (X<=>F) (P89)
+ 1: 52       X Loc [ LowBat7   ]
+ 2: 1        =
+ 3: 1        F
+ 4: 57       Set Port 7 Low
+
+
+46:  If (X<=>F) (P89)
+ 1: 52       X Loc [ LowBat7   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     47:  If Flag/Port (P91)
+      1: 27       Do if Flag 7 is Low
+      2: 47       Set Port 7 High
+
+    48:  End (P95)
+
+
+; Echo-Speisung ein, falls Flag6=Low AND LowBat6=0, sonst aus
+
+49:  If Flag/Port (P91)
+ 1: 16       Do if Flag 6 is High
+ 2: 56       Set Port 6 Low
+
+50:  If (X<=>F) (P89)
+ 1: 51       X Loc [ LowBat6   ]
+ 2: 1        =
+ 3: 1        F
+ 4: 56       Set Port 6 Low
+
+51:  If (X<=>F) (P89)
+ 1: 51       X Loc [ LowBat6   ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+     52:  If Flag/Port (P91)
+      1: 26       Do if Flag 6 is Low
+      2: 46       Set Port 6 High
+
+    53:  End (P95)
+
+
+
+;------------------------- Messungen auf dem Logger ------------------------
+; =========== Projekt 22 - Messung Echo Bodenfeuchtesensoren   alle 60 Min.
+
+    54:  If time is (P92)
+     1: 59       Minutes (Seconds --) into a
+     2: 60       Interval (same units as above)
+     3: 30       Then Do
+
+55:  If Flag/Port (P91)
+ 1: 46       Do if Port 6 is High
+ 2: 30       Then Do
+
+56:  Excite-Delay (SE) (P4)
+ 1: 3        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 3        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 1        Delay (0.01 sec units)
+ 6: 2500     mV Excitation
+ 7: 226      Loc [ EchoU1_15 ]
+ 8: 1        Multiplier
+ 9: 0        Offset
+
+57:  Excite-Delay (SE) (P4)
+ 1: 3        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 6        SE Channel
+ 4: 2        Excite all reps w/Exchan 2
+ 5: 1        Delay (0.01 sec units)
+ 6: 2500     mV Excitation
+ 7: 229      Loc [ EchoU2_15 ]
+ 8: 1        Multiplier
+ 9: 0        Offset
+
+58:  Excite-Delay (SE) (P4)
+ 1: 3        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 9        SE Channel
+ 4: 3        Excite all reps w/Exchan 3
+ 5: 1        Delay (0.01 sec units)
+ 6: 2500     mV Excitation
+ 7: 232      Loc [ EchoU3_15 ]
+ 8: 1        Multiplier
+ 9: 0        Offset
+
+; Umrechung in Bodenwassergehalt (Lineare Kalibration pro Sensor)
+; Standardkalibration Y=X*0.00119-0.4 fuer Mineralboeden (p. 17, in Manual EC-5, 2006)
+; Achtung: Fuer exakte Werte ist eine Eichung mit der
+; entsprechenden Kabellaenge und des Bodentyps notwendig.
+
+; Echo_1_15
+      59:  Z=X*F (P37)
+       1: 226      X Loc [ EchoU1_15 ]
+       2: 0.00119  F
+       3: 26       Z Loc [ Echo_1_15 ]
+
+      60:  Z=X+F (P34)
+       1: 26       X Loc [ Echo_1_15 ]
+       2: -.4      F
+       3: 26       Z Loc [ Echo_1_15 ]
+
+; Echo_1_50
+      61:  Z=X*F (P37)
+       1: 227      X Loc [ EchoU1_50 ]
+       2: 0.00119  F
+       3: 27       Z Loc [ Echo_1_50 ]
+
+      62:  Z=X+F (P34)
+       1: 27       X Loc [ Echo_1_50 ]
+       2: -.4      F
+       3: 27       Z Loc [ Echo_1_50 ]
+
+; Echo_1_80
+      63:  Z=X*F (P37)
+       1: 228      X Loc [ EchoU1_80 ]
+       2: 0.00119  F
+       3: 28       Z Loc [ Echo_1_80 ]
+
+      64:  Z=X+F (P34)
+       1: 28       X Loc [ Echo_1_80 ]
+       2: -.4      F
+       3: 28       Z Loc [ Echo_1_80 ]
+
+; Echo_2_15
+      65:  Z=X*F (P37)
+       1: 229      X Loc [ EchoU2_15 ]
+       2: 0.00119  F
+       3: 29       Z Loc [ Echo_2_15 ]
+
+      66:  Z=X+F (P34)
+       1: 29       X Loc [ Echo_2_15 ]
+       2: -.4      F
+       3: 29       Z Loc [ Echo_2_15 ]
+
+; Echo_2_50
+      67:  Z=X*F (P37)
+       1: 230      X Loc [ EchoU2_50 ]
+       2: 0.00119  F
+       3: 30       Z Loc [ Echo_2_50 ]
+
+      68:  Z=X+F (P34)
+       1: 30       X Loc [ Echo_2_50 ]
+       2: -.4      F
+       3: 30       Z Loc [ Echo_2_50 ]
+
+; Echo_2_80
+      69:  Z=X*F (P37)
+       1: 231      X Loc [ EchoU2_80 ]
+       2: 0.00119  F
+       3: 31       Z Loc [ Echo_2_80 ]
+
+      70:  Z=X+F (P34)
+       1: 31       X Loc [ Echo_2_80 ]
+       2: -.4      F
+       3: 31       Z Loc [ Echo_2_80 ]
+
+
+; Echo_3_15
+      71:  Z=X*F (P37)
+       1: 232      X Loc [ EchoU3_15 ]
+       2: 0.00119  F
+       3: 32       Z Loc [ Echo_3_15 ]
+
+      72:  Z=X+F (P34)
+       1: 32       X Loc [ Echo_3_15 ]
+       2: -.4      F
+       3: 32       Z Loc [ Echo_3_15 ]
+
+; Echo_3_50
+      73:  Z=X*F (P37)
+       1: 233      X Loc [ EchoU3_50 ]
+       2: 0.00119  F
+       3: 33       Z Loc [ Echo_3_50 ]
+
+      74:  Z=X+F (P34)
+       1: 33       X Loc [ Echo_3_50 ]
+       2: -.4      F
+       3: 33       Z Loc [ Echo_3_50 ]
+
+; Echo_3_80
+      75:  Z=X*F (P37)
+       1: 234      X Loc [ EchoU3_80 ]
+       2: 0.00119  F
+       3: 34       Z Loc [ Echo_3_80 ]
+
+      76:  Z=X+F (P34)
+       1: 34       X Loc [ Echo_3_80 ]
+       2: -.4      F
+       3: 34       Z Loc [ Echo_3_80 ]
+
+77:  Else (P94)
+
+     78:  Beginning of Loop (P87)
+      1: 0000     Delay
+      2: 9        Loop Count
+
+          79:  Z=F x 10^n (P30)
+           1: -999     F
+           2: 0        n, Exponent of 10
+           3: 26    -- Z Loc [ Echo_1_15 ]
+
+          80:  Z=F x 10^n (P30)
+           1: -999     F
+           2: 0        n, Exponent of 10
+           3: 226   -- Z Loc [ EchoU1_15 ]
+
+     81:  End (P95)
+
+
+82:  End (P95)
+
+83:  End (P95)
+; =========== Ende Projekt 22 - Messung 
+
+
+;--------------------------- Subroutinenaufruf -----------------------------
+
+; --- Multiplexer-Ansteuerung und Messungen auf dem Multiplexer ---
+
+; =========== Projekt 21
+84:  Do (P86)
+ 1: 1        Call Subroutine 1
+
+; --- GSM ---
+85:  Do (P86)
+ 1: 2        Call Subroutine 2
+
+
+;--------------------------- Fehlerpruefung und Ablegen der Messdaten -----------------------------
+; Range check Sap Flow: 1-25
+
+86:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+     87:  If (X<=>F) (P89)
+      1: 106   -- X Loc [ XSap_1    ]
+      2: 3        >=
+      3: 1        F
+      4: 30       Then Do
+
+          88:  If (X<=>F) (P89)
+           1: 106   -- X Loc [ XSap_1    ]
+           2: 4        <
+           3: 25       F
+           4: 30       Then Do
+
+
+          89:  Z=X (P31)
+           1: 106   -- X Loc [ XSap_1    ]
+           2: 6     -- Z Loc [ Sap_1     ]
+
+
+          90:  Z=Z+1 (P32)
+           1: 206   -- Z Loc [ NSap_1    ]
+
+
+
+
+     91:  Else (P94)
+
+; noetig, damit der Zaehler der Variablen stimmt
+
+          92:  Z=X/Y (P38)
+           1: 106   -- X Loc [ XSap_1    ]
+           2: 6     -- Y Loc [ Sap_1     ]
+           3: 136      Z Loc [ Dummy     ]
+
+     93:  End (P95)
+
+94:  Else (P94)
+
+; noetig, damit der Zaehler der Variablen stimmt
+
+
+          95:  Z=X/Y (P38)
+           1: 106   -- X Loc [ XSap_1    ]
+           2: 6     -- Y Loc [ Sap_1     ]
+           3: 136      Z Loc [ Dummy     ]
+
+
+
+96:  End (P95)
+
+97:  End (P95)
+
+; Range check Dendro: 1-2500
+
+98:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+     99:  If (X<=>F) (P89)
+      1: 116   -- X Loc [ XDend_1   ]
+      2: 3        >=
+      3: 1        F
+      4: 30       Then Do
+
+          100:  If (X<=>F) (P89)
+           1: 116   -- X Loc [ XDend_1   ]
+           2: 4        <
+           3: 2500     F
+           4: 30       Then Do
+
+          101:  Z=X (P31)
+           1: 116   -- X Loc [ XDend_1   ]
+           2: 16    -- Z Loc [ Dend_1    ]
+
+          102:  Z=Z+1 (P32)
+           1: 216   -- Z Loc [ NDend_1   ]
+
+
+     103:  Else (P94)
+
+; noetig, damit der Zaehler der Variablen stimmt
+
+          104:  Z=X/Y (P38)
+           1: 116   -- X Loc [ XDend_1   ]
+           2: 16    -- Y Loc [ Dend_1    ]
+           3: 136      Z Loc [ Dummy     ]
+
+
+     105:  End (P95)
+
+106:  Else (P94)
+
+; noetig, damit der Zaehler der Variablen stimmt
+
+          107:  Z=X/Y (P38)
+           1: 116   -- X Loc [ XDend_1   ]
+           2: 16    -- Y Loc [ Dend_1    ]
+           3: 136      Z Loc [ Dummy     ]
+
+
+108:  End (P95)
+
+109:  End (P95)
+
+
+;------------- Mittelung & Abspeicherung der Messdaten ----------------------
+
+110:  If time is (P92) ;Messwert-Enderfassung alle 10 Minuten
+ 1: 0000     Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+
+; Array ID entspricht dem Messintervall in den Daten (erste Kolonne)
+111:  Set Active Storage Area (P80)^13854
+ 1: 1        Final Storage Area 1
+ 2: 10       Array ID
+
+
+112:  Sample (P70)^29306
+ 1: 1        Reps
+ 2: 1        Loc [ Stat_Nr__ ]
+
+113:  Sample (P70)^8196
+ 1: 1        Reps
+ 2: 2        Loc [ Proj_21   ]
+
+;Festlegung des zu speichernden Datum-/Zeitformats
+114:  Real Time (P77) ^20252
+ 1: 1110     Year,Day,Hour/Minute (midnight = 0000)
+
+
+115:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+116:  If (X<=>F) (P89)
+ 1: 206   -- X Loc [ NSap_1    ]
+ 2: 3        >=
+ 3: 2        F
+ 4: 30       Then Do
+
+
+117:  Average (P71)^6045;Mittelwertbildung der Saftflussmesswerte
+ 1: 1        Reps
+ 2: 6     -- Loc [ Sap_1     ]
+
+118:  Else (P94)
+
+     119:  Z=F x 10^n (P30)
+      1: -999     F
+      2: 00       n, Exponent of 10
+      3: 6     -- Z Loc [ Sap_1     ]
+
+
+     120:  Sample (P70)^32425
+      1: 1        Reps
+      2: 6     -- Loc [ Sap_1     ]
+
+
+121:  End (P95)
+; if/else
+
+122:  End (P95)
+; loop
+
+
+
+123:  Resolution (P78)
+ 1: 1        High Resolution
+
+
+124:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+125:  If (X<=>F) (P89)
+ 1: 216   -- X Loc [ NDend_1   ]
+ 2: 3        >=
+ 3: 2        F
+ 4: 30       Then Do
+
+
+126:  Average (P71)^22589
+ 1: 1        Reps
+ 2: 16    -- Loc [ Dend_1    ]
+
+127:  Else (P94)
+
+     128:  Z=F x 10^n (P30)
+      1: -999     F
+      2: 00       n, Exponent of 10
+      3: 16    -- Z Loc [ Dend_1    ]
+
+
+     129:  Sample (P70)^17342
+      1: 1        Reps
+      2: 16    -- Loc [ Dend_1    ]
+
+
+130:  End (P95)
+; if/else
+
+131:  End (P95)
+; loop
+
+132:  Average (P71)^10680
+ 1: 3        Reps
+ 2: 36       Loc [ BattVolt  ]
+
+133:  Average (P71)^21616
+ 1: 1        Reps
+ 2: 54       Loc [ VoltDend  ]
+
+
+134:  Resolution (P78)
+ 1: 0        Low Resolution
+
+135:  If time is (P92)
+ 1: 0000     Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 30       Then Do
+
+     136:  Beginning of Loop (P87)
+      1: 0000     Delay
+      2: 10       Loop Count
+
+137:  Z=F x 10^n (P30)
+ 1: 0        F
+ 2: 00       n, Exponent of 10
+ 3: 206   -- Z Loc [ NSap_1    ]
+
+
+138:  Z=F x 10^n (P30)
+ 1: 0        F
+ 2: 00       n, Exponent of 10
+ 3: 216   -- Z Loc [ NDend_1   ]
+
+139:  End (P95)
+; if/else
+
+140:  End (P95)
+; loop
+
+
+; =========== Ende Projekt 21
+
+
+; =========== Projekt 22 - Speichern                        alle 60 Minuten
+141:  If time is (P92) 
+ 1: 0000     Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+
+; Array ID entspricht dem Messintervall in den Daten (erste Kolonne)
+142:  Set Active Storage Area (P80)^26888
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+143:  Sample (P70)^4689
+ 1: 1        Reps
+ 2: 1        Loc [ Stat_Nr__ ]
+
+144:  Sample (P70)^8050
+ 1: 1        Reps
+ 2: 3        Loc [ Proj_22   ]
+
+;Festlegung des zu speichernden Datum-/Zeitformats
+145:  Real Time (P77) ^20252
+ 1: 1110     Year,Day,Hour/Minute (midnight = 0000)
+
+; Bodenwassergehalt [m3/m3],9 Sensoren
+146:  Average (P71)^5722
+ 1: 9        Reps
+ 2: 26       Loc [ Echo_1_15 ]
+
+; Spannung [mV] (Rohwert) Bodenwasserghelatssensoren, 9 Sensoren
+147:  Average (P71)^874
+ 1: 9        Reps
+ 2: 226      Loc [ EchoU1_15 ]
+
+; =========== Ende Projekt 22 - Speichern
+
+
+;-------------------------------- Table 2 ----------------------------------
+
+*Table 2 Program
+  02: 00        Execution Interval (seconds)
+
+
+
+;-------------------------------- Subroutinen ------------------------------
+
+
+*Table 3 Subroutines
+
+;-------- Subroutine Multiplexer --------
+
+1:  Beginning of Subroutine (P85)
+ 1: 1        Subroutine 1
+
+2:  Do (P86)
+ 1: 41       Set Port 1 High ;Aktivieren des Multiplexers (AM16/32A)
+
+
+3:  Beginning of Loop (P87) ;Start des Messdurchlaufs fuer 10 Granier-Sensoren
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+4:  Step Loop Index (P90) ;Festlegen der richtigen Reihenfolge der Input Locations
+ 1: 1        Step
+
+5:  Do (P86) ;Aktivieren des Clock-Impulses fuer AM16/32A
+ 1: 72       Pulse Port 2
+
+6:  Excitation with Delay (P22) ;10ms Pause zwischen den Einzelmessungen
+ 1: 01       Ex Channel
+ 2: 0000     Delay W/Ex (units = 0.01 sec)
+ 3: 5        Delay After Ex (units = 0.01 sec)
+ 4: 0000     mV Excitation
+
+7:  If Flag/Port (P91)
+ 1: 48       Do if Port 8 is High
+ 2: 30       Then Do
+
+8:  Volt (Diff) (P2) ;Messinstruktion fuer Saftflusssensoren und Umrechnung in Grad C
+ 1: 1        Reps
+ 2: 1        2.5 mV Slow Range
+ 3: 01       DIFF Channel
+ 4: 106   -- Loc [ XSap_1    ]
+ 5: 25       Mult
+ 6: 0.0      Offset
+
+9:  Else (P94)
+
+
+          10:  Z=F x 10^n (P30)
+           1: -999     F
+           2: 0        n, Exponent of 10
+           3: 106   -- Z Loc [ XSap_1    ]
+
+
+11:  End (P95)
+
+12:  End (P95) ;Ende des Messdurchlaufs fuer Saftflussensoren
+
+; Start Messdurchlauf fuer 10 Punktdendrometer
+13:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+
+     14:  Step Loop Index (P90)
+      1: 1        Step
+
+
+     15:  Do (P86)
+      1: 72       Pulse Port 2
+
+     16:  Excitation with Delay (P22)
+      1: 01       Ex Channel
+      2: 0000     Delay W/Ex (0.01 sec units)
+      3: 5        Delay After Ex (0.01 sec units)
+      4: 0000     mV Excitation
+
+17:  If Flag/Port (P91)
+ 1: 47       Do if Port 7 is High
+ 2: 30       Then Do
+
+18:  Volt (Diff) (P2) ;Messinstruktion fuer Dendrometer
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 01       DIFF Channel
+ 4: 116   -- Loc [ XDend_1   ]
+ 5: 1        Mult
+ 6: 0.0      Offset
+
+19:  Else (P94)
+
+
+          20:  Z=F x 10^n (P30)
+           1: -999     F
+           2: 0        n, Exponent of 10
+           3: 116   -- Z Loc [ XDend_1   ]
+
+
+21:  End (P95)
+
+22:  End (P95)
+; Ende des Messdurchlaufs fuer Dendrometer
+
+
+
+; Start Messdurchlauf fuer 1 5V-Spannungsmessung
+23:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 1        Loop Count
+
+
+     24:  Step Loop Index (P90)
+      1: 1        Step
+
+
+     25:  Do (P86)
+      1: 72       Pulse Port 2
+
+     26:  Excitation with Delay (P22)
+      1: 01       Ex Channel
+      2: 0000     Delay W/Ex (0.01 sec units)
+      3: 5        Delay After Ex (0.01 sec units)
+      4: 0000     mV Excitation
+
+27:  Volt (Diff) (P2) ;Messinstruktion fuer Dendrometer
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 01       DIFF Channel
+ 4: 54    -- Loc [ VoltDend  ]
+ 5: 2.963    Mult
+ 6: 0.0      Offset
+
+
+
+28:  End (P95)
+; Ende des Messdurchlaufs fuer 5V-Dendrospeisungs-Messung
+
+
+
+
+; Hier sind noch weiter Multiplexer-Eingaenge frei programmierbar. Im Moment leer.
+
+29:  Do (P86)
+ 1: 51       Set Port 1 Low ;Deaktivieren des AM416
+
+
+30:  End (P95)
+
+
+;--------------------------------------- GSM ------------------------------------------
+
+; Subroutine 2 Datenkommunikation ueber Siemens GSM (Port 4)
+; Innerhalb der Zeitgrenzen kann mit dem Flag 4 die Natelkommunikation
+; permanent aufrecht erhalten werden. Wird das Flag 4 nicht auf high gesetzt
+; bleibt das Natel jeweils die zweiten 10 Minuten jeder vollen Stunde von 9:00 bis 18:00 eingeschaltet
+; Eine automatische Einschaltung des GSM erfolgt, wenn die Batterie_V > 13.0 V ist.
+
+31:  Beginning of Subroutine (P85)
+ 1: 2        Subroutine 2
+
+32:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 1        Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+33:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 41       Loc [ Zeit_HHMM ]
+
+34:  Real Time (P77)^16064
+ 1: 20       Hour/Minute (midnight = 2400)
+
+
+; wenn Batterie-Ladung < 10.5 V, Natel ausschalten
+35:  If (X<=>F) (P89)
+ 1: 36       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 10.5     F
+ 4: 30       Then Do
+
+36:  Do (P86)
+ 1: 24       Set Flag 4 Low
+
+37:  Do (P86)
+ 1: 54       Set Port 4 Low
+
+38:  End (P95)
+
+; Jede Stunde wird Flag 4 einmal auf 0 gesetzt (volle Stunde).
+; Damit bleibt Natel auch nach maueller einschaltung max. 60 min eingeschaltet.
+; Ausnahme bleibt bei Batteriespannung > 13.0 V
+
+
+39:  If time is (P92)
+ 1: 00       Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+40:  Do (P86)
+ 1: 24       Set Flag 4 Low
+
+
+41:  End (P95)
+
+
+
+;Uebertragungszeit von xx bis yy jeweils 10 Min einer Stunde
+; von xx:11 bis xx:zz (7h bis 17h30)
+
+
+42:  If (X<=>F) (P89)
+ 1: 41       X Loc [ Zeit_HHMM ]
+ 2: 3        >=
+ 3: 700      F
+ 4: 30       Then Do
+
+; wenn Batterie-Ladung > 13.0 V, Natel einschalten
+43:  If (X<=>F) (P89)
+ 1: 36       X Loc [ BattVolt  ]
+ 2: 3        >=
+ 3: 13.0     F
+ 4: 14       Set Flag 4 High
+
+
+44:  If time is (P92)
+ 1: 10       Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+45:  Z=F (P30)
+ 1: 1        F
+ 2: 00       Exponent of 10
+ 3: 42       Z Loc [ FlagKontr ]
+
+46:  Do (P86)
+ 1: 44       Set Port 4 High
+
+
+47:  End (P95)
+
+48:  If time is (P92)
+ 1: 20       Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+
+49:  Z=F (P30)
+ 1: 0        F
+ 2: 00       Exponent of 10
+ 3: 42       Z Loc [ FlagKontr ]
+
+50:  End (P95)
+
+51:  End (P95)
+
+52:  If (X<=>F) (P89)
+ 1: 41       X Loc [ Zeit_HHMM ]
+ 2: 3        >=
+ 3: 1730     F
+ 4: 30       Then Do
+
+
+53:  Do (P86)
+ 1: 24       Set Flag 4 Low
+
+54:  Z=F (P30)
+ 1: 0        F
+ 2: 0        Exponent of 10
+ 3: 42       Z Loc [ FlagKontr ]
+
+55:  End (P95)
+
+;-------------------- Kommunikationsfenster Start ---------------------
+
+
+56:  If (X<=>F) (P89)
+ 1: 41       X Loc [ Zeit_HHMM ]
+ 2: 1        =
+ 3: 0615     F
+ 4: 30       Then Do
+
+     57:  Z=F x 10^n (P30)
+      1: 1        F
+      2: 00       n, Exponent of 10
+      3: 42       Z Loc [ FlagKontr ]
+
+
+     58:  Do (P86)
+      1: 44       Set Port 4 High
+
+
+
+59:  End (P95)
+
+60:  If (X<=>F) (P89)
+ 1: 41       X Loc [ Zeit_HHMM ]
+ 2: 1        =
+ 3: 0630     F
+ 4: 30       Then Do
+
+     61:  Z=F x 10^n (P30)
+      1: 0.0      F
+      2: 00       n, Exponent of 10
+      3: 42       Z Loc [ FlagKontr ]
+
+62:  End (P95)
+
+
+;-------------------- Kommunikationsfenster End ---------------------
+
+
+
+63:  If Flag/Port (P91)
+ 1: 14       Do if Flag 4 is High
+ 2: 44       Set Port 4 High
+
+64:  If Flag/Port (P91)
+ 1: 24       Do if Flag 4 is Low
+ 2: 30       Then Do
+
+65:  If (X<=>F) (P89)
+ 1: 42       X Loc [ FlagKontr ]
+ 2: 1        =
+ 3: 0        F
+ 4: 54       Set Port 4 Low
+
+66:  End (P95)
+
+67:  End (P95)
+
+End Program
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-Input Locations-
+1 Stat_Nr__ 1 1 1
+2 Proj_21   1 0 1
+3 Proj_22   1 1 1
+4 _________ 0 0 0
+5 _________ 0 0 0
+6 Sap_1     7 4 2
+7 Sap_2     3 0 0
+8 Sap_3     3 0 0
+9 Sap_4     3 0 0
+10 Sap_5     3 0 0
+11 Sap_6     3 0 0
+12 Sap_7     3 0 0
+13 Sap_8     3 0 0
+14 Sap_9     3 0 0
+15 Sap_10    11 0 0
+16 Dend_1    3 4 2
+17 Dend_2    3 0 0
+18 Dend_3    11 0 0
+19 Dend_4    11 0 0
+20 Dend_5    11 0 0
+21 Dend_6    11 0 0
+22 Dend_7    11 0 0
+23 Dend_8    11 0 0
+24 Dend_9    11 0 0
+25 Dend_10   19 0 0
+26 Echo_1_15 1 2 3
+27 Echo_1_50 3 2 2
+28 Echo_1_80 1 2 2
+29 Echo_2_15 1 2 2
+30 Echo_2_50 1 2 2
+31 Echo_2_80 1 2 2
+32 Echo_3_15 1 2 2
+33 Echo_3_50 1 2 2
+34 Echo_3_80 1 2 2
+35 leer      1 0 0
+36 BattVolt  5 9 1
+37 CR10XTemp 9 1 1
+38 Batt_Min  17 4 2
+39 _________ 0 0 0
+40 _________ 0 0 0
+41 Zeit_HHMM 1 3 1
+42 FlagKontr 1 0 5
+43 Ctr1      1 0 1
+44 Ctr2      1 0 1
+45 Ctr3      1 0 1
+46 Ctr4      1 0 1
+47 Ctr5      1 0 1
+48 Ctr6      1 0 1
+49 Ctr7      1 0 1
+50 Ctr8      1 0 1
+51 LowBat6   1 1 2
+52 LowBat7   1 1 2
+53 LowBat8   1 1 2
+54 VoltDend  1 1 2
+106 XSap_1    1 5 2
+107 XSap_2    1 0 0
+108 XSap_3    1 0 0
+109 XSap_4    1 0 0
+110 XSap_5    1 0 0
+111 XSap_6    1 0 0
+112 XSap_7    1 0 0
+113 XSap_8    1 0 0
+114 XSap_9    1 0 0
+115 XSap_10   1 0 0
+116 XDend_1   1 5 2
+117 XDend_2   0 0 0
+118 XDend_3   0 0 0
+119 XDend_4   0 0 0
+120 XDend_5   0 0 0
+121 XDend_6   0 0 0
+122 XDend_7   0 0 0
+123 XDend_8   0 0 0
+124 XDend_9   0 0 0
+125 XDend_10  0 0 0
+136 Dummy     1 0 4
+206 NSap_1    1 1 2
+207 NSap_2    0 0 0
+208 NSap_3    0 0 0
+209 NSap_4    0 0 0
+210 NSap_5    0 0 0
+211 NSap_6    0 0 0
+212 NSap_7    0 0 0
+213 NSap_8    0 0 0
+214 NSap_9    0 0 0
+215 NSap_10   0 0 0
+216 NDend_1   1 1 1
+217 NDend_2   0 0 0
+218 NDend_3   0 0 0
+219 NDend_4   0 0 0
+220 NDend_5   0 0 0
+221 NDend_6   0 0 0
+222 NDend_7   0 0 0
+223 NDend_8   0 0 0
+224 NDend_9   0 0 0
+225 NDend_10  0 0 0
+226 EchoU1_15 7 2 2
+227 EchoU1_50 11 2 1
+228 EchoU1_80 27 2 1
+229 EchoU2_15 15 2 1
+230 EchoU2_50 11 2 1
+231 EchoU2_80 27 2 1
+232 EchoU3_15 15 2 1
+233 EchoU3_50 11 2 1
+234 EchoU3_80 19 2 1
+235 _________ 0 0 0
+236 _________ 0 0 0
+237 _________ 0 0 0
+238 _________ 0 0 0
+239 _________ 0 0 0
+240 _________ 0 0 0
+241 _________ 0 0 0
+242 _________ 0 0 0
+243 _________ 0 0 0
+244 _________ 0 0 0
+245 _________ 0 0 0
+246 _________ 0 0 0
+247 _________ 0 0 0
+248 _________ 0 0 0
+249 _________ 0 0 0
+250 _________ 0 0 0
+251 _________ 0 0 0
+252 _________ 0 0 0
+253 _________ 0 0 0
+254 _________ 0 0 0
+255 _________ 0 0 0
+256 _________ 0 0 0
+257 _________ 0 0 0
+258 _________ 0 0 0
+259 _________ 0 0 0
+260 _________ 0 0 0
+261 _________ 0 0 0
+262 _________ 0 0 0
+263 _________ 0 0 0
+264 _________ 0 0 0
+265 _________ 0 0 0
+266 _________ 0 0 0
+267 _________ 0 0 0
+268 _________ 0 0 0
+269 _________ 0 0 0
+270 _________ 0 0 0
+271 _________ 0 0 0
+272 _________ 0 0 0
+273 _________ 0 0 0
+274 _________ 0 0 0
+275 _________ 0 0 0
+276 _________ 0 0 0
+277 _________ 0 0 0
+278 _________ 0 0 0
+279 _________ 0 0 0
+280 _________ 0 0 0
+323 _________ 0 0 0
+324 _________ 0 0 0
+325 _________ 0 0 0
+326 _________ 0 0 0
+327 _________ 0 0 0
+328 _________ 0 0 0
+329 _________ 0 0 0
+330 _________ 0 0 0
+331 _________ 0 0 0
+332 _________ 0 0 0
+333 _________ 0 0 0
+334 _________ 0 0 0
+335 _________ 0 0 0
+336 _________ 0 0 0
+337 _________ 0 0 0
+338 _________ 0 0 0
+339 _________ 0 0 0
+340 _________ 0 0 0
+341 _________ 0 0 0
+342 _________ 0 0 0
+353 _________ 0 0 0
+423 _________ 0 0 0
+424 _________ 0 0 0
+425 _________ 0 0 0
+426 _________ 0 0 0
+427 _________ 0 0 0
+428 _________ 0 0 0
+429 _________ 0 0 0
+430 _________ 0 0 0
+431 _________ 0 0 0
+432 _________ 0 0 0
+433 _________ 0 0 0
+434 _________ 0 0 0
+435 _________ 0 0 0
+436 _________ 0 0 0
+437 _________ 0 0 0
+438 _________ 0 0 0
+439 _________ 0 0 0
+440 _________ 0 0 0
+441 _________ 0 0 0
+442 _________ 0 0 0
+443 _________ 0 0 0
+2343 _________ 1 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-Final Storage Area 2-
+0
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,Year_RTM,20252
+0,Day_RTM
+0,Hour_Minute_RTM
+1,Sap_1_AVG~6,6045
+2,Proj_21~2,8196
+3,10,13854
+4,Stat_Nr__~1,29306
+5,Hour_Minute_RTM,16064
+6,BattVolt_MIN~36,23980
+7,BattVolt_MAX~36,7352
+8,Echo_1_15_AVG~26,5722
+8,Echo_1_50_AVG~27
+8,Echo_1_80_AVG~28
+8,Echo_2_15_AVG~29
+8,Echo_2_50_AVG~30
+8,Echo_2_80_AVG~31
+8,Echo_3_15_AVG~32
+8,Echo_3_50_AVG~33
+8,Echo_3_80_AVG~34
+9,Dend_1_AVG~16,22589
+10,Sap_1~6,32425
+11,Dend_1~16,17342
+12,60,26888
+13,Stat_Nr__~1,4689
+14,Proj_22~3,8050
+15,EchoU1_15_AVG~226,874
+15,EchoU1_50_AVG~227
+15,EchoU1_80_AVG~228
+15,EchoU2_15_AVG~229
+15,EchoU2_50_AVG~230
+15,EchoU2_80_AVG~231
+15,EchoU3_15_AVG~232
+15,EchoU3_50_AVG~233
+15,EchoU3_80_AVG~234
+16,BattVolt_AVG~36,10680
+16,CR10XTemp_AVG~37
+16,Batt_Min_AVG~38
+17,VoltDend_AVG~54,21616

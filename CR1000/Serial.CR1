@@ -1,0 +1,64 @@
+'CR1000 Series Datalogger
+
+'For programming tips, copy this address to your browser
+'search window:https://www.campbellsci.com/videos/datalogger-programming
+'To create a different opening program template, type in new
+'instructions and select Template | Save as Default Template
+'Date:
+'Program author:
+
+'Declare Constants
+'Example:
+'CONST PI = 3.141592654 or Const PI = 4*ATN(1)
+
+'Declare Public Variables
+'Example:
+Public PTemp, Batt_volt
+Public RawString As String * 45, SplitStrings(6) As String * 4
+Public WindSpeedRaw, WindDirectionTrue, CompassDirection, WindDirection, WindSpeedCalc As Float
+Public NBytesReturned
+
+'Declare Private Variables
+'Example:
+'Dim Counter
+
+'Define Data Tables.
+DataTable (Test,1,1000)
+  DataInterval (0,15,Sec,10)
+  Minimum (1,Batt_volt,FP2,0,False)
+  Sample (1,PTemp,FP2)
+  Sample (1,WindSpeedRaw,FP2)
+  Sample (1,WindSpeedCalc,FP2)
+  Sample (1,WindDirectionTrue,FP2)
+  Sample (1,CompassDirection,FP2)
+  Sample (1,WindDirection,FP2)
+EndTable
+
+'Define Subroutines
+'Sub
+	'EnterSub instructions here
+'EndSub
+
+'Main Program
+BeginProg
+  SerialOpen (Com1,9600,0,0,50)
+  Scan (1,Sec,0,0)
+    PanelTemp (PTemp,250)
+    Battery (Batt_volt)
+    SerialInRecord (Com1,RawString,0,32,0,NBytesReturned,01)
+    SplitStr (SplitStrings(),RawString," ",8,0)
+    WindSpeedRaw = SplitStrings(1)
+    WindSpeedCalc = WindSpeedRaw*0.04903
+    WindDirectionTrue = SplitStrings(2)
+    CompassDirection = SplitStrings(5)
+    WindDirection = SplitStrings(6)
+    CallTable Test
+  NextScan
+'  SlowSequence
+'  Scan (1,Sec,3,0)
+'    SerialOut (Com1,CHR(2)&"1234E+04,1234,abcd"&CHR(13)&CHR(3),"",0,100)
+'  NextScan
+EndProg
+
+
+

@@ -1,0 +1,4 @@
+"TOA5","UIT_B","CR1000","E5303","CR1000.Std.24","CPU:UIT_B_3.CR1","51736","Meteo"
+"TIMESTAMP","RECORD","Stationskennung","MProjNr","Messintervall","Lufttemperatur","Globalstrahlung","phot.akt.Strahlung","UVB_Strahlung","Windgeschwindigkeit","Windrichtung","Lufttemperatur_Stw","Globalstrahlung_Stw","phot.akt.Str._Stw","UVB_Strahlung_Stw","Windgeschwindigkeit_Stw","Windrichtung_Stw","Windspitze","Luftfeuchtigkeit","Niederschlag","Luftfeuchtigkeit_Stw"
+"TS","RN","","","","deg_C","W/m2","umol/m2s","W/m2","m/s","Deg","deg_C","W/m2","umol/m2s","W/m2","m/s","deg","m/s","%","mm/10min","%"
+"","","Smp","Smp","Smp","Avg","Avg","Avg","Avg","WVc","WVc","Std","Std","Std","Std","Std","Std","Smp","Avg","Smp","Std"

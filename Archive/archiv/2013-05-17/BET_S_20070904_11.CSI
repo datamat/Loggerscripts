@@ -1,0 +1,1080 @@
+;{CR10X}
+;
+;==============================================================================
+; Station:                                                             04.09.2007
+; --------
+;   o Serial Number:       SV01019 - Bettlach11
+;   o Location:            Bettlachstock Bestand
+;   o Call Number:         079 239 41 63 via SV99004 and MD9
+;   + Station Program 1:   Solar Battery Charge Control (Flag/Port 4)
+;   + Station Program 2:   Voltage-dependent Sensor Switch
+;                            Port 1: AM416 reset
+;                            Port 2: AM416 1 clock
+;                            Port 3: AM416 2 clock
+;                            Port 4: High = Shunt ein
+;                            Flag/Port 5: TDP50 1-12 + AVRD
+;                            Flag/Port 6: TDP50 13-24
+;                            Flag/Port 7: TDP50 25-36, TRACO
+;                            Port 8: high = Speisung Dendro
+;                          ALLE Heizungen Port 5,6,7,8 aus
+;                            Flag 1:  high:  alle Heizungen aus - Messungen gehen weiter
+;                            Flag 1:  low:   Standard programm
+;                            Flag 2:  high:  Messfenster Sapflow ein
+;                            Flag 2:  low:   Messfenster Sapflow aus
+;                            Flag 3:
+;                            Flag 4: high wenn Batt_Volt > 13.9, low wenn Batt_Volt < 13.5
+;
+; Program:
+; --------
+;   o Source Code:         Bettlach11.CSI
+;   o Author:              Revidiertes markasub-Prg, Roman Zweifel
+;   o Version:             040907
+; Projects Table 1:
+;   + Project 101:         Status Data (Final Storage Area 2)
+; Projects Table 2:
+;   + Project (201)-10:    Sapflow Data (Final Storag Area 1)
+;   + Project (202)-2:     Dendrometer Data (Final Storag Area 1)
+;
+; Table 4 Parameters:
+; -------------------
+; @@00  Station ID [4]
+; @@01  Execution Interval Table 2 [10s]
+; @@02  Project ID Sapflow Data [10]
+; @@03  Project ID Dendrometer Data [2]
+; @@04  Shunt On [13.9 V]
+; @@05  Shunt Off [13.5 V]
+; @@06  Sapflow Sensors 1 - 12 On [12.0 V]     Flag 5 - C5 - ADRD1 + 2 ein/aus
+; @@07  Sapflow Sensors 1 - 12 Off [11.6 V]
+; @@08  Sapflow Sensors 13 - 24 On [12.2 V]    Flag 6 - C6 - AVRD2
+; @@09  Sapflow Sensors 13 - 24 Off [11.8 V]
+; @@10  Sapflow Sensors 25 - 36 On [12.4 V]    Flag 7 - C7 - Traco
+; @@11  Sapflow Sensors 25 - 36 Off [12.0 V]
+
+;
+; Notation:
+; ---------
+; U_log        Logger Supply Voltage [V]
+; U_log_MIN    Minimum of Logger Supply Voltage [V]
+; U_log_MAX    Maximum of Logger Supply Voltage [V]
+; U_log_AVG    Average of Logger Supply Voltage [V]
+; T_log        Logger Temperature [°C]
+; T_log_AVG    Average of Logger Temperature [°C]
+; U_n          n = {01,02,...,36} : Sapflow Signal Voltages [mV]
+;              n = {37,38,...,48} : Dendrometer Signal Voltages [mV]
+;
+;------------------------------------------------------------------------------
+; 2.10.02: Sapflow Daten messen jetzt ab Loop 11
+;==============================================================================
+; Table 1 Station and Project IDs
+
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+
+1:  Z=F (P30)
+ 1: 4        F @@0
+ 2: 0        Exponent of 10
+ 3: 1        Z Loc [ IDStation ]
+
+2:  Z=F (P30)
+ 1: 101      F  ; <> 0!
+ 2: 0        Exponent of 10
+ 3: 2        Z Loc [ IDProj101 ]
+
+;==============================================================================
+; Project 101 Status Data: Measurement
+
+3:  If (X<=>F) (P89)
+ 1: 2        X Loc [ IDProj101 ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  4:  Batt Voltage (P10)
+   1: 5        Loc [ U_log     ]
+
+  5:  Internal Temperature (P17)
+   1: 6        Loc [ T_log     ]
+;------------------------------------------------------------------------------
+; Project 101 Status Data: Calculation
+
+  6:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 120      Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  7:  Set Active Storage Area (P80)
+   1: 3        Input Storage Area
+   2: 7        Loc [ U_log_MIN ]
+
+  8:  Minimum (P74)^14918
+   1: 1        Reps
+   2: 0        Value Only
+   3: 5        Loc [ U_log     ]
+
+  9:  Maximum (P73)^21062
+   1: 1        Reps
+   2: 0        Value Only
+   3: 5        Loc [ U_log     ]
+
+  10:  Average (P71)^31615
+   1: 2        Reps
+   2: 5        Loc [ U_log     ]
+;------------------------------------------------------------------------------
+; Project 101 Status Data: Final Storage
+
+  11:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 120      Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  12:  Set Active Storage Area (P80)^6168
+   1: 2        Final Storage Area 2
+   2: 120      Array ID
+
+  13:  Sample (P70)^3555
+   1: 2        Reps
+   2: 1        Loc [ IDStation ]
+
+  14:  Real Time (P77)^7026
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  15:  Sample (P70)^22470
+   1: 4        Reps
+   2: 7        Loc [ U_log_MIN ]
+
+  16:  Sample (P70)^6979
+   1: 4        Reps
+   2: 62       Loc [ STATUS_f1 ]
+
+17:  End (P95)
+
+;==============================================================================
+; Calling Station Programs
+
+18:  Do (P86)
+ 1: 1        Call Subroutine 1
+
+
+;==============================================================================
+
+;--------------------------------------------
+;Dendrometerspeisung ein- und ausschalten
+;--------------------------------------------
+
+19:  If time is (P92)
+ 1: 4        Minutes (Seconds --) into a
+ 2: 5        Interval (same units as above)
+ 3: 48       Set Port 8 High
+
+20:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 5        Interval (same units as above)
+ 3: 58       Set Port 8 Low
+
+
+;*****************************************************************************
+
+
+*Table 2 Program
+  02: 10        Execution Interval (seconds)
+
+
+
+1:  If (X<=>F) (P89)
+ 1: 5        X Loc [ U_log     ]
+ 2: 3        >=
+ 3: 11.5     F
+ 4: 30       Then Do
+
+2:  Do (P86)
+ 1: 10       Set Output Flag High (Flag 0)
+
+3:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 69       Loc [ Realtime  ]
+
+4:  Real Time (P77)^21002
+ 1: 20       Hour/Minute (midnight = 2400)
+
+5:  Do (P86)
+ 1: 20       Set Output Flag Low (Flag 0)
+
+
+6:  Do (P86)
+ 1: 12       Set Flag 2 High
+
+
+
+7:  If Flag/Port (P91)
+ 1: 12       Do if Flag 2 is High
+ 2: 30       Then Do
+
+  8:  Z=F (P30)
+   1: 10       F @@2
+   2: 0        Exponent of 10
+   3: 3        Z Loc [ IDProj201 ]
+
+9:  End (P95)
+
+10:  If Flag/Port (P91)
+ 1: 22       Do if Flag 2 is Low
+ 2: 30       Then Do
+
+11:  Z=F (P30)
+ 1: 0        F
+ 2: 0        Exponent of 10
+ 3: 3        Z Loc [ IDProj201 ]
+
+12:  End (P95)
+
+  13:  Z=F (P30)
+   1: 2        F @@3
+   2: 0        Exponent of 10
+   3: 4        Z Loc [ IDProj202 ]
+
+14:  Else (P94)
+
+     15:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 0        n, Exponent of 10
+      3: 3        Z Loc [ IDProj201 ]
+
+     16:  Z=F x 10^n (P30)
+      1: 0        F
+      2: 0        n, Exponent of 10
+      3: 4        Z Loc [ IDProj202 ]
+
+17:  End (P95)
+
+;==============================================================================
+; Project 201 Sapflow Data: Block IDs (0 = inactive, 1 = active)
+
+18:  Do (P86)
+ 1: 2        Call Subroutine 2
+
+
+19:  If (X<=>F) (P89)
+ 1: 3        X Loc [ IDProj201 ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+  20:  Read Ports (P25)
+   1: 16       Mask (0..255)
+   2: 11       Loc [ IDTDP_12  ]
+
+  21:  Read Ports (P25)
+   1: 32       Mask (0..255)
+   2: 12       Loc [ IDTDP_24  ]
+
+  22:  Read Ports (P25)
+   1: 64       Mask (0..255)
+   2: 13       Loc [ IDTDP_36  ]
+
+23:  If Flag/Port (P91)
+ 1: 11       Do if Flag 1 is High
+ 2: 30       Then Do
+
+24:  Z=F (P30)
+ 1: 52       F
+ 2: 0        Exponent of 10
+ 3: 11       Z Loc [ IDTDP_12  ]
+
+25:  Z=F (P30)
+ 1: 52       F
+ 2: 0        Exponent of 10
+ 3: 12       Z Loc [ IDTDP_24  ]
+
+26:  Z=F (P30)
+ 1: 52       F
+ 2: 0        Exponent of 10
+ 3: 13       Z Loc [ IDTDP_36  ]
+
+27:  End (P95)
+
+;------------------------------------------------------------------------------
+; Project 201 Sapflow: Measurement
+
+  28:  If (X<=>F) (P89) ; Measurement Block 1: TDP50 1 - 12
+   1: 11       X Loc [ IDTDP_12  ]
+   2: 2        <>
+   3: 0        F
+   4: 30       Then Do
+
+    29:  Do (P86)
+     1: 41       Set Port 1 High
+
+    30:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 6        Loop Count
+
+      31:  Step Loop Index (P90)
+       1: 2        Step
+
+      32:  Do (P86)
+       1: 72       Pulse Port 2
+
+      33:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (units = 0.01 sec)
+       3: 5        Delay After Ex (units = 0.01 sec)
+       4: 0        mV Excitation
+
+      34:  Volt (Diff) (P2)
+       1: 2        Reps
+       2: 1        2.5 mV Slow Range
+       3: 3        DIFF Channel
+       4: 14    -- Loc [ U_01      ]
+       5: 25       Mult
+       6: 0.0      Offset
+
+    35:  End (P95)
+
+    36:  If (X<=>F) (P89) ; Measurement Block 2: TDP50 13 - 24
+     1: 12       X Loc [ IDTDP_24  ]
+     2: 2        <>
+     3: 0        F
+     4: 30       Then Do
+
+      37:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 6        Loop Count
+
+        38:  Step Loop Index (P90)
+         1: 2        Step
+
+        39:  Do (P86)
+         1: 72       Pulse Port 2
+
+        40:  Excitation with Delay (P22)
+         1: 1        Ex Channel
+         2: 0        Delay W/Ex (units = 0.01 sec)
+         3: 5        Delay After Ex (units = 0.01 sec)
+         4: 0        mV Excitation
+
+        41:  Volt (Diff) (P2)
+         1: 2        Reps
+         2: 1        2.5 mV Slow Range
+         3: 3        DIFF Channel
+         4: 26    -- Loc [ U_13      ]
+         5: 25       Mult
+         6: 0.0      Offset
+
+      42:  End (P95)
+
+      43:  If (X<=>F) (P89) ; Measurement Block 3: TDP50 25 - 36
+       1: 13       X Loc [ IDTDP_36  ]
+       2: 2        <>
+       3: 0        F
+       4: 30       Then Do
+
+        44:  Beginning of Loop (P87)
+         1: 0        Delay
+         2: 4        Loop Count
+
+          45:  Step Loop Index (P90)
+           1: 2        Step
+
+          46:  Do (P86)
+           1: 72       Pulse Port 2
+
+          47:  Excitation with Delay (P22)
+           1: 1        Ex Channel
+           2: 0        Delay W/Ex (units = 0.01 sec)
+           3: 5        Delay After Ex (units = 0.01 sec)
+           4: 0        mV Excitation
+
+          48:  Volt (Diff) (P2)
+           1: 2        Reps
+           2: 1        2.5 mV Slow Range
+           3: 3        DIFF Channel
+           4: 38    -- Loc [ U_25      ]
+           5: 25       Mult
+           6: 0.0      Offset
+
+        49:  End (P95)
+
+;
+        50:  Beginning of Loop (P87)
+         1: 0        Delay
+         2: 2        Loop Count
+
+          51:  Step Loop Index (P90)
+           1: 2        Step
+
+          52:  Do (P86)
+           1: 73       Pulse Port 3
+
+          53:  Excitation with Delay (P22)
+           1: 1        Ex Channel
+           2: 0        Delay W/Ex (units = 0.01 sec)
+           3: 5        Delay After Ex (units = 0.01 sec)
+           4: 0        mV Excitation
+
+
+          54:  Volt (Diff) (P2)
+           1: 2        Reps
+           2: 1        2.5 mV Slow Range
+           3: 5        DIFF Channel
+           4: 46    -- Loc [ U_33      ]
+           5: 25       Mult
+           6: 0.0      Offset
+
+
+        55:  End (P95)
+
+
+      56:  Else (P94)
+
+        57:  Beginning of Loop (P87)
+         1: 0        Delay
+         2: 12       Loop Count
+
+          58:  Z=F (P30)
+           1: -999     F
+           2: 0        Exponent of 10
+           3: 38    -- Z Loc [ U_25      ]
+
+        59:  End (P95)
+
+      60:  End (P95)
+
+    61:  Else (P94)
+
+      62:  Beginning of Loop (P87)
+       1: 0        Delay
+       2: 12       Loop Count
+
+        63:  Z=F (P30)
+         1: -999     F
+         2: 0        Exponent of 10
+         3: 26    -- Z Loc [ U_13      ]
+
+      64:  End (P95)
+
+    65:  End (P95)
+
+    66:  Do (P86)
+     1: 51       Set Port 1 Low
+
+  67:  Else (P94)
+
+    68:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 12       Loop Count
+
+      69:  Z=F (P30)
+       1: -999     F
+       2: 0        Exponent of 10
+       3: 14    -- Z Loc [ U_01      ]
+
+    70:  End (P95)
+
+  71:  End (P95)
+
+;------------------------------------------------------------------------------
+; Project 201 Sapflow Data: Final Storage
+
+  72:  Do (P86)
+   1: 10       Set Output Flag High (Flag 0)
+
+  73:  Set Active Storage Area (P80)^20147
+   1: 1        Final Storage Area 1
+   2: 10       Array ID
+
+  74:  Sample (P70)^32650
+   1: 1        Reps
+   2: 1        Loc [ IDStation ]
+
+  75:  Sample (P70)^9186
+   1: 1        Reps
+   2: 3        Loc [ IDProj201 ]
+
+  76:  Real Time (P77)^13464
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  77:  Sample (P70)^6841
+   1: 36       Reps
+   2: 14       Loc [ U_01      ]
+
+78:  End (P95)
+
+;==============================================================================
+; Project (202)-2 Dendrometer Data: Measurement
+
+79:  If (X<=>F) (P89)
+ 1: 4        X Loc [ IDProj202 ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+     80:  If Flag/Port (P91)
+      1: 48       Do if Port 8 is High
+      2: 30       Then Do
+
+    81:  Do (P86)
+     1: 41       Set Port 1 High
+
+;--------------------------------------------------------------
+;   2 loop um zu überspringen (sapflow) und dann Dentro messen
+;--------------------------------------------------------------
+
+    82:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 2        Loop Count
+
+      83:  Do (P86)
+       1: 73       Pulse Port 3
+
+      84:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (0.01 sec units)
+       3: 10       Delay After Ex (0.01 sec units)
+       4: 0        mV Excitation
+
+    85:  End (P95)
+
+    86:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 6        Loop Count
+
+      87:  Step Loop Index (P90)
+       1: 2        Step
+
+      88:  Do (P86)
+       1: 73       Pulse Port 3
+
+      89:  Excitation with Delay (P22)
+       1: 1        Ex Channel
+       2: 0        Delay W/Ex (units = 0.01 sec)
+       3: 10       Delay After Ex (units = 0.01 sec)
+       4: 0        mV Excitation
+
+
+      90:  Volt (Diff) (P2)
+       1: 2        Reps
+       2: 4        250 mV Slow Range
+       3: 5        DIFF Channel
+       4: 50    -- Loc [ U_37      ]
+       5: 1.0      Mult
+       6: 0.0      Offset
+
+    91:  End (P95)
+
+    92:  Do (P86)
+     1: 51       Set Port 1 Low
+
+  93:  Else (P94)
+
+    94:  Beginning of Loop (P87)
+     1: 0        Delay
+     2: 12       Loop Count
+
+      95:  Z=F (P30)
+       1: -999     F
+       2: 0        Exponent of 10
+       3: 50    -- Z Loc [ U_37      ]
+
+    96:  End (P95)
+
+  97:  End (P95)
+
+;------------------------------------------------------------------------------
+; Project (202)-2 Dendrometer Data: Final Storage
+
+  98:  If time is (P92)
+   1: 0        Minutes (Seconds --) into a
+   2: 10       Interval (same units as above)
+   3: 10       Set Output Flag High (Flag 0)
+
+  99:  Set Active Storage Area (P80)^30393
+   1: 1        Final Storage Area 1
+   2: 11       Array ID
+
+  100:  Sample (P70)^4404
+   1: 1        Reps
+   2: 1        Loc [ IDStation ]
+
+  101:  Sample (P70)^5641
+   1: 1        Reps
+   2: 4        Loc [ IDProj202 ]
+
+  102:  Real Time (P77)^19675
+   1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+  103:  Sample (P70)^21673
+   1: 12       Reps
+   2: 50       Loc [ U_37      ]
+
+104:  End (P95)
+
+;******************************************************************************
+
+
+
+
+*Table 3 Subroutines
+;------------------------------------------------------------------------------
+; Station Program 1: Solar Battery Charge Control
+
+1:  Beginning of Subroutine (P85)
+ 1: 1        Subroutine 1
+
+  2:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 3        >=
+   3: 13.9     F @@4
+   4: 14       Set Flag 4 High
+
+  3:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 13.5     F @@5
+   4: 24       Set Flag 4 Low
+
+  4:  If Flag/Port (P91)
+   1: 14       Do if Flag 4 is High
+   2: 44       Set Port 4 High
+
+  5:  If Flag/Port (P91)
+   1: 24       Do if Flag 4 is Low
+   2: 54       Set Port 4 Low
+
+6:  End (P95)
+;------------------------------------------------------------------------------
+; Station Program 2: Voltage-dependent Sensor Switch
+
+7:  Beginning of Subroutine (P85)
+ 1: 2        Subroutine 2
+
+  8:  If Flag/Port (P91)
+   1: 21       Do if Flag 1 is Low
+   2: 30       Then Do
+
+    9:  Z=F (P30)
+     1: 21       F
+     2: 0        Exponent of 10
+     3: 62       Z Loc [ STATUS_f1 ]
+
+  10:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 3        >=
+   3: 12       F @@6
+   4: 15       Set Flag 5 High
+
+  11:  If Flag/Port (P91)
+   1: 15       Do if Flag 5 is High
+   2: 30       Then Do
+
+    12:  Z=F (P30)
+     1: 15       F
+     2: 00       Exponent of 10
+     3: 63       Z Loc [ STATUS_f5 ]
+
+  13:  End (P95)
+
+  14:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 11.6     F @@7
+   4: 25       Set Flag 5 Low
+
+  15:  If Flag/Port (P91)
+   1: 25       Do if Flag 5 is Low
+   2: 30       Then Do
+
+    16:  Z=F (P30)
+     1: 25       F
+     2: 00       Exponent of 10
+     3: 63       Z Loc [ STATUS_f5 ]
+
+  17:  End (P95)
+
+  18:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 3        >=
+   3: 12.2     F @@8
+   4: 16       Set Flag 6 High
+
+  19:  If Flag/Port (P91)
+   1: 16       Do if Flag 6 is High
+   2: 30       Then Do
+
+    20:  Z=F (P30)
+     1: 16       F
+     2: 00       Exponent of 10
+     3: 64       Z Loc [ STATUS_f6 ]
+
+  21:  End (P95)
+
+  22:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 11.8     F @@9
+   4: 26       Set Flag 6 Low
+
+  23:  If Flag/Port (P91)
+   1: 26       Do if Flag 6 is Low
+   2: 30       Then Do
+
+    24:  Z=F (P30)
+     1: 26       F
+     2: 00       Exponent of 10
+     3: 64       Z Loc [ STATUS_f6 ]
+
+  25:  End (P95)
+
+  26:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 3        >=
+   3: 12.4     F @@10
+   4: 17       Set Flag 7 High
+
+  27:  If Flag/Port (P91)
+   1: 17       Do if Flag 7 is High
+   2: 30       Then Do
+
+    28:  Z=F (P30)
+     1: 17       F
+     2: 0        Exponent of 10
+     3: 65       Z Loc [ STATUS_f7 ]
+
+  29:  End (P95)
+
+  30:  If (X<=>F) (P89)
+   1: 5        X Loc [ U_log     ]
+   2: 4        <
+   3: 12       F @@11
+   4: 27       Set Flag 7 Low
+
+  31:  If Flag/Port (P91)
+   1: 27       Do if Flag 7 is Low
+   2: 30       Then Do
+
+    32:  Z=F (P30)
+     1: 27       F
+     2: 0        Exponent of 10
+     3: 65       Z Loc [ STATUS_f7 ]
+
+33:  End (P95)
+
+34:  End (P95)
+
+  35:  If Flag/Port (P91)
+   1: 15       Do if Flag 5 is High
+   2: 45       Set Port 5 High
+
+  36:  If Flag/Port (P91)
+   1: 25       Do if Flag 5 is Low
+   2: 55       Set Port 5 Low
+
+  37:  If (X<=>F) (P89)
+   1: 3        X Loc [ IDProj201 ]
+   2: 1        =
+   3: 0        F
+   4: 55       Set Port 5 Low
+
+  38:  If Flag/Port (P91)
+   1: 16       Do if Flag 6 is High
+   2: 46       Set Port 6 High
+
+  39:  If Flag/Port (P91)
+   1: 26       Do if Flag 6 is Low
+   2: 56       Set Port 6 Low
+
+  40:  If (X<=>F) (P89)
+   1: 3        X Loc [ IDProj201 ]
+   2: 1        =
+   3: 0        F
+   4: 56       Set Port 6 Low
+
+  41:  If Flag/Port (P91)
+   1: 17       Do if Flag 7 is High
+   2: 47       Set Port 7 High
+
+  42:  If Flag/Port (P91)
+   1: 27       Do if Flag 7 is Low
+   2: 57       Set Port 7 Low
+
+  43:  If (X<=>F) (P89)
+   1: 3        X Loc [ IDProj201 ]
+   2: 1        =
+   3: 0        F
+   4: 57       Set Port 7 Low
+
+44:  If Flag/Port (P91)
+ 1: 11       Do if Flag 1 is High
+ 2: 30       Then Do
+
+  45:  Z=F (P30)
+   1: 11       F
+   2: 00       Exponent of 10
+   3: 62       Z Loc [ STATUS_f1 ]
+
+  46:  Do (P86)
+   1: 55       Set Port 5 Low
+
+  47:  Do (P86)
+   1: 56       Set Port 6 Low
+
+  48:  Do (P86)
+   1: 57       Set Port 7 Low
+
+49:  End (P95)
+
+50:  If Flag/Port (P91)
+ 1: 45       Do if Port 5 is High
+ 2: 30       Then Do
+
+  51:  Z=F (P30)
+   1: 45       F
+   2: 0        Exponent of 10
+   3: 66       Z Loc [ STATUS_p5 ]
+
+52:  End (P95)
+
+53:  If Flag/Port (P91)
+ 1: 55       Do if Port 5 is Low
+ 2: 30       Then Do
+
+  54:  Z=F (P30)
+   1: 55       F
+   2: 00       Exponent of 10
+   3: 66       Z Loc [ STATUS_p5 ]
+
+55:  End (P95)
+
+56:  If Flag/Port (P91)
+ 1: 56       Do if Port 6 is Low
+ 2: 30       Then Do
+
+  57:  Z=F (P30)
+   1: 56       F
+   2: 0        Exponent of 10
+   3: 67       Z Loc [ STATUS_p6 ]
+
+58:  End (P95)
+
+59:  If Flag/Port (P91)
+ 1: 46       Do if Port 6 is High
+ 2: 30       Then Do
+
+  60:  Z=F (P30)
+   1: 46       F
+   2: 0        Exponent of 10
+   3: 67       Z Loc [ STATUS_p6 ]
+
+61:  End (P95)
+
+62:  If Flag/Port (P91)
+ 1: 57       Do if Port 7 is Low
+ 2: 30       Then Do
+
+  63:  Z=F (P30)
+   1: 57       F
+   2: 0        Exponent of 10
+   3: 68       Z Loc [ STATUS_p7 ]
+
+64:  End (P95)
+
+65:  If Flag/Port (P91)
+ 1: 47       Do if Port 7 is High
+ 2: 30       Then Do
+
+  66:  Z=F (P30)
+   1: 47       F
+   2: 0        Exponent of 10
+   3: 68       Z Loc [ STATUS_p7 ]
+
+67:  End (P95)
+
+68:  End (P95)
+
+;==============================================================================
+
+
+
+End Program
+
+
+-Input Locations-
+1 IDStation 1 3 1
+2 IDProj101 1 2 1
+3 IDProj201 1 5 3
+4 IDProj202 1 2 2
+5 U_log     1 12 1
+6 T_log     1 1 1
+7 U_log_MIN 1 1 1
+8 U_log_MAX 1 1 0
+9 U_log_Avg 1 1 0
+10 T_log_Avg 1 1 0
+11 IDTDP_12  1 1 2
+12 IDTDP_24  1 1 2
+13 IDTDP_36  1 1 2
+14 U_01      5 1 2
+15 U_02      17 0 1
+16 U_03      0 0 0
+17 U_04      0 0 0
+18 U_05      1 1 0
+19 U_06      1 1 0
+20 U_07      1 1 0
+21 U_08      0 0 0
+22 U_09      0 0 0
+23 U_10      0 0 0
+24 U_11      0 0 0
+25 U_12      0 0 0
+26 U_13      5 0 2
+27 U_14      17 0 1
+28 U_15      0 0 0
+29 U_16      0 0 0
+30 U_17      0 0 0
+31 U_18      0 0 0
+32 U_19      0 0 0
+33 U_20      0 0 0
+34 U_21      0 0 0
+35 U_22      0 0 0
+36 U_23      0 0 0
+37 U_24      0 0 0
+38 U_25      5 0 2
+39 U_26      17 0 1
+40 U_27      0 0 0
+41 U_28      0 0 0
+42 U_29      0 0 0
+43 U_30      0 0 0
+44 U_31      0 0 0
+45 U_32      0 0 0
+46 U_33      5 0 1
+47 U_34      17 0 1
+48 U_35      0 0 0
+49 U_36      0 0 0
+50 U_37      5 1 2
+51 U_38      17 1 1
+52 U_39      0 0 0
+53 U_40      1 1 0
+54 U_41      0 0 0
+55 U_42      0 0 0
+56 U_43      0 0 0
+57 U_44      0 0 0
+58 U_45      0 0 0
+59 U_46      0 0 0
+60 U_47      0 0 0
+61 U_48      0 0 0
+62 STATUS_f1 1 1 2
+63 STATUS_f5 1 0 2
+64 STATUS_f6 1 0 2
+65 STATUS_f7 1 0 2
+66 STATUS_p5 1 0 2
+67 STATUS_p6 1 0 2
+68 STATUS_p7 1 0 2
+69 Realtime  1 2 1
+70 _________ 0 0 0
+71 _________ 0 0 0
+72 _________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+0
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+-Final Storage Area 2-
+5849
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,U_log_MIN~5,14918
+1,U_log_MAX~5,21062
+2,U_log_AVG~5,31615
+2,T_log_AVG~6
+3,120,6168
+4,IDStation~1,3555
+4,IDProj101~2
+5,Year_RTM,7026
+5,Day_RTM
+5,Hour_Minute_RTM
+6,U_log_MIN~7,22470
+6,U_log_MAX~8
+6,U_log_Avg~9
+6,T_log_Avg~10
+7,STATUS_f1~62,6979
+7,STATUS_f5~63
+7,STATUS_f6~64
+7,STATUS_f7~65
+8,Hour_Minute_RTM,21002
+9,10,20147
+10,IDStation~1,32650
+11,IDProj201~3,9186
+12,Year_RTM,13464
+12,Day_RTM
+12,Hour_Minute_RTM
+13,U_01~14,6841
+13,U_02~15
+13,U_03~16
+13,U_04~17
+13,U_05~18
+13,U_06~19
+13,U_07~20
+13,U_08~21
+13,U_09~22
+13,U_10~23
+13,U_11~24
+13,U_12~25
+13,U_13~26
+13,U_14~27
+13,U_15~28
+13,U_16~29
+13,U_17~30
+13,U_18~31
+13,U_19~32
+13,U_20~33
+13,U_21~34
+13,U_22~35
+13,U_23~36
+13,U_24~37
+13,U_25~38
+13,U_26~39
+13,U_27~40
+13,U_28~41
+13,U_29~42
+13,U_30~43
+13,U_31~44
+13,U_32~45
+13,U_33~46
+13,U_34~47
+13,U_35~48
+13,U_36~49
+14,11,30393
+15,IDStation~1,4404
+16,IDProj202~4,5641
+17,Year_RTM,19675
+17,Day_RTM
+17,Hour_Minute_RTM
+18,U_37~50,21673
+18,U_38~51
+18,U_39~52
+18,U_40~53
+18,U_41~54
+18,U_42~55
+18,U_43~56
+18,U_44~57
+18,U_45~58
+18,U_46~59
+18,U_47~60
+18,U_48~61

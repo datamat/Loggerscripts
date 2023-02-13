@@ -1,0 +1,528 @@
+' WSL / LWF Meteostation, Lens Bestand, LEB, 20
+' Number/access: 41791945432-3.wsl.ch, 002006, 26
+
+' S T A T I O N   C O N F I G
+' ---------------------------------------------------------------
+Const SName As String = "002006" : Const SFull As String = "LEB"
+Const StatID = 20 : Const StatL As String = SName + "_" + SFull
+Public Has230V As Boolean = 0 : Public HasCam As Boolean = 0
+Public HasPlv As Boolean = 0
+
+' D E F I N I T I O N S
+' ---------------------------------------------------------------
+' Modem
+Public DefaultTen As Boolean, MdmWindow As Boolean
+Public IsMdmOn As Boolean : Public MdmStat As String * 40 = "Off"
+Dim Ofst As Float : Public U_24h = 12.0 : Public U_10min = 12.5
+Public Override As Boolean
+
+' Connection
+Public PingStart As Boolean, HasInt As Boolean
+Public Ping, PingWSL : Public WithinWSL As Boolean
+
+' FTP connections
+Public Transf As Boolean : Public FTPSuccess
+Const FTPSrv = "ftp.wsl.ch" : Const FTPUsr = "lwfmeteousr"
+Const FTPPw = "ZPVBNl.SEnsDJ" : Const RmtD = "/data/ftp/lwf_meteo/"
+Const FTPCRUsr = "lwfmeteo" : Const FTPCRPw = "2qcfdh1mVmZAtnj1"
+Dim Tstamp As String : Public Filename As String * 100
+
+' Power and alarming
+Const ToAddr = "lwfmeteo@gmail.com"
+Const Subject = "Low power alarm in " + SFull
+Const CRLF = CHR (13)+CHR (10) : Dim Message As String * 250
+Public MailSuc : Public SrvResponse As String * 50
+
+' Camera
+Public CamOn As Boolean : Public CamStat As String * 40 = "Off"
+Public IsDay As Boolean : Public rTime (9), monthr
+Public CamWindow1 As Boolean : Public CamWindow2 As Boolean
+
+' Miscellaneous, special sensors and Pluvio
+Const SenOff = "NAN" : Const C8_Mdm = 8
+Const PrtTARH = 4 : Const PrtMUXCLK = 5 : Const PrtMUX1RES = 2
+Public Bt, PTemp : Units Bt = Volts : Units PTemp = Deg C
+Public TAIRcur, Plvstat (3), Plvcur (9), Heatingduration
+Public PlvFull : Units PlvFull = %
+Alias Plvcur (7) = Plvtempw : Units Plvtempw = Deg C
+Alias Plvstat (1) = Plvtempe : Units Plvtempe = Deg C
+Alias Plvstat (3) = Plvtempa : Units Plvtempa = Deg C
+Public C1 As Boolean, C2 As Boolean, C2N As Boolean ' N for Night
+
+' S U B R O U T I N E S
+' ---------------------------------------------------------------
+' Turn modem on or off
+Sub SubMdm ()
+  Battery (Bt)
+  DefaultTen = TimeIsBetween (8,3,10,Min)
+  MdmWindow = TimeIsBetween (778,805,1440,Min) '13, i.e 14/15
+  If Has230V OR Override Then
+    If TimeIsBetween (1980,1985,3600,Sec) Then
+      PortSet (C8_Mdm,0) : IsMdmOn = 0 : MdmStat = "Hourly reboot"
+    Else
+      PortSet (C8_Mdm,1) : IsMdmOn = 1 : MdmStat = "Always on"
+    EndIf
+  ElseIf MdmWindow AND Bt >= U_24h Then
+    PortSet (C8_Mdm,1) : IsMdmOn = 1 : MdmStat = "Window"
+  ElseIf DefaultTen AND Bt >= U_10min Then
+    PortSet (C8_Mdm,1) : IsMdmOn = 1 : MdmStat = "Ten min"
+  Else
+    PortSet (C8_Mdm,0) : IsMdmOn = 0 : MdmStat = "Off"
+  EndIf
+EndSub
+
+' Check whether we are connected to the Internet/WSL
+Sub IsOnline ()
+  PingStart = 1 : HasInt = 0 : Ping = PingIP ("8.8.8.8",300)
+  If Ping <> 0 Then HasInt = 1
+  If HasInt Then
+    WithinWSL = 0 : PingWSL = PingIP ("10.30.1.20",200)
+    If PingWSL = 0 Then PingWSL = PingIP ("10.30.1.20",400)
+    If PingWSL = 0 Then PingWSL = PingIP ("10.30.1.20",800)
+    If PingWSL <> 0 Then WithinWSL = 1
+  EndIf
+  PingStart = 0
+EndSub
+
+' Low power mailing
+Sub LowPwrmail ()
+  Battery (Bt)
+  If Bt < 12.4 Then
+    Message = "Hi!" + CRLF + CRLF
+    Message = Message + "This is an automatic message "
+    Message = Message + "from your friendly datalogger named "
+    Message = Message + SFull + ". The battery voltage is "
+    Message = Message + "below 12.4 V, i.e. exactly " + Bt + " V."
+    MailSuc = EmailRelay (ToAddr,Subject,Message,SrvResponse)
+    Erase (Message)
+  EndIf
+EndSub
+
+' Check whether it is day or not (civil twighlight)
+Sub Daycheck ()
+  RealTime (rTime ())
+  monthr = rTime (2) : IsDay = 0
+  If TimeIsBetween (459,940,1440,Min) AND monthr = 1 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (422,986,1440,Min) AND monthr = 2 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (370,1027,1440,Min) AND monthr = 3 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (370,1130,1440,Min) AND monthr = 4 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (322,1170,1440,Min) AND monthr = 5 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (302,1198,1440,Min) AND monthr = 6 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (319,1193,1440,Min) AND monthr = 7 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (356,1152,1440,Min) AND monthr = 8 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (396,1093,1440,Min) AND monthr = 9 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (437,1034,1440,Min) AND monthr = 10 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (422,927,1440,Min) AND monthr = 11 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (457,913,1440,Min) AND monthr = 12 Then
+    IsDay = 1
+  EndIf
+EndSub
+
+' Camera taking fantastic pictures
+Sub SubCam ()
+  Battery (Bt) : Call Daycheck ()
+  CamWindow1 = TimeIsBetween (778,795,1440,Min) '13, i.e 14/15
+  CamWindow2 = TimeIsBetween (118,4,120,Min) AND IsDay 'every two hours
+  If Has230V AND TimeIsBetween (58,3,60,Min) AND IsDay Then
+    SW12 (1) : CamOn = 1 : CamStat = "Hourly pictures"
+  ElseIf (CamWindow1 OR CamWindow2) AND Bt >= U_24h Then
+    SW12 (1) : CamOn = 1 : CamStat = "Daily pics"
+  Else
+    SW12 (0) : CamOn = 0 : CamStat = "Off"
+  EndIf
+EndSub
+
+' Send all files on drive to the WSL
+Sub SubSendToFTP ()
+  Transf = 0 : Tstamp = Public.TimeStamp (1,1)
+  Tstamp = Mid (Tstamp,7,4)+Mid (Tstamp,1,2)+Mid (Tstamp,4,2)+ _
+  Mid (Tstamp,12,2)+Mid (Tstamp,15,2)+Mid (Tstamp,18,2)
+  Filename = RmtD + SFull + "_P01Table10_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPw, _
+  "P01Table10",Filename,2,0,0,min,-1008)
+  ' NumRecs=0: all data will be send, depending on interval
+  ' Interval=0: all new data will be sent
+  ' Interval<0: always in that interval, e.g. every hr last 3 hrs
+  ' Interval>0: e.g. only send 10 min value every 60 mins
+  If FTPSuccess = -1 Then
+    Filename = RmtD + SFull + "_DeviceStatus_" + Tstamp + ".crd"
+    FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPw, _
+    "DeviceStatus",Filename,2,0,0,min,-1008)
+    If FTPSuccess = -1 Then Transf = 1
+  EndIf
+  If FTPSuccess = -1 Then
+    Filename = RmtD + SFull + "_P01Table60_" + Tstamp + ".crd"
+    FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPw, _
+    "P01Table60",Filename,2,0,0,min,-1008)
+  EndIf
+  If FTPSuccess = -1 Then
+    Filename = RmtD + SFull + "_P22SoilEC60_" + Tstamp + ".crd"
+    FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPw, _
+    "P22SoilEC60",Filename,2,0,0,min,-1008)
+  EndIf
+EndSub
+
+' Switch heating on or off
+Sub Heating ()
+  Battery (Bt) : Call Daycheck ()
+  If TimeIntoInterval (1200,1440,Min) Then
+    Timer (1,Min,3) : Heatingduration = 0 : C2N = 0
+  EndIf
+  ' technical and temporal conditions (wir koennten jetzt heizen):
+  C1 = IsDay AND Bt > 12.8 AND (Timer (1,Min,4) <= 20)
+  ' meteorological conditions (wir muessten heute irgendwann heizen):
+  C2 = (TAIRcur < 8 AND TAIRcur > (-10))
+  If C2 Then C2N = 1
+  If C1 AND C2N Then
+    PortSet (6,1) : Timer (1,Min,0)
+  Else
+    PortSet (6,0) : Timer (1,Min,1) : Plvtempa = SenOff
+  EndIf
+  Heatingduration = Timer (1,Min,4)
+EndSub
+
+' Correct some data by minimum and maximum limits
+Sub SUBCheckRange (LVal,LMin,LMax)
+  If (LVal > LMax) OR (LVal < LMin) Then LVal = SenOff
+EndSub
+
+' P R O J E C T S
+' ---------------------------------------------------------------
+' Project 01: Meteo
+Public DWND As Boolean = 0 : Public SRAD As Boolean = 0
+
+' Calib constants for precip only
+Const CalPrec1 = 0.200
+Const MultiSRAD = 100 : Const OffSRAD = 0 ' SKS1110
+Const MultiPAR = 100 : Const OffPAR = 0 ' SKP210/I
+
+' Measurement variables
+Public SRADcur, PARcur ' Radiation sensors
+Public Preccur1 ' Precipication
+Public RHUMcur, RHUMcuri, VWNDcur, DWNDcur
+
+' Calculated variables
+Dim SatVPCalc, Ea : Public VPDcur, Dewpcur ' VPD and Dewpoint
+
+' Units
+Units SRADcur = W m-2 : Units PARcur = micromol m-2 s-1
+Units RHUMcur = % : Units TAIRcur = Deg C : Units RHUMcuri = %
+Units Preccur1 = mm : Units SatVPCalc = kPa : Units VPDcur = kPa
+Units Ea = kPa : Units Dewpcur = Deg C : Units VWNDcur = m s-1
+Units DWNDcur = Deg : Alias Plvcur (2) = Plvr : Units Plvr = mm
+
+DataTable (P01Table10,1,-1)
+  DataInterval (0,10,Min,0)
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,1,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  Average (1,TAIRcur,FP2,0) : FieldNames ("Lufttemperatur")
+  Average (1,SRADcur,FP2,0) : FieldNames ("Globalstrahlung")
+  Average (1,PARcur,FP2,0) : FieldNames ("PAR")
+  Sample (1,SenOff,FP2,0) : FieldNames ("UVB_notinstalled")
+  WindVector (1,VWNDcur,DWNDcur,FP2,0,0,0,1)
+  FieldNames ("Windgeschwindigkeit,Windrichtung")
+  StdDev (1,TAIRcur,FP2,0) : FieldNames ("Lufttemperatur_Stw")
+  StdDev (1,SRADcur,FP2,0) : FieldNames ("Globalstrahlung_Stw")
+  StdDev (1,PARcur,FP2,0) : FieldNames ("PAR_Stw")
+  Sample (1,SenOff,FP2,0) : FieldNames ("UVB_Stw_notinstalled")
+  StdDev (1,VWNDcur,FP2,0)
+  FieldNames ("Windgeschwindigkeit_Stw")
+  StdDev (1,DWNDcur,FP2,0) : FieldNames ("Windrichtung_Stw")
+  Maximum (1,VWNDcur,FP2,False,False) : FieldNames ("Windspitze")
+  Average (1,RHUMcur,FP2,0) : FieldNames ("Luftfeuchtigkeit")
+  Totalize (1,Preccur1,FP2,0) : FieldNames ("Niederschlag1")
+  StdDev (1,RHUMcur,FP2,0) : FieldNames ("Luftfeuchtigkeit_Stw")
+  Average (1,Dewpcur,FP2,0) : FieldNames ("Taupunkt")
+  Average (1,VPDcur,FP2,0) : FieldNames ("VaporPressureDeficit")
+  ' Sample (1,Plvr,FP2) : FieldNames ("Niederschlag_Pluvio")
+EndTable
+
+DataTable (P01Table60,1,-1)
+  DataInterval (0,60,Min,0)
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,1,UINT2): FieldNames ("ProjektNr")
+  Sample (1,60,UINT2) : FieldNames ("Messperiode")
+  Average (1,RHUMcur,FP2,0) : FieldNames ("Luftfeuchtigkeit")
+  Totalize (1,Preccur1,FP2,0) : FieldNames ("Niederschlag1")
+  StdDev (1,RHUMcur,FP2,0) : FieldNames ("Luftfeuchtigkeit_Stw")
+EndTable
+
+DataTable (P01TableRAW,1,1) ' Something will be the minimum
+  DataInterval (0,1,Min,0) : CardOut (0,5000000)
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,TAIRcur,FP2,0) : FieldNames ("Lufttemperatur")
+  Sample (1,SRADcur,FP2,0) : FieldNames ("Globalstrahlung")
+  Sample (1,PARcur,FP2,0) : FieldNames ("PAR")
+  Sample (1,SenOff,FP2,0) : FieldNames ("UVB_notinstalled")
+  WindVector (1,VWNDcur,DWNDcur,FP2,0,0,0,1)
+  FieldNames ("Windgeschwindigkeit,Windrichtung")
+  Sample (1,RHUMcur,FP2,0) : FieldNames ("Luftfeuchtigkeit")
+  Totalize (1,Preccur1,FP2,0) : FieldNames ("Niederschlag1")
+  Sample (1,Dewpcur,FP2,0) : FieldNames ("Taupunkt")
+  Sample (1,VPDcur,FP2,0) : FieldNames ("VaporPressureDeficit")
+  Sample (1,RHUMcuri,FP2,0)
+  FieldNames ("Luftfeuchtigkeit_unkorrigiert")
+  ' Sample (1,Plvr,FP2)
+  ' FieldNames ("Niederschlag_Pluvio")
+EndTable
+
+' Standard meteo measurements
+Sub SubP01 ()
+  ' Activate sensors needing power
+  If TimeIntoInterval (40,60,Sec) Then
+    PortSet (PrtTARH,1) : Delay (0,10,mSec)
+  EndIf
+  ' Wind direction (Campbell W200P: SE4,Vx2)
+  If DWND Then
+    BrHalf (DWNDcur,1,mV2500,4,Vx1,1,2500,0,20000,250,357,0)
+  Else
+    DWNDcur = SenOff
+  EndIf
+  Call SUBCheckRange (DWNDcur,0,360)
+
+  ' Windgeschwindigkeit (VWND) in main scan (Campbell A10R: P1)
+  ' Precipitation (Campbell ARG100: P2) in main scan, has to be!
+
+  If TimeIntoInterval (0,60,Sec) Then
+    ' Temperature and humidity everywhere anyway
+    VoltSe (TAIRcur,1,mv2500,3,0,0,250,0.1,-40)
+    Call SUBCheckRange (TAIRcur,-40,50)
+    VoltSe (RHUMcur,1,mv2500,2,0,0,250,0.1,0)
+    Call SUBCheckRange (RHUMcur,5,108)
+    RHUMcuri = RHUMcur
+    If RHUMcur>108 Then RHUMcur = 108
+
+    If SRAD Then
+      VoltSe (SRADcur,1,mV25,7,0,10000,250,MultiSRAD,OffSRAD)
+    Else
+      SRADcur = SenOff
+    EndIf
+    Call SUBCheckRange (SRADcur,-10,2500)
+
+    ' PAR everywhere anyway
+    VoltSe (PARcur,1,mV250,8,0,10000,250,MultiPAR,OffPAR)
+    Call SUBCheckRange (PARcur,-10,2500)
+
+    ' Dewpoint and VPD calculation
+    DewPoint (Dewpcur,TAIRcur,RHUMcur)
+    Call SUBCheckRange (Dewpcur,-10,30)
+    SatVP (SatVPCalc,TAIRcur)
+    Ea = (RHUMcur/100)*SatVPCalc
+    VPDcur = SatVPCalc-Ea
+
+    ' Deactivate sensor after measurements
+    PortSet (PrtTARH,0) : Delay (0,10,mSec)
+  EndIf
+
+  ' Ott Pluvio on SDI12 C5
+  If HasPlv Then
+    If TimeIntoInterval (0,10,Min) Then
+      Delay (1,1,Sec) : SDI12Recorder (Plvcur,5,0,"M!",1,0)
+      PlvFull = (Plvcur (6) - 263) / 15
+    EndIf
+  Else
+    Plvcur () = SenOff
+  EndIf
+EndSub
+
+' ***************************************************************
+' Project 04: Device status
+Public LithiumBatt : Units LithiumBatt = V
+
+DataTable (DeviceStatus,1,-1)
+  DataInterval (0,10,Min,0)
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,4,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  Minimum (1,Bt,FP2,0,0) : FieldNames ("MinBattVolt")
+  Average (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp")
+  Average (1,LithiumBatt,FP2,0) : FieldNames ("AvgLithiumBatt")
+  ' Sample (1,Plvcur (9),Long)
+  ' FieldNames ("Status_Niederschlagsmessung_Pluvio")
+  ' Sample (1,Plvcur (8),Long)
+  ' FieldNames ("Status_Heizung_Pluvio")
+  ' Sample (1,Plvtempw,FP2)
+  ' FieldNames ("Temperatur_Waegezelle_Pluvio")
+  ' Average (1,Plvtempe,FP2,0)
+  ' FieldNames ("Temperatur_Elektronikeinheit_Pluvio")
+  ' Maximum (1,Plvtempa,FP2,0,0)
+  ' FieldNames ("Max_Temperatur_Auffangring_Pluvio")
+  ' Sample (1,Heatingduration,FP2,0)
+  ' FieldNames ("Dauer_Heizung_Pluvio")
+  ' Sample (1,PlvFull,FP2,0)
+  ' FieldNames ("Fuellstand_Pluvio")
+EndTable
+
+Sub SubP04 ()
+  PanelTemp (PTemp,250) : Battery (Bt)
+  LithiumBatt = Status.LithiumBattery (1,1)
+  ' Ott Pluvio on SDI12 C5
+  If TimeIntoInterval (0,1,Min) Then Call Heating ()
+  If HasPlv Then
+    If TimeIntoInterval (0,10,Min) Then
+      Delay (1,1,Sec) : SDI12Recorder (Plvstat,5,0,"M1!",1,0)
+    EndIf
+  Else
+    Plvstat () = SenOff
+  EndIf
+EndSub
+
+' ***************************************************************
+' Project 22: Echo EC-5 soil volumetric water content
+Public EC15cmact (5), EC50cmact (5), EC80cmact (5), ECU (15)
+' depths do not correspond here at all! Look at FieldNames!
+Public EC05cmact (1) : Units EC15cmact = m3 m-3 : Units ECU = mV
+Dim i22
+
+DataTable (P22SoilEC60,1,-1)
+  DataInterval (0,60,Min,0)
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,22,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,60,UINT2) : FieldNames ("Messperiode")
+  Average (1,EC15cmact (1),FP2,0) : FieldNames ("EC5_5cm_1")
+  Average (1,EC50cmact (1),FP2,0) : FieldNames ("EC5_15cm_1")
+  Average (1,EC80cmact (1),FP2,0) : FieldNames ("EC5_50cm_1")
+  Average (1,EC15cmact (2),FP2,0) : FieldNames ("EC5_5cm_2")
+  Average (1,EC50cmact (2),FP2,0) : FieldNames ("EC5_15cm_2")
+  Average (1,EC80cmact (2),FP2,0) : FieldNames ("EC5_30cm_2")
+  Average (1,EC15cmact (3),FP2,0) : FieldNames ("EC5_5cm_3")
+  Average (1,EC50cmact (3),FP2,0) : FieldNames ("EC5_15cm_3")
+  Average (1,EC80cmact (3),FP2,0) : FieldNames ("EC5_30cm_3")
+  Average (1,EC15cmact (4),FP2,0) : FieldNames ("EC5_15cm_LW_1")
+  Average (1,EC50cmact (4),FP2,0) : FieldNames ("EC5_15cm_LW_2")
+  Average (1,EC80cmact (4),FP2,0) : FieldNames ("EC5_15cm_LW_3")
+  Average (1,EC15cmact (5),FP2,0) : FieldNames ("EC5_80cm_LW_1")
+  Average (1,EC50cmact (5),FP2,0) : FieldNames ("EC5_80cm_LW_2")
+  Average (1,EC80cmact (5),FP2,0) : FieldNames ("EC5_80cm_LW_3")
+  Average (1,ECU (1),FP2,0) : FieldNames ("EC5_5cm_mV_1")
+  Average (1,ECU (2),FP2,0) : FieldNames ("EC5_15cm_mV_1")
+  Average (1,ECU (3),FP2,0) : FieldNames ("EC5_50cm_mV_1")
+  Average (1,ECU (4),FP2,0) : FieldNames ("EC5_5cm_mV_2")
+  Average (1,ECU (5),FP2,0) : FieldNames ("EC5_15cm_mV_2")
+  Average (1,ECU (6),FP2,0) : FieldNames ("EC5_30cm_mV_2")
+  Average (1,ECU (7),FP2,0) : FieldNames ("EC5_5cm_mV_3")
+  Average (1,ECU (8),FP2,0) : FieldNames ("EC5_15cm_mV_3")
+  Average (1,ECU (9),FP2,0) : FieldNames ("EC5_30cm_mV_3")
+  Average (1,ECU (10),FP2,0) : FieldNames ("EC5_15cm_mV_LW_1")
+  Average (1,ECU (11),FP2,0) : FieldNames ("EC5_15cm_mV_LW_2")
+  Average (1,ECU (12),FP2,0) : FieldNames ("EC5_15cm_mV_LW_3")
+  Average (1,ECU (13),FP2,0) : FieldNames ("EC5_80cm_mV_LW_1")
+  Average (1,ECU (14),FP2,0) : FieldNames ("EC5_80cm_mV_LW_2")
+  Average (1,ECU (15),FP2,0) : FieldNames ("EC5_80cm_mV_LW_3")
+  ' Teabag
+  'Average (1,EC05cmact (1),FP2,0) : FieldNames ("EC5_05cm_4")
+  'Average (1,ECU (10),FP2,0) : FieldNames ("EC5_05cm_mV_4")
+EndTable
+
+Sub SubP22 ()
+  ' Toggle Flag 6 for testing
+  If TimeIntoInterval (59,60,Min) Then
+    ' Multiplexer 1 einschalten
+    PortSet (PrtMUX1RES,1) : Delay (0,10,msec)
+    For i22 = 1 To 11
+      PulsePort (PrtMUXCLK,10000) : Delay (0,10,msec)
+    Next i22
+    ' Set 12 ff: Messen Spannung Echo EC-5 Bodenwassergehalt
+    For i22 = 0 To 4
+      PulsePort (PrtMUXCLK,10000) : Delay (0,20,msec)
+      BrHalf (ECU (i22*3+1),1,mV2500,9,Vx2,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (i22*3+2),1,mV2500,10,Vx2,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (i22*3+3),1,mV2500,11,Vx2,1,2500,0,10000,250,2500,0)
+    Next i22
+    ' Teabag
+    'PulsePort (PrtMUXCLK,10000) : Delay (0,10,msec) ' CLK is C7
+    'BrHalf (ECU (10),1,mV2500,9,Vx2,1,2500,0,10000,250,2500,0)
+    ' Multiplexer 1 ausschalten
+    PortSet (PrtMUX1RES,0) : Delay (0,10,msec)
+
+    ' Umrechung in Bodenwassergehalt (Lineare Kalibration pro Sensor)
+    ' Standardkalibration Y = X*0.00119-0.4 fuer Mineralboeden
+    ' (p., 17 in Manual, 2006)
+    EC15cmact (1) = (ECU (1) * 0.00119) - 0.4
+    EC50cmact (1) = (ECU (2) * 0.00119) - 0.4
+    EC80cmact (1) = (ECU (3) * 0.00119) - 0.4
+    EC15cmact (2) = (ECU (4) * 0.00119) - 0.4
+    EC50cmact (2) = (ECU (5) * 0.00119) - 0.4
+    EC80cmact (2) = (ECU (6) * 0.00119) - 0.4
+    EC15cmact (3) = (ECU (7) * 0.00119) - 0.4
+    EC50cmact (3) = (ECU (8) * 0.00119) - 0.4
+    EC80cmact (3) = (ECU (9) * 0.00119) - 0.4
+    EC15cmact (4) = (ECU (10) * 0.00119) - 0.4
+    EC50cmact (4) = (ECU (11) * 0.00119) - 0.4
+    EC80cmact (4) = (ECU (12) * 0.00119) - 0.4
+    EC15cmact (5) = (ECU (13) * 0.00119) - 0.4
+    EC50cmact (5) = (ECU (14) * 0.00119) - 0.4
+    EC80cmact (5) = (ECU (15) * 0.00119) - 0.4
+    ' Teabag
+    'EC05cmact (1) = (ECU (10) * 0.00119) - 0.4
+  EndIf
+EndSub
+
+' M A I N   P R O G R A M
+' ---------------------------------------------------------------
+SequentialMode ' needed so that Scans run after each other
+
+BeginProg
+  SetStatus ("StationName",StatL) : SetStatus ("USRDriveSize",0)
+  SetStatus ("HTTPEnabled",1) : SetStatus ("FTPEnabled",1)
+  SetStatus ("FTPUsername",FTPCRUsr) : SetStatus ("PingEnabled",1)
+  SetStatus ("TelnetEnabled",1) : SetStatus ("FTPPassword",FTPCRPw)
+
+  ' Before voltage is given to sensors, values bogus
+  TAIRcur = SenOff : RHUMcur = SenOff : RHUMcuri = SenOff
+  SatVPCalc = SenOff : Ea = SenOff : PARcur = SenOff
+  Preccur1 = SenOff : VPDcur = SenOff : Dewpcur = SenOff
+  SRADcur = SenOff : DWNDcur = SenOff : VWNDcur = SenOff
+
+  ' Main Scan
+  Scan (20,Sec,0,0)
+    Call SubP01 ()
+    PulseCount (VWNDcur,1,1,2,1,1.25,0)
+    PulseCount (Preccur1,1,2,2,0,CalPrec1,0)
+    Call SUBCheckRange (Preccur1,0,100)
+    CallTable P01Table10
+    CallTable P01Table60
+    CallTable P01TableRAW
+    Call SubP04 ()
+    CallTable DeviceStatus
+    Delay (1,1,Sec)
+    Call SubP22 ()
+    CallTable P22SoilEC60
+  NextScan
+
+  ' SlowScan 1
+  SlowSequence
+  Scan (1,Min,0,0)
+    Call SubMdm ()
+    If IsMdmOn Then Call SubSendToFTP ()
+  NextScan
+  EndSequence
+
+  ' SlowScan 2
+  SlowSequence
+  Scan (2,Min,0,0)
+    Delay (0,1,Sec)
+    If HasCam Then Call SubCam ()
+    ' Call IsOnline ()
+  NextScan
+  EndSequence
+
+  ' SlowScan 3
+  SlowSequence
+  Scan (120,Min,0,0)
+    Call LowPwrmail ()
+  NextScan
+  EndSequence
+EndProg

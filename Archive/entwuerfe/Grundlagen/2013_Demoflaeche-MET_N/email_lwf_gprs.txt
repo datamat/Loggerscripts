@@ -1,0 +1,91 @@
+	
+	Re: Ftp Account lwf_gprs  
+	Peter Jakob  
+	to:
+	Markus Reinhardt
+	09.09.2014 09:55
+	Cc:
+	Peter Waldner
+	Show Details
+
+
+
+Lieber Markus,
+
+vielen Dank für Deine kompetenten Dienste!
+
+Liebe Grüsse
+
+Peter
+____________________________________________________________________
+Peter Jakob
+Swiss Federal Institute for Forest, Snow and Landscape Research WSL 
+Research for People and the Environment 
+Zürcherstrasse 111
+CH-8903 Birmensdorf
+
+Telefon +41-44-739 25 77
+Fax +41-44-739 22 15
+peter.jakob@wsl.ch
+http://www.wsl.ch/info/mitarbeitende/jakob/index_EN
+
+
+
+From: Markus Reinhardt/WSL
+To: Peter Jakob/WSL@wsl, 
+Date: 09.09.2014 09:52
+Subject: Re: Ftp Account lwf_gprs
+
+
+Peter,
+
+Hier die Zugangsdaten für den FTP-Account:
+
+Login: lwf_gprs
+PW: rpg08.wl
+
+Gruss
+Markus
+
+-- 
+Markus Reinhardt
+Eidg. Forschungsanstalt WSL
+IT / Server, Netzwerk und Applikationen
+Zuercherstr. 111
+CH-8903 Birmensdorf
+
+Telefon +41-44-739 25 86
+Fax +41-44-739 22 15
+markus.reinhardt@wsl.ch
+http://www.wsl.ch/info/mitarbeitende/reinhard
+
+Peter Jakob/WSL wrote on 09/05/2014 05:25:19 PM:
+
+> From: Peter Jakob/WSL
+> To: Markus Reinhardt/WSL@wsl
+> Cc: Peter Waldner/WSL@wsl
+> Date: 09/05/2014 05:25 PM
+> Subject: Ftp Account lwf_gprs
+> 
+> Lieber Markus,
+> 
+> Ich wäre froh, wenn Du mit einen FTP account auf dem WSL FTP Server 
+> anlegen könntest, auf den der user lwf_gprs und (nur dieser) alle 
+> Zugriffe hat.
+> 
+> User: lwf_gprs
+> 
+> Liebe Grüsse
+> 
+> Peter
+> ____________________________________________________________________
+> Peter Jakob
+> Swiss Federal Institute for Forest, Snow and Landscape Research WSL 
+> Research for People and the Environment 
+> Zürcherstrasse 111
+> CH-8903 Birmensdorf
+> 
+> Telefon +41-44-739 25 77
+> Fax +41-44-739 22 15
+> peter.jakob@wsl.ch
+> http://www.wsl.ch/info/mitarbeitende/jakob/index_EN

@@ -1,0 +1,48 @@
+Final Storage Label File for:  VORD_M10.csi
+Date:  4/27/2007
+Time:  10:11:37
+
+60 Output_Table  60.00 Min
+1 60 L
+2 IDStation  L
+3 IDProj  L
+4 _RTM  L
+5 _RTM  L
+6 _RTM  L
+7 Dendro_1_AVG  L
+8 Dendro_2_AVG  L
+9 Dendro_3_AVG  L
+10 Dendro_4_AVG  L
+11 Dendro_5_AVG  L
+12 Dendro_6_AVG  L
+13 Dendro_7_AVG  L
+14 Dendro_8_AVG  L
+15 Dendro_9_AVG  L
+16 Dendro_10_AVG  L
+17 Dendro_11_AVG  L
+18 Dendro_12_AVG  L
+19 Dendro_13_AVG  L
+20 Dendro_14_AVG  L
+21 Dendro_15_AVG  L
+22 Dendro_16_AVG  L
+23 Dendro_17_AVG  L
+24 Dendro_18_AVG  L
+25 Dendro_19_AVG  L
+26 Dendro_20_AVG  L
+27 Dendro_21_AVG  L
+28 Dendro_22_AVG  L
+29 Dendro_23_AVG  L
+30 Dendro_24_AVG  L
+31 Dendro_25_AVG  L
+32 Dendro_26_AVG  L
+33 Dendro_27_AVG  L
+34 Dendro_28_AVG  L
+35 Dendro_29_AVG  L
+36 Dendro_30_AVG  L
+37 Dendro_31_AVG  L
+38 Dendro_32_AVG  L
+39 LoggTemp_AVG  L
+40 BattVolt_AVG  L
+
+
+Estimated Total Final Storage Locations used per day 960

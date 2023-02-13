@@ -1,0 +1,143 @@
+'CR1000 Series Datalogger
+'Test GPRS connection CR1000 - Cinterion MC52i - WSL
+' init with at^sics
+' trying wsl.swisscom.ch
+
+' Declare Public Variables
+Public PTemp, batt_volt
+
+' Declare Communication Variables
+Public FlagFTP As Long
+Public DataLine As String * 1000
+Public DataFile As Long
+Public pppIPAddress As String * 30
+Public pppCloseSuccess As Boolean
+Public pppOpenState As Boolean
+Public pppOpenCount As Long
+Public FTPSendSuccess As Boolean
+Public NTPOffset As Long
+Public FTPCount As Long
+
+' Declare GSM-Modem Konfiguration variables
+Public FlagConfigGSM As Long
+Public GSMCommandString As String * 100
+Public GSMAnswer As String * 1000
+Dim    SerialInput As String * 100
+
+' Declare Ftp Variables
+Const cFTP_IP       =   "ftp.wsl.ch"
+Const cFTP_User     =   "lwf_gprs"
+Const cFTP_Pwd      =   "rpg08.wl"
+Const cDataFileName =   "USR:LocalData.dat"
+Const cFTPFileName  =   "mc52i_test2.txt"
+
+'Define Data Tables
+DataTable (Test,1,1000)
+	DataInterval (0,60,Sec,10)
+	Minimum (1,batt_volt,FP2,0,False)
+	Sample (1,PTemp,FP2)
+EndTable
+
+
+'Define Subroutines
+' DataRecord an File auf USR: auf Logger anhaengen  (Peter Waldner, 14.9.2015)
+Sub SubAppend
+        ' "2014-09-14 00:00:00",RecordNr="1",DataTable
+        DataLine=Mid(DataLine,1,21)&","&"1"&Mid(DataLine,22,Len(DataLine)-22)&CHR(10)
+        DataFile=FileOpen(cDataFileName,"a",-1)
+        FileWrite(DataFile,DataLine,0)
+        FileClose(DataFile)
+EndSub
+
+Sub SubAT
+     Dim i As Long
+     SerialOpen(ComRS232,9600,0,100,100)
+     Delay(1,200,mSec)
+     SerialFlush(ComRS232)
+     SerialOut(ComRS232,GSMCommandString & CHR(13),"",1,100)
+     GSMAnswer=""
+     For i = 1 To 10
+       SerialIn(SerialInput,comRS232,100,13,100)
+       GSMAnswer = GSMAnswer & SerialInput
+     Next i
+     Delay(1,2000,mSec)
+     SerialClose(ComRS232)
+EndSub
+
+'Main Program
+BeginProg
+	Scan (60,Sec,0,0)
+		PanelTemp (PTemp,250)
+		Battery (batt_volt)
+		'Enter other measurement instructions
+		'Call Output Tables
+		'Example:
+		If TimeIntoInterval(0,60,Sec) Then
+  		CallTable Test
+      GetRecord(DataLine,Test,1)
+ 		  Call SubAppend
+    EndIf
+    
+    ' Communication
+     ' Modem Konfiguration
+     GSMCommandString="AT^SICS=0,conType,GPRS0"
+     Call SubAT
+     GSMCommandString="AT^SICS=0,""apn"",""wsl.swisscom.ch"""
+     Call SubAT
+     GSMCommandString="AT^SICS=0,""INACTTO"",6400"
+     Call SubAT
+     GSMCommandString="AT^SICS=0,""user"",""41796409313"""
+     Call SubAT
+     GSMCommandString="AT^SICS=0,""passwd"",kup4m!RT"
+     Call SubAT
+     GSMCommandString="AT^SICS?"
+     Call SubAT
+     GSMCommandString="AT^SISS=0,SRVTYPE,TRANSPARENT"
+     Call SubAT
+     GSMCommandString="AT^SISS=0,CONID,0"
+     Call SubAT
+     GSMCommandString="AT^SISS=0,ALPHABET,1"
+     Call SubAT
+     GSMCommandString="AT^SISC=0"
+     Call SubAT
+     GSMCommandString="AT^SISO=0"
+     Call SubAT
+     ' ERROR --> detailed error description?
+     GSMCommandString="AT^SIST=0"
+     Call SubAT
+     GSMCommandString="AT^SISI?"
+     Call SubAT
+     
+
+     'GSMCommandString="AT+CGDCONT,""IP"",""gprs.swisscom.ch"""
+     'Call SubAT
+     'GSMCommandString="AT+CGACT=1,1"
+     'Call SubAT
+     'GSMCommandString="AT+CGPADDR=1"
+     'Call SubAT
+      
+     ' cgpaddr erhalten
+     ' pppIPAddress erhalten
+     ' pppIPAddr 0.0.0.0 angezeigt.
+     ' ftp file uebermittelt!
+     
+     ' Open PPP
+     Delay(1,2000,mSec)
+     pppIPAddress = PPPOpen
+     Delay(1,2000,mSec)
+
+     ' ftp
+     FTPClient(cFTP_IP,cFTP_User,cFTP_Pwd,cDataFileName,cFTPFileName,0)
+     Delay(1,2000,mSec)
+     FTPClient(cFTP_IP,cFTP_User,cFTP_Pwd,cDataFileName,cFTPFileName,0)
+     Delay(1,2000,mSec)
+     FTPClient(cFTP_IP,cFTP_User,cFTP_Pwd,cDataFileName,cFTPFileName,0)
+     FileManage(cDataFileName,8)
+
+     ' Close PPP
+     'PPPClose
+     'pppIPAddress = "0.0.0.0"
+
+	NextScan
+EndProg
+

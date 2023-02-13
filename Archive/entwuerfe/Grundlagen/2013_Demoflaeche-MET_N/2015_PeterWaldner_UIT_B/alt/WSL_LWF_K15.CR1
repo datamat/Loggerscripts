@@ -1,0 +1,1090 @@
+'**************************************************************************************
+'*                                                                                    *
+'*   Programm:          WSL_LWF_K14.CS1                                               *
+'*                      Langfristige Waldökosystem-Forschung LWF / WSL                *
+'*   Logger:            Campbell CR1000                                               *
+'*   Version:           V 1.1                                                         *
+'*   Ersterstellung:    12.04.2012                                                    *
+'*   letzte Aenderung:  05.04.2013                                                    *
+'*   Autor:             Martin Zimmerli, SensAlpin GmbH                               *
+'*                                                                                    *
+'**************************************************************************************
+'--------------------------------------------------------------------------------------
+'*   Anpassungen an LWF Standards, Peter Waldner, 9.9.2014
+'*   ----
+'*   - Parameterwerte ausschliesslich aus Programm lesen (SUBParameter)
+'*   - LWF-Fileformat http://wiki.lwf.wsl.ch/tiki-index.php?page_ref_id=122
+'      "2014-09-09 10:00:00",RecordNr,Statnr,Projnr,Messintervall, ..., ..., ..
+'       Dateiname : *.crd 
+'*   - FTP Generisches Lesen aus DataTable, LWF-FileFormat und FileName mit Zeitstempel (SubAppend)
+'*   - LWF-Zeit: GMT + 0 Minuten (anstatt GMT + 3600 Minuten)
+'*   - Projekt 1 DataTable Meteo FolgeNr angepasst
+'*   - Projekt 1 stuendliche Messparameter weiterfuehren (DataTable Meteo60)
+'*   - Projekt 4 technische Daten alle 240 Minuten (DataTable Tech)
+'*   - AT-Befehle an Modem ausgeschaltet
+'      (URL und Passwort fuer PPP waren mit Device Config bereits auf Logger gespielt worden
+'*   - Zeitfenster angepasst (SUBGSM2)
+'* 
+'*   noch offen
+'*   [] Spannung der internen Batterie im Logger messen
+'*   [] Zeitfenster fuer stuendliche GSM Datenuebertragung festlegen, 
+'       falls Batterie i.o und ftp nicht geht
+'--------------------------------------------------------------------------------------
+'*
+'*   Station:                WSL LWF-Station
+'*   Stations-ID:            122
+'*   Telefonnummer:          079 179 90 64
+'*   PakBus-Adresse:         101
+'*
+'*
+'*   Messungen:
+'*   **********
+'*   Lufttemperatur          TAIR [°C], Rotronic Hygroclip HC 2            (SE3, C6)
+'*   rel. Feuchte            RHUM [%],  Rotronic Hygroclip HC 2            (SE2, C6)
+'*   Windrichtung            DWND [deg], Campbell W200P                   (SE4, Ex2)
+'*   Windgeschwindigkeit     VWND [m/s], Campbell A100R                         (P1)
+'*   Niederschlag            PLUV [mm], Campbell ARG100 0.2mm Wippe             (P2)
+'*   Globalstrahlung         SRAD [W/m2], Skye SKS1110                         (SE7)
+'*   photosynth. akt. Str.   PAR  [umol/m2s], Skye SKP 210/I                   (SE8)
+'*   UVB-Strahlung           UVB  [mW/m2], Skye SKU 430/I                   (Diff 3)
+'*
+'*   Multiplexer             Mux 1: AM16/32_1                (C1, C2 / SE9 ... SE12)
+'*
+'*                           Mux 2: AM16/32_2               (C3, C4 / SE13 ... SE16)
+'*
+'*   Batteriespannung        VBAT [V]
+'*   Loggertermperatur       TLOG [°C]
+'*
+'*
+'*   INPUT CHANNELS:
+'*   --------------
+'*   SE1:  -           SE2:  RHUM        SE3:  TAIR        SE4:  DWND
+'*   SE5:  UVB High    SE6:  UVB Low     SE7:  SRAD        SE8:  PAR   
+'*   SE9:  Odd H Mux1  SE10: Odd L Mux1  SE11: Even H Mux1 SE12: Even L Mux1
+'*   SE13: Odd H Mux2  SE14: Odd L Mux2  SE15: Even H Mux2 SE16: Even L Mux2
+'*   
+'*   PULSE INPUT CHANNELS:
+'*   --------------------
+'*   P1:  VWND         P2:  PLUV
+'*
+'*   CONTROL PORTS: (Wichtig: Bei Multiplexer Schalter 4x16/2x32 kontrollieren)
+'*   -------------
+'*   C1:  CLK Mux 1    C2:  RES Mux 1    C3:  CLK Mux 2    C4:  RES Mux 2   
+'*   C5:  -            C6:  PS TARH      C7:  -            C8:  -
+'*
+'*   Switched 12V:     GSM  (low = on)
+'*
+'*   EXCITATION CHANNELS:
+'*   -------------------
+'*   Ex1: -            Ex2: DWND          Ex3: -   
+'*
+'*
+'*   Programmkonfiguration:
+'*   **********************
+'*   Station:               Kennung durch StationID
+'*   Sensoren:              Ein-/Aus-Schalten der Messung von XXXX mit StatXXXX
+'*                          - StatXXXX >= 1:   eingeschaltet
+'*                          - StatXXXX  = 0:   ausgeschaltet
+'*   Niederschlag:          PLUVcali:  Wippenvolumen in mm
+'*   Globalstrahlung:       SRADcali:  1 / Empfindlichkeit [mV/W/m2]
+'*   phot. akt. Strahlung:  PARcali:   1 / Empfindlichkeit [mV/umol/m2s]
+'*   UVB-Strahlung:         UVBcali:   1000 / Empfindlichkeit [mV/W/m2]
+'*
+'*   
+'*   Energieversorgung:
+'*   ******************
+'*   Solarspeisung 15W / 38Ah mit Laderegler SunSaver SS-6
+'*
+'*   Kommunikation / Datenablage:
+'*   ****************************
+'*   GSM:                   Cinterion MC52i Terminal
+'*                          geschaltet ueber SW12V (low: EIN / high: AUS) 
+'*                          im Normalbetrieb alle 10 Min fuer 2 Min ein kein Reset 
+'*
+'*                          bei tiefer Batteriespannung morgens um 05:00 Uhr
+'*                          VBAT5h < VBATlim (default: 12.4V), wird das GSM-Modem
+'*                          jeweils nur noch waehrend der Zeitfenstern eingeschaltet
+'*                          (default: 06:00-06:30/10:00-10:30/14:00-14:30/18:00-18:30)
+'*
+'*   GPRS:                  GPRS-Verbindung wird in einem eigenen Zeitfenster geschlossen
+'*                          (
+'*                          falls StatFTP >= 1:
+'*                          GPRS-Verbindung wird nach dem jeweils ersten FTP-Transfer
+'*                          nach jeder vollen Stunde einmal stuendlich geschlossen und
+'*                          vor dem naechsten FTP-Transfer wieder geoeffnet.
+'*                          falls StatFTP = 0:
+'*                          GPRS-Verbindung wird stuendlich 
+'*                          um hh:10 geoeffnet und
+'*                          um hh:00 geschlossen.
+'*                          )
+'*
+'*   FTP:                   falls StatFTP >= 1:
+'*                          Alle 10 (cMETEOINT) Minuten wird eine Datenzeile ins 
+'*                          lokale Datenfile USR:LocalData.dat geschrieben. 
+'*                          Dieses wird per FTP auf einen FTP-Server uebertragen.
+'*                          Bei erfolgreicher Uebertragung wird das File geloescht,
+'*                          ansonsten wird es stehen gelassen.
+'*
+'*   Zeit:                  falls StatNTP >= 1:
+'*                          Die Loggerzeit wird einmal taeglich nach Aufbau der 
+'*                          ersten GPRS-Verbindung nach Mitternacht mit dem NTP-Server
+'*                          "pool.ntp.org" auf GMT+0 ohne Sommerzeit synchronisiert.
+'*          
+'*   Daten:				          Meteodaten (cMETEOINT = 10 Minuten):
+'*								          Stations-ID, Lufttemperatur, Luftfeuchtigkeit,
+'*                          Windgeschwindigkeit, Windrichtung, Windspitze, 
+'*                          Niederschlag, Niederschlagssumme, Globalstrahlung, 
+'*                          photosynthetisch aktive Strahlung, UVB-Strahlung
+'*                          Batteriespannung, Loggertemperatur, Qualitaetsparameter
+'*
+'*								          Konfigurationsdaten (bei Aenderung der Konfiguration):
+'*								          Stations-ID, Status, PLUVcali, SRADcali, 
+'*                          PARCali, UVBCali
+'*                          
+'*   Konfiguration:         Die Konfigurationsparameter werden in einem Text-File
+'*                          auf dem USR-Drive abgelegt ("USR:Parameter.cal").
+'*                          Es werden jedoch immer die Werte aus SUBParameter 
+'*                          im Programm uebernommen. Das Parameterfile wird dann ueberschrieben. 
+'*                          Nach jeder Aenderung der Konfigurationsparameter sollten
+'*                          diese durch Setzen von FlagEnterConfig neu abgelegt werden.
+'*
+'*                          Jedesmal, wenn das Kalibrationsfile neu geschrieben wird,
+'*                          wird zur Dokumentation der aktuellen Konfiguration eine
+'*                          Zeile im Table der Konfigurationsdaten abgelegt.
+'*
+'*
+'*
+'**************************************************************************************
+'*                                                                                    *
+'*   D E K L A R A T I O N                                                            *
+'*                                                                                    *
+'**************************************************************************************
+SequentialMode
+
+'--------------------------------------------------------------------------------------
+'-   K O N S T A N T E N                                                              -
+'--------------------------------------------------------------------------------------
+Const cPROGSCAN       =    5
+Const cSensorOff      = -999     '* Code fuer nicht angeschlossene Sensoren
+
+'*** Programm Konfiguration
+Const cnSTATUS        =   10      '* Anzahl binaerer Status-Werte
+Const cstVBATT        =    1      '*  - Binaerwert:      1
+Const cstTARH         =    2      '*  - Binaerwert:      2
+Const cstVWND         =    3      '*  - Binaerwert:      4
+Const cstDWND         =    4      '*  - Binaerwert:      8
+Const cstPLUV         =    5      '*  - Binaerwert:     16
+Const cstSRAD         =    6      '*  - Binaerwert:     32
+Const cstPAR          =    7      '*  - Binaerwert:     64
+Const cstUVB          =    8      '*  - Binaerwert:    128
+Const cstFTP          =    9      '*  - Binaerwert:    256
+Const cstNTP          =   10      '*  - Binaerwert:    512
+Const cnPARAMETER     =   30
+
+ConstTable
+  Const cMETEOINT     =   10      '* Speicherintervall der Meteodaten in Minuten
+  Const cPPPOPENATMPT =    5      '* Anzahl Verbindungsversuche bei GPRS-Attach
+  Const cFTP_IP       =   "ftp.wsl.ch"
+  Const cFTP_User     =   "lwf_gprs"
+  Const cFTP_Pwd      =   "rpg08.wl"
+  Const cDataFileName =   "USR:LocalData.dat"
+  Const cFTPFileName  =   "MET_N"
+EndConstTable 
+
+
+'--------------------------------------------------------------------------------------
+'-   V A R I A B L E N                                                                -
+'--------------------------------------------------------------------------------------
+
+'*** Stationskonfiguration
+Public StationID As Long
+Public ProgVers
+Public StatusIn As Long
+
+'*** Messgroessen:
+Public VBATact
+Public TLOGact
+Public TAIRact
+Public RHUMact
+Public VWNDact
+Public VWNDmax
+Public DWNDact
+Public PLUVact
+Public SRADact
+Public PARact
+Public UVBact
+
+'*** Programmsteuerung:
+Public FlagMeteoData     As Boolean
+Public FlagConfigData    As Boolean
+Public FlagBatSave       As Boolean
+Public FlagForceMeasure  As Boolean
+Public FlagEnterStatus   As Boolean
+Public FlagEnterConfig   As Boolean
+Public FlagTimeSync      As Boolean
+Public FlagPPPOpen       As Boolean
+Public FlagPPPClose      As Boolean
+Public FlagInit          As Long
+
+'*** Programmkonfiguration:
+Public Quality As Long
+Public Status(cnSTATUS) As Long
+ Alias Status(cstVBATT)  = StatBATT
+ Alias Status(cstTARH)   = StatTARH
+ Alias Status(cstVWND)   = StatVWND
+ Alias Status(cstDWND)   = StatDWND
+ Alias Status(cstPLUV)   = StatPLUV
+ Alias Status(cstSRAD)   = StatSRAD
+ Alias Status(cstPAR)    = StatPAR
+ Alias Status(cstUVB)   = StatUVB
+ Alias Status(cstFTP)    = StatFTP
+ Alias Status(cstNTP)    = StatNTP
+Public PluvCali
+Public SRadCali
+Public PARCali
+Public UVBCali
+Public VBATlim
+
+'*** Umrechnungen von Messgroessen:
+Public PluvSum
+Public Pluv10m
+Public VBATmean
+Public VBAT5h
+Dim    TAIR
+Dim    RHUM
+Dim    VWND
+Dim    DWND
+Dim    SRAD
+Dim    PAR
+Dim    UVB
+Dim    VBAT
+Dim    TLOG
+
+'***   FTP-Filetransfer
+Public FlagFTP As Long
+Public DataLine As String * 1000
+Public DataFile As Long
+Public pppIPAddress As String * 30
+Public pppCloseSuccess As Boolean
+Public pppOpenState As Boolean
+Public pppOpenCount As Long
+Public FTPSendSuccess As Boolean
+Public NTPOffset As Long
+Public FTPCount As Long
+
+'***   Konfiguration GSM-Modem
+Public FlagConfigGSM As Long
+Public GSMCommandString As String * 100
+Public GSMAnswer As String * 1000
+Dim    SerialInput As String * 100
+
+'*** Zeitvariable
+Dim    ActualTime(9)
+ Alias ActualTime(1) = Year
+ Alias ActualTime(2) = Month
+ Alias ActualTime(3) = DayOfMonth
+ Alias ActualTime(4) = hour
+ Alias ActualTime(5) = minute
+ Alias ActualTime(6) = second
+ Alias ActualTime(7) = uSecond
+ Alias ActualTime(8) = DayOfWeek
+ Alias ActualTime(9) = DayOfYear
+Public TimeFile As String * 16
+Public TimeLWF As String * 16
+
+'*** Masseinheiten
+Units TAIRact = deg_C
+Units RHUMact = %
+Units VWNDact = m/s
+Units VWNDmax = m/s
+Units Pluv10m = mm/10min
+Units PluvSum = mm
+Units DWNDact = deg
+Units SRADact = W/m2
+Units PARact  = umol/m2s
+Units UVBact  = W/m2
+Units VBATact = V
+Units TLOGact = deg_C
+
+'*** Hilfsvariablen
+Dim iCnt As Long
+Dim ParameterArray(cnPARAMETER)
+
+'---------------------------------------
+'*** Weitere fuer Projekte (Peter Waldner, 9.9.2014)
+Public Proj1 
+Public Proj4
+Public Pluv60m
+'*** Weitere fuer Datentransfer
+Public hhmm
+Public i
+'*** Weitere fuer Zeitfenster
+Public FlagTime 
+'*** Hilfsvariabeln Loops Multiplexer (Cnt) und Loop Sensoren pro Set (i)
+Public nCnt 
+Public iStart
+Public iEnd 
+Public i
+'---------------------------------------
+
+
+'**************************************************************************************
+'*                                                                                    *
+'*   D A T E N - T A B L E S                                                          *
+'*                                                                                    *
+'**************************************************************************************
+DataTable (Meteo,FlagMeteoData,-1)
+	DataInterval (0,cMETEOINT,Min,10)
+  Sample(1,StationID,IEEE4)
+	FieldNames("Stationskennung")
+' --------------------------------------------
+' LWF Datenformat (Peter Waldner, 9.9.2014)
+  Sample(1,Proj1,IEEE4)
+	FieldNames("MProjNr")
+  Sample(1,cMETEOINT,FP2)
+	FieldNames("Messintervall")
+' --------------------------------------------
+' --------------------------------------------
+' Projekt 1 FolgeNr (Peter Waldner, 9.9.2014)
+  Average(1,TAIRact,FP2,False) 
+	FieldNames("Lufttemperatur") '1
+  Average(1,SRADact,FP2,False)
+	FieldNames("Globalstrahlung") '2
+  Average(1,PARact,FP2,False)
+	FieldNames("phot.akt.Strahlung") '3
+  Average(1,UVBact,FP2,False)
+	FieldNames("UVB_Strahlung") '4
+	WindVector(1,VWNDact,DWNDact,FP2,False,0,0,1)
+  FieldNames("Windgeschwindigkeit, Windrichtung") '5,6
+  StdDev(1,TAIRact,FP2,False) 
+	FieldNames("Lufttemperatur_Stw") '7
+  StdDev(1,SRADact,FP2,False)
+	FieldNames("Globalstrahlung_Stw") '8
+  StdDev(1,PARact,FP2,False)
+	FieldNames("phot.akt.Str._Stw") '9
+  StdDev(1,UVBact,FP2,False)
+	FieldNames("UVB_Strahlung_Stw") '10
+	StdDev(1,VWNDact,FP2,False)
+  FieldNames("Windgeschwindigkeit_Stw") '11
+	StdDev(1,DWNDact,FP2,False)
+  FieldNames("Windrichtung_Stw") '12
+  Sample(1,VWNDmax,FP2)
+	FieldNames("Windspitze") '13
+  Average(1,RHUMact,FP2,False)
+	FieldNames("Luftfeuchtigkeit") ' 14
+  Sample(1,Pluv10m,FP2)
+	FieldNames("Niederschlag" ) '15
+  StdDev(1,RHUMact,FP2,False)
+	FieldNames("Luftfeuchtigkeit_Stw") ' 16
+	Average(1,VBATact,FP2,False)
+	FieldNames("Batteriespannung") '17
+	Average(1,TLOGact,FP2,False)
+	FieldNames("Loggertemperatur") '18
+	Sample(1,Quality,FP2)
+	FieldNames("Qualitaet") '19
+EndTable
+' -----------------------------------------------------
+' ----------------------------------------------
+' Projekt 1: Std Messarten parallel weiterfuehren (Peter Waldner, 9.9.2014)
+DataTable (Meteo60,FlagMeteoData,-1)
+  DataInterval(0,60,Min,10)
+  Sample(1,StationID,IEEE4)
+	FieldNames("Stationskennung")
+  Sample(1,Proj1,IEEE4)
+	FieldNames("MProjNr")
+  Sample(1,60,FP2)
+	FieldNames("Messintervall")
+  Average(1,RHUMact,FP2,False)
+	FieldNames("Luftfeuchtigkeit") '1
+  Sample(1,Pluv60m,FP2)
+	FieldNames("Niederschlag") '2
+  StdDev(1,RHUMact,FP2,False)
+	FieldNames("Luftfeuchtigkeit_Stw") '3
+EndTable
+'-----------------------------------------------
+
+' ----------------------------------------------
+' Projekt 4: Technische Daten (Peter Waldner, 9.9.2014)
+DataTable (Tech,True,-1)
+  DataInterval(0,240,Min,10)
+  Sample(1,StationID,IEEE4)
+	FieldNames("Stationskennung")
+  Sample(1,Proj4,IEEE4)
+	FieldNames("MProjNr")
+  Sample(1,240,FP2)
+	FieldNames("Messintervall")
+	Average(1,VBATact,FP2,False)
+	FieldNames("Batteriespannung") '1 > 28
+	Average(1,TLOGact,FP2,False)
+	FieldNames("Loggertemperatur") '2 > 29
+	' interne Batterie?
+EndTable
+' ----------------------------------------------
+
+DataTable (Konfiguration,FlagConfigData,50)
+  Sample(1,StationID,IEEE4)
+	FieldNames("Stationskennung")
+  Sample(1,Status,IEEE4)
+	FieldNames("Status")
+  Sample(1,PluvCali,FP2)
+	FieldNames("Faktor_PLUV")
+  Sample(1,SRadCali,FP2)
+	FieldNames("Faktor_SRAD")
+  Sample(1,PARCali,FP2)
+	FieldNames("Faktor_PAR")
+  Sample(1,UVBCali,FP2)
+	FieldNames("Faktor_UVB")
+EndTable
+
+'**************************************************************************************
+'*                                                                                    *
+'*   S U B R O U T I N E N                                                            *
+'*                                                                                    *
+'**************************************************************************************
+
+'--------------------------------------------------------------------------------------
+'-   SUBInitialize: Programm initialisieren   -----------------------------------------
+Sub SUBInitialize
+  FlagMeteoData    = True
+  FlagConfigData   = True
+  FlagBatSave      = False
+  FlagForceMeasure = False
+  FlagEnterStatus  = False
+  FlagEnterConfig  = False
+  FlagTimeSync     = False
+  FlagPPPOpen      = False
+  FlagPPPClose     = False
+  pppOpenState     = False
+  pppCloseSuccess  = PPPClose
+  ' Programmparameter einlesen / initialisieren
+'--------------------------------------------------------------------
+' Parameter nur aus SUBParemeter lesen und nicht aus Parameterfile (Peter Waldner, 11.9.2014)
+  Call SUBParameter
+  'Call SUBReadParameter
+  'Call SUBInitStatus
+'--------------------------------------------------------------------
+  FlagInit         = 1
+EndSub '---   End SUBInitialize   -----------------------------------------------------
+
+'--------------------------------------------------------------------
+' Parameter aus Programm lesen anstatt aus Parameterfile (Peter Waldner, 11.9.2014)
+'***   SUBParameter: Parameterwerte setzen (Peter Waldner, 11.9.2014)
+Sub SUBParameter
+  '*** Stationsnummer (s. Oracle-Tabelle METEO.STATION.STATNR)
+  StationID        =     122   '* Stations-Identifikationsnummer
+  
+  '*** Station direkt konfigurieren (Sensor ein=1, aus=0)
+  '    (anstatt ueber binaere Stationskonfiguration in Parameterfile)
+  ' StatusIn         =    1023   '* Status (binaere Sensorkonfiguration)
+  StatBATT = 1 'Batteriespannung Logger
+  StatTARH = 1 'Temperatur/rel. Luftfeuchtigkeit
+  StatVWND = 1 'Windgeschwindigkeit
+  StatDWND = 1 'Windrichtung
+  StatPLUV = 1 'Niederschlag
+  StatSRAD = 1 'Globalstrahlung
+  StatPAR  = 1 'PAR
+  StatUVB  = 1 'UV-B
+  StatFTP  = 1 'Station sendet Daten an lwf_gprs@ftp.wsl.ch
+  StatNTP  = 1 'Zeit korrigieren
+
+  ' StatusIn und Parameterfile setzen
+  FlagEnterStatus = 1 'loest Call SUBEnterStatus aus
+  FlagEnterConfig = 1 'loest Call SUBWriteParameter aus
+
+  '*** Projekt 1: Kalibrationskonstanten
+  PluvCali         =     0.2   '* Wippenvolumen Niederschlagssensor
+  SRadCali         =     100   '* Kalibrationsfaktor SKS1110
+  PARCali          =     100   '* Kalibrationsfaktor SKP 210/I
+  UVBCali          = 6.66667   '* Kalibrationsfaktor SKU 430/I
+  VBATlim          =    12.3   '* Grenzspannung fuer Batteriesparmode
+  ProgVers         =     1.2   '* Programmversion
+
+  '*** Projekte 
+  Proj1=1 'Meteo (immer ein)
+  Proj4=4 'Technische Daten (immer ein)
+EndSub
+
+'**************************************************************************************
+'***   SUBDefaultParameter: Initialisierung mit Defaultwerten    *******************
+'Sub SUBDefaultParameter
+'  StationID        =     122   '* Stations-Identifikationsnummer
+'  StatusIn         =    1023   '* Status (binaere Sensorkonfiguration)
+'  PluvCali         =     0.2   '* Wippenvolumen Niederschlagssensor
+'  SRadCali         =     100   '* Kalibrationsfaktor SKS1110
+'  PARCali          =     100   '* Kalibrationsfaktor SKP 210/I
+'  UVBCali          = 6.66667   '* Kalibrationsfaktor SKU 430/I
+'  VBATlim          =    12.4   '* Grenzspannung fuer Batteriesparmode
+'  ProgVers         =     1.1   '* Programmversion
+'EndSub
+
+'**************************************************************************************
+'***   SUBReadParameter: Einlesen der Programmparameter   *****************************
+'Sub SUBReadParameter  
+'  ParameterArray(1) = -9999
+'  Calfile(ParameterArray(),cnPARAMETER,"USR:Parameter.cal",1)
+'  If ParameterArray(1) = -9999 Then
+'    ' Wenn kein Cal-File eingelesen wurde:
+'    Call SUBDefaultParameter
+'    Call SUBWriteParameter
+'    ExitSub
+'  EndIf
+'  ' Sensor-Kalibrationswerte
+'  StationID        = ParameterArray(1)
+'  StatusIn         = ParameterArray(2)
+'  PluvCali         = ParameterArray(3)
+'  SRadCali         = ParameterArray(4)
+'  PARCali          = ParameterArray(5)
+'  UVBCali          = ParameterArray(6)
+'  VBATlim          = ParameterArray(7)
+'  ProgVers         = ParameterArray(8)
+'EndSub
+'-------------------------------------------------------------------
+
+'**************************************************************************************
+'***   SUBWriteParameter: Programmparameter in CAL-/TXT-File schreiben   **************
+Sub SUBWriteParameter
+  ParameterArray(1) = StationID
+  ParameterArray(2) = StatusIn
+  ParameterArray(3) = PluvCali
+  ParameterArray(4) = SRadCali
+  ParameterArray(5) = PARCali
+  ParameterArray(6) = UVBCali
+  ParameterArray(7) = VBATlim
+  ParameterArray(8) = ProgVers
+  '***   Parameter schreiben
+  Calfile (ParameterArray(),cnPARAMETER,"USR:Parameter.cal",0)
+  FlagConfigData  = True
+  FlagEnterConfig = False
+EndSub
+
+'--------------------------------------------------------------------------------------
+'-   SUBCheckRange: range check to set status value   ---------------------------------
+Sub SUBCheckRange(lVal, lMin, lMax, lStatInd)
+  If Status(lStatInd) >= 1 Then
+    If (lVal > lMax) OR (lVal < lMin) OR (lVal = NAN) Then
+      Status(lStatInd) = Status(lStatInd) + 1
+    EndIf
+  EndIf
+EndSub '---   End SUBCheckRange   -----------------------------------------------------
+
+'--------------------------------------------------------------------------------------
+'-   SUBEnterStatus: enter changed Status(n)-values and calculate StatusIn   ----------
+Sub SUBEnterStatus
+  Dim k1
+  
+  StatusIn = 0 
+  For k1 = 1 To cnSTATUS
+    If Status(k1) >= 1 Then
+      StatusIn = StatusIn + INT(2^(k1-1)+0.3)
+    EndIf
+  Next k1
+  FlagEnterStatus = False
+EndSub '---   End SUBEnterStatus   ----------------------------------------------------
+
+'--------------------------------------------------------------------------------------
+'-   SUBInitStatus: Statuswerte aus binaerem Status initialisieren   ------------------
+Sub SUBInitStatus
+  Dim k2
+  
+  For k2 = 1 To cnSTATUS
+    If ((StatusIn MOD (2^k2)) > (2^(k2-1)-0.5)) Then
+      Status(k2) = 1
+    Else
+      Status(k2) = 0
+    EndIf
+  Next k2
+EndSub '---   End SUBInitStatus   -----------------------------------------------------
+
+'--------------------------------------------------------------------------------------
+'-   SUBQuality: calculate binary quality from status values   ------------------------
+Sub SUBQuality
+  Dim k3
+  
+  Quality = 0
+  For k3 = 1 To cnSTATUS
+    If Status(k3) >= 2 Then
+      Quality = Quality + INT(2^(k3-1)+0.3)
+    EndIf
+  Next k3
+  Call SUBInitStatus
+EndSub '---   End SUBQuality   --------------------------------------------------------
+
+'--------------------------------------------------------------------------------------
+'-   SUBGSM: Steuerung des GSM-Modems (Wavecom Fastrack XTEND FXT009)   ---------------
+Sub SUBGSM
+  If FlagBatSave Then
+    '***   Stromsparmode: GSM eingeschaltet nur jeweils von   *************************
+    '***   06:00-06:30 / 10:00-10:30 / 14:00-14:30 / 18:00-18:30
+    If minute = 00 Then
+      If hour = 6 OR hour = 10 OR hour = 14 OR hour = 18 Then
+        SW12(0)
+      EndIf
+    ElseIf minute = 30
+      If hour = 6 OR hour = 10 OR hour = 14 OR hour = 18 Then
+        SW12(1)
+        pppOpenState = False
+      EndIf
+    EndIf
+  Else
+    '---   ohne Stromsparmode Reset taeglich um 11:55 Uhr
+    If IfTime(715,1440,Min) Then
+      SW12(1)
+      pppOpenState = False
+    Else
+      SW12(0)
+    EndIf
+  EndIf
+  '---   einmal stuendlich GPRS-Verbindung schliessen
+  If TimeIntoInterval(0,60,Min) Then
+    FlagPPPClose = True
+  EndIf
+  '---   falls FTP ausgeschaltet stuendlich GPRS-Verbindung oeffnen
+  If StatFTP = 0 Then
+    If TimeIntoInterval(10,60,Min) Then
+      FlagPPPOpen = True
+      pppOpenCount = 0
+    EndIf
+  EndIf
+EndSub '---   End SUBGSM   ------------------------------------------------------------
+
+'----------------------------------
+' Zeitfenster Variante 2 (Peter Waldner, 14.9.2015)
+Sub SUBGSM2
+  ' Anfbedingungen
+  hhmm=hour*100+minute
+  FlagTime=True
+  
+  ' Zeitfenster GSM 14:22-14:20
+  If FlagTime AND hhmm>=1422 AND hhmm<1430 Then
+    FlagTime=False
+    If hhmm=1432  Then
+      SW12(0)
+      FlagPPPClose=True
+    EndIf
+    If hhmm=1430  Then
+      FlagPPPOpen=True
+    EndIf
+  EndIf
+  ' Zeitfenster GPRS 1 22:00-22:10
+  If FlagTime AND hhmm>=2200 AND hhmm<2210 Then
+    FlagTime=False
+    If hhmm=2220 Then
+      ' ein 
+      SW12(0)
+      FlagPPPOpen = True
+      pppOpenCount = 0
+    EndIf
+  EndIf
+  ' Zeitfenster GPRS 2 8:00-8:15
+  If FlagTime AND hhmm>=800 AND hhmm<815 Then
+    FlagTime=False
+    If hhmm=800 Then
+      ' ein 
+      SW12(0)
+      FlagPPPOpen = True
+      pppOpenCount = 0
+    EndIf
+  EndIf
+  
+  ' Zeitfenster FTP xx:x9 - xx:x1 bei BattSave=False
+  If FlagTime AND FlagBatSave=False AND StatFTP Then
+    ' Zeitfenster ftp
+    If TimeIntoInterval(9,10,Min) Then
+      ' ein
+      SW12(0)
+      FlagPPPOpen = True
+      pppOpenCount = 0
+    EndIf
+    If TimeIntoInterval(1,10,Min) Then
+      ' aus
+      SW12(1)
+      pppOpenState=False
+    EndIf
+    FlagTime=false
+  EndIf
+  ' Kein Zeitfenster Modem ausschalten
+  If FlagTime Then 
+      ' auschalten
+      SW12(1)
+      pppOpenState=False
+  EndIf
+EndSub  
+
+
+'--------------------------------------------------------------------------------------
+'-   SUBConfigGSM: Seriell-Befehle an GSM-Modem (Wavecom  -  RS232, 9600baud)   -------
+Sub SUBConfigGSM
+  Dim i As Long
+  
+  SerialOpen(ComRS232,9600,0,100,100)
+  Delay(1,200,mSec)
+  SerialFlush(ComRS232)
+  SerialOut(ComRS232,GSMCommandString & CHR(13),"",1,10)
+  GSMAnswer = ""
+  For i = 1 To 10
+    SerialIn(SerialInput,ComRS232,100,13,100)
+    GSMAnswer = GSMAnswer & SerialInput
+  Next i
+  SerialFlush(ComRS232)
+  SerialClose(ComRS232)
+EndSub '---   End SUBConfigGSM   ------------------------------------------------------
+
+' -------------------------------------
+' DataRecord an File auf USR: auf Logger anhaengen  (Peter Waldner, 14.9.2015)
+Sub SubAppend
+        ' "2014-09-14 00:00:00",RecordNr="1",DataTable
+        DataLine=Mid(DataLine,1,21)&","&"1"&Mid(DataLine,22,Len(DataLine)-22)
+        DataFile=FileOpen(cDataFileName,"a",-1)
+        FileWrite(DataFile,DataLine,0)
+        FileClose(DataFile)
+EndSub
+'-------------------------------
+
+
+
+'**************************************************************************************
+'*                                                                                    *
+'*   H A U P T P R O G R A M M                                                        *
+'*                                                                                    *
+'**************************************************************************************
+BeginProg
+	Scan (cPROGSCAN,Sec,0,0)
+	  RealTime(ActualTime)
+    If FlagInit = 0 Then Call SUBInitialize
+    If FlagEnterStatus Then Call SUBEnterStatus
+    If FlagEnterConfig Then Call SUBWriteParameter
+    
+    '***   Einschalten Hygroclip HC2-S3 und SKU 430 (C6)   ****************************
+    If FlagForceMeasure Then
+      PortSet(6,1)
+    ElseIf TimeIntoInterval(55,60,Sec) Then
+      PortSet(6,1)
+    EndIf
+    If TimeIntoInterval(0,30,Min) Then
+      FlagForceMeasure = False
+    EndIf
+    
+    '***   Systemmessungen und GSM-Steuerung   ****************************************
+ 	  If TimeIntoInterval(0,60,Sec) Then
+   	  Battery(VBATact)
+   	  AvgRun(VBATmean,1,VBATact,30)
+      If TimeIntoInterval(300,1440,Min) Then
+        VBAT5h = VBATmean
+        If VBAT5h > VBATlim Then
+          FlagBatSave = False
+        Else
+          FlagBatSave = True
+        EndIf
+      EndIf
+      PanelTemp(TLOGact,250)
+      Call SUBGSM2
+    EndIf
+    ' Da FlagConfigGSM nicht gesetzt wird, wird SUBConfigGSM nicht durchlaufen
+    If FlagConfigGSM > 0 Then
+      FlagConfigGSM = FlagConfigGSM - cPROGSCAN
+      If FlagConfigGSM <= 0 Then
+        FlagConfigGSM = 0
+        Call SUBConfigGSM
+      EndIf
+    EndIf
+
+    '***   Meteomessungen (5 Sekunden)   **********************************************
+    '---   Windgeschwindigkeit (Campbell A100R: P1)   ---------------------------------
+    If StatVWND >= 1 Then
+      PulseCount(VWNDact,1,1,2,1,1.25,0)
+      Call SUBCheckRange(VWNDact,0,70,cstVWND)
+      If VWNDact > VWNDmax Then
+        VWNDmax = VWNDact
+      EndIf
+    Else
+      VWNDact = cSensorOff
+      VWNDmax = cSensorOff
+    EndIf
+    '---   Windrichtung (Campbell W200P: SE4, Ex2)   ----------------------------------
+    If StatDWND >= 1 Then
+      BrHalf(DWNDact,1,mV2500,4,Vx2,1,2500,False,20000,250,357,0)
+      Call SUBCheckRange(DWNDact,-1,361,cstDWND)
+    Else
+      DWNDact = cSensorOff
+    EndIf
+    '---   Niederschlag (Campbell ARG100: P2)   ---------------------------------------
+    If StatPLUV >= 1 Then
+      PulseCount(PLUVact,1,2,2,0,PluvCali,0)
+      PluvSum = PluvSum + PLUVact
+      Pluv10m = Pluv10m + PLUVact
+ '-------------------------------------
+ ' Std. Messart weiterfuehren (Peter Waldner, 9.9.2014)
+      Pluv60m = Pluv60m + PLUVact
+ '-------------------------------------
+    Else
+      PLUVact = cSensorOff
+      PluvSum = cSensorOff
+      Pluv10m = cSensorOff
+ '-------------------------------------
+ ' Std. Messart weiterfuehren (Peter Waldner, 9.9.2014)
+      Pluv60m = cSensorOff
+ '-------------------------------------
+    EndIf
+
+    '***   Meteomessungen (60 Sekunden)   *********************************************
+    If TimeIntoInterval(0,60,Sec) OR FlagForceMeasure Then
+      '---   Lufttemperatur und -feuchte (Rotronic Hygroclip HC2-S3:  SE3/2, C6) ------
+      If StatTARH >= 1 Then
+        VoltSe(TAIRact,1,mv2500,3,False,0,_50Hz,0.1,-40)
+        VoltSe(RHUMact,1,mv2500,2,False,0,_50Hz,0.1,0)      
+        Call SUBCheckRange(TAIRact,-40,50,cstTARH)
+        Call SUBCheckRange(RHUMact,0,100,cstTARH)
+      Else
+        TAIRact = cSensorOff
+        RHUMact = cSensorOff
+      EndIf
+
+      '---   kurzwellige Strahlung (SKS1110: SE7)   -----------------------------------
+      If StatSRAD >= 1 Then
+        VoltSe(SRADact,1,mV25,7,False,0,250,SRadCali,0)
+        SUBCheckRange(SRADact,0,2000,cstSRAD)
+      Else
+        SRADact = cSensorOff
+      EndIf
+
+      '---   photosynthetisch aktive Strahlung (SKP 210/I: SE8)   ---------------------
+      If StatPAR >= 1 Then
+        VoltSe(PARact,1,mV250,8,False,0,250,PARCali,0)
+        SUBCheckRange(PARact,0,10000,cstPAR)
+      Else
+        PARact = cSensorOff
+      EndIf
+
+      '---   Ultraviolett-B Strahlung (SKU 430/I: Diff3)   ----------------------------
+      If StatUVB >= 1 Then
+        VoltDiff(UVBact,1,mV2500,3,False,0,250,UVBCali,0)
+        SUBCheckRange(UVBact,0,10000,cstUVB)
+      Else
+        UVBact = cSensorOff
+      EndIf
+
+      '---   Speisung Hygroclip und SKU 430 ausschalten   -----------------------------
+      If NOT FlagForceMeasure Then
+        PortSet(6,0)
+      EndIf
+    EndIf
+
+    '***   Multiplexer Mux1 (10 Minuten)   ********************************************
+    If TimeIntoInterval(0,10,Min) Then
+      '* Multiplexer 1 aktivieren
+'     PortSet(2,1)
+      '* Multiplexer durchschalten:
+      For iCnt = 1 To 0
+        PulsePort(1,10000)
+        '---   MESSUNG VON SENSOREN AM MULTIPLEXER 1 (SE9 ... SE12)   -----------------
+        ' . . .
+      Next iCnt
+      '* Mulitplexer 1 deaktivieren
+      PortSet(2,0)
+    EndIf
+
+    '***   Multiplexer Mux2 (10 Minuten)   ********************************************
+    If TimeIntoInterval(0,10,Min) Then
+      '* Multiplexer 2 aktivieren
+'     PortSet(4,1)
+      '* Multiplexer durchschalten:
+      For iCnt = 1 To 0
+        PulsePort(3,10000)
+        '---   MESSUNG VON SENSOREN AM MULTIPLEXER 2 (SE13 ... SE16)   ----------------
+        ' . . .
+      Next iCnt
+      '* Mulitplexer 2 deaktivieren
+      PortSet(4,0)
+    EndIf
+
+    '***   Daten-Ablage   *************************************************************
+    If TimeIntoInterval(0,cMETEOINT,Min) Then
+      Call SUBQuality
+    EndIf
+		CallTable Meteo
+' ------------------------------------------
+' Projekt 1: Weitere Tabellen (Peter Waldner, 9.9.2014)
+    CallTable Meteo60
+    CallTable Tech
+' -----------------------------------------
+    CallTable Konfiguration
+    FlagConfigData = False
+
+    '***   FTP Datentransfer vorbereiten   ********************************************
+'    If StatFTP >= 1 Then
+'      If TimeIntoInterval(0,cMETEOINT,Min) Then
+'        TAIR    = Meteo.Lufttemperatur(1,1)
+'        RHUM    = Meteo.Luftfeuchtigkeit(1,1)
+'        VWND    = Meteo.Windgeschwindigkeit(1,1)
+'        DWND    = Meteo.Windrichtung(1,1)
+'        SRAD    = Meteo.Globalstrahlung(1,1)
+'        PAR     = Meteo.phot.akt.Strahlung(1,1)
+'        UVB     = Meteo.UVB_Strahlung(1,1)
+'        VBAT    = Meteo.Batteriespannung(1,1)
+'        TLOG    = Meteo.Loggertemperatur(1,1)
+'        If StatTARH = 0 Then
+'          TAIR = cSensorOff
+'          RHUM = cSensorOff
+'        EndIf
+'        If StatVWND = 0 Then
+'          VWND = cSensorOff
+'          VWNDmax = cSensorOff
+'        EndIf
+'        If StatDWND = 0 Then
+'          DWND = cSensorOff
+'        EndIf
+'        If StatSRAD = 0 Then
+'          SRAD = cSensorOff
+'        EndIf
+'        If StatPAR = 0 Then
+'          PAR = cSensorOff
+'        EndIf
+'        If StatUVB = 0 Then
+'          UVB = cSensorOff
+'        EndIf        
+        '- Datenzeile ins lokale Datenfile schreiben
+'        DataLine = FormatFloat(DayOfMonth,"%02.0f") & "."
+'        DataLine = DataLine & FormatFloat(Month,"%02.0f") & "."
+'        DataLine = DataLine & FormatFloat(Year,"%04.0f") & " "
+'        DataLine = DataLine & FormatFloat(hour,"%02.0f") & ":"
+'        DataLine = DataLine & FormatFloat(minute,"%02.0f") & ","
+'        DataLine = DataLine & FormatFloat(StationID,"%.0f") & "," 
+'        DataLine = DataLine & TAIR & "," & RHUM & "," & VWND & ","
+'        DataLine = DataLine & DWND & "," & VWNDmax & "," & Pluv10m & ","
+'        DataLine = DataLine & PluvSum & "," & SRAD & "," & PAR & "," & UVB & ","
+'        DataLine = DataLine & VBAT & "," & TLOG & "," & Quality & CHR(10)
+'        DataFile = FileOpen(cDataFileName,"a",-1)
+'        FileWrite(DataFile,DataLine,0)
+'        FileClose(DataFile)
+'        '---   FTP-Transfer initialisieren
+'        If NOT pppOpenState Then pppOpenCount = 0
+'        FTPSendSuccess = False
+'        FlagFTP = 1
+'      EndIf
+'    EndIf
+    
+'------------------------------------------
+'   *** FTP File Generisch ab DataTable (Peter Waldner, 11.9.2014)
+    If StatFTP > 0 Then
+      If TimeIntoInterval(0,cMETEOINT,Min) Then
+        ' Alle 10 Min.
+        GetRecord(DataLine,Meteo,1)
+        Call SubAppend
+      EndIf
+      If TimeIntoInterval(0,60,Min) Then
+        ' Alle 60 Min
+        GetRecord(DataLine,Meteo60,1)
+        Call SubAppend
+      EndIf
+      If TimeIntoInterval(0,240,Min) Then
+        ' Alle 240 Min
+        GetRecord(DataLine,Tech,1)
+        Call SubAppend
+      EndIf
+    EndIf               
+    '---   FTP-Transfer initialisieren
+    If StatFTP > 0 Then
+      If TimeIntoInterval(0,cMETEOINT,Min) Then
+        If NOT pppOpenState Then pppOpenCount = 0
+        FTPSendSuccess = False
+        FlagFTP = 1
+      EndIf
+    EndIf
+'-----------------------------------------
+
+    If TimeIntoInterval(0,1440,Min) Then
+      FTPCount = 0
+      If StatNTP >=1 Then
+        FlagTimeSync = True
+      EndIf
+    EndIf
+
+    '***   Reset der Meteo-Werte   ****************************************************
+    If TimeIntoInterval(0,cMETEOINT,Min) Then
+      Pluv10m = 0
+      VWNDmax = 0
+    EndIf
+    
+' ---------------------------------------------------
+' Projekt 1: Std Werte (Peter Waldner, 9.9.2014)
+    If TimeIntoInterval(0,60,Min) Then
+      Pluv60m=0
+    EndIf 
+' ----------------------------------------------------   
+    If TimeIntoInterval(0,1440,Min) Then
+      '---   Reset der laufenden Jahres-Niederschlagssumme jeweils am 1. Mai
+      If Month = 5 AND DayOfMonth = 1 Then
+        PluvSum = 0
+      EndIf
+    EndIf
+
+	NextScan
+
+
+
+'**************************************************************************************
+'***																																								***
+'***   F T P - D A T E N T R A N S F E R    			  																***
+'***																																						    ***
+'**************************************************************************************
+  SlowSequence
+  Scan(30,Sec,5,0)
+    '---   Zeitsynchronisation mit "pool.ntp.org"   -----------------------------------
+    If FlagTimeSync AND pppOpenState Then
+      '----------------------
+      ' GMT + 0 Minuten (Peter Waldner, 14.9.2014)
+      NTPOffset = NetworkTimeProtocol ("pool.ntp.org",0,1000)
+      '----------------------
+      FlagTimeSync = False
+      Delay(1,10,Sec)
+    EndIf
+    '---   PPP-Verbindung aufbauen, falls nicht bereits offen   -----------------------
+    If FlagFTP = 1 AND pppOpenState Then
+      FlagFTP = 11
+    EndIf
+    If (FlagFTP = 1 AND NOT pppOpenState) OR FlagPPPOpen Then
+      '---   PPP-Verbindung aufbauen
+      ' ... folgende Zeilen bereits mit Device Configuration auf DataLogger
+      'SerialOpen(ComRS232,9600,0,100,100)
+      'Delay(1,200,mSec)
+      'SerialFlush(ComRS232)
+      'SerialOut(ComRS232,"AT+CGDCONT=1,""IP"",""gprs.swisscom.ch""" & CHR(13),"",1,10)
+      'SerialClose(ComRS232)
+      pppOpenCount = pppOpenCount + 1
+      pppIPAddress = PPPOpen
+      If pppIPAddress <> "0.0.0.0" Then
+        pppOpenState = True
+        FlagPPPOpen  = False
+        If FlagFTP = 1 Then FlagFTP = 11
+      ElseIf pppOpenCount >= cPPPOPENATMPT Then
+        '---   PPP-Verbindung fehlgeschlagen, Abbruch nach cPPPOPENATMPT Versuchen
+        pppCloseSuccess = PPPClose
+        FlagPPPOpen  = False
+        FlagFTP = 0
+      EndIf
+    '---   Datenfile per FTP schicken   -----------------------------------------------
+    ElseIf FlagFTP = 11 Then
+      ' FTP Datenuebertragung (nur ein Versuch, bei Misserfolg File stehenlassen)
+      '---------------------------------
+      TimeFile=Mid(DataLine,2,10)&"-"&Mid(DataLine,13,2)&"-"&Mid(DataLine,16,2) 'Peter Waldner, 14.9.2014)
+      If FTPClient(cFTP_IP,cFTP_User,cFTP_Pwd,cDataFileName,cFTPFileName & "-" & TimeFile & ".crd",0) Then
+      '---------------------------------
+        FileManage(cDataFileName,8)
+        FTPSendSuccess = True
+        FTPCount = FTPCount + 1
+      EndIf
+      FlagFTP = 12
+      ' falls FlagPPPClose, dann GPRS-Verbindung nach Transfer schliessen
+    ElseIf FlagFTP = 12 OR FlagFTP = 0 Then
+      If FlagPPPClose Then
+        pppCloseSuccess = PPPClose
+        If pppCloseSuccess Then
+          pppOpenState = False
+          FlagPPPClose = False
+          FlagFTP = 0
+        EndIf
+      EndIf
+    EndIf
+  Next Scan
+EndProg
+

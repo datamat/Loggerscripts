@@ -1,0 +1,124 @@
+Program Trace Information File for:  VOR_SMEX_test.csi
+Date: 3/7/2011
+Time: 11:50:30
+
+T = Program Table Number
+N = Sequential Program Instruction Location Number
+Instruction = Instruction Number and Name
+
+Inst ExTm = Individual Instruction Execution Time
+Block ExTm = Cumulative Execution Time for program block,
+             i.e., subroutine
+Prog ExTm = Cumulative Total Program Execution Time
+
+                                                          Output Flag High
+                                   Inst  Block   Prog     Inst  Block   Prog
+                                   ExTm   ExTm   ExTm     ExTm   ExTm   ExTm
+T|N|Instruction                   (msec) (msec) (msec)   (msec) (msec) (msec)
+---------------                   ------ ------ ------   ------ ------ ------
+1|1|30 Z=F x 10^n                   1.0    1.0    1.0      1.0    1.0    1.0
+1|2|30 Z=F x 10^n                   1.0    2.0    2.0      1.0    2.0    2.0
+1|3|10 Batt Voltage                 8.3   10.3   10.3      8.3   10.3   10.3
+1|4|86 Do                           0.3   10.6   10.6      0.3   10.6   10.6
+1|5|22 Excitation with Delay     1000.5 1011.1 1011.1   1000.5 1011.1 1011.1
+1|6|86 Do                           0.3 1011.4 1011.4      0.3 1011.4 1011.4
+1|7|22 Excitation with Delay      500.5 1511.9 1511.9    500.5 1511.9 1511.9
+1|8|11 Temp (107)                 174.9 1686.8 1686.8    174.9 1686.8 1686.8
+1|9|86 Do                           0.3 1687.1 1687.1      0.3 1687.1 1687.1
+1|10|22 Excitation with Delay     500.5 2187.6 2187.6    500.5 2187.6 2187.6
+1|11|11 Temp (107)                174.9 2362.5 2362.5    174.9 2362.5 2362.5
+1|12|86 Do                          0.3 2362.8 2362.8      0.3 2362.8 2362.8
+1|13|22 Excitation with Delay      30.5 2393.3 2393.3     30.5 2393.3 2393.3
+1|14|1 Volt (SE)                   50.5 2443.8 2443.8     50.5 2443.8 2443.8
+1|15|86 Do                          0.3 2444.1 2444.1      0.3 2444.1 2444.1
+1|16|22 Excitation with Delay      10.5 2454.6 2454.6     10.5 2454.6 2454.6
+1|17|1 Volt (SE)                   50.5 2505.1 2505.1     50.5 2505.1 2505.1
+1|18|86 Do                          0.3 2505.4 2505.4      0.3 2505.4 2505.4
+1|19|22 Excitation with Delay      10.5 2515.9 2515.9     10.5 2515.9 2515.9
+1|20|1 Volt (SE)                   50.5 2566.4 2566.4     50.5 2566.4 2566.4
+1|21|86 Do                          0.3 2566.7 2566.7      0.3 2566.7 2566.7
+1|22|22 Excitation with Delay      10.5 2577.2 2577.2     10.5 2577.2 2577.2
+1|23|1 Volt (SE)                   50.5 2627.7 2627.7     50.5 2627.7 2627.7
+1|24|86 Do                          0.3 2628.0 2628.0      0.3 2628.0 2628.0
+1|25|22 Excitation with Delay    4000.5 6628.5 6628.5   4000.5 6628.5 6628.5
+1|26|1 Volt (SE)                   50.5 6679.0 6679.0     50.5 6679.0 6679.0
+1|27|86 Do                          0.3 6679.3 6679.3      0.3 6679.3 6679.3
+1|28|22 Excitation with Delay      10.5 6689.8 6689.8     10.5 6689.8 6689.8
+1|29|1 Volt (SE)                   50.5 6740.3 6740.3     50.5 6740.3 6740.3
+1|30|86 Do                          0.3 6740.6 6740.6      0.3 6740.6 6740.6
+1|31|22 Excitation with Delay      10.5 6751.1 6751.1     10.5 6751.1 6751.1
+1|32|1 Volt (SE)                   50.5 6801.6 6801.6     50.5 6801.6 6801.6
+1|33|86 Do                          0.3 6801.9 6801.9      0.3 6801.9 6801.9
+1|34|22 Excitation with Delay      10.5 6812.4 6812.4     10.5 6812.4 6812.4
+1|35|1 Volt (SE)                   50.5 6862.9 6862.9     50.5 6862.9 6862.9
+1|36|86 Do                          0.3 6863.2 6863.2      0.3 6863.2 6863.2
+1|37|22 Excitation with Delay      20.5 6883.7 6883.7     20.5 6883.7 6883.7
+1|38|4 Excite-Delay (SE)          161.0 7044.7 7044.7    161.0 7044.7 7044.7
+1|39|86 Do                          0.3 7045.0 7045.0      0.3 7045.0 7045.0
+1|40|22 Excitation with Delay      20.5 7065.5 7065.5     20.5 7065.5 7065.5
+1|41|4 Excite-Delay (SE)          161.0 7226.5 7226.5    161.0 7226.5 7226.5
+1|42|86 Do                          0.3 7226.8 7226.8      0.3 7226.8 7226.8
+1|43|22 Excitation with Delay      10.5 7237.3 7237.3     10.5 7237.3 7237.3
+1|44|4 Excite-Delay (SE)           48.1 7285.4 7285.4     48.1 7285.4 7285.4
+1|45|86 Do                          0.3 7285.7 7285.7      0.3 7285.7 7285.7
+1|46|22 Excitation with Delay      10.5 7296.2 7296.2     10.5 7296.2 7296.2
+1|47|4 Excite-Delay (SE)           48.1 7344.3 7344.3     48.1 7344.3 7344.3
+1|48|86 Do                          0.3 7344.6 7344.6      0.3 7344.6 7344.6
+1|49|22 Excitation with Delay      10.5 7355.1 7355.1     10.5 7355.1 7355.1
+1|50|4 Excite-Delay (SE)           48.1 7403.2 7403.2     48.1 7403.2 7403.2
+1|51|86 Do                          0.3 7403.5 7403.5      0.3 7403.5 7403.5
+1|52|87 Beginning of Loop           0.3 7403.8 7403.8      0.3 7403.8 7403.8
+ Execution times in the loop are calculated for one pass only.
+1|53|37 Z=X*F                       1.2 7405.0 7405.0      1.2 7405.0 7405.0
+1|54|95 End                         0.2 7405.2 7405.2      0.2 7405.2 7405.2
+1|55|87 Beginning of Loop           0.3 7405.5 7405.5      0.3 7405.5 7405.5
+ Execution times in the loop are calculated for one pass only.
+1|56|37 Z=X*F                       1.2 7406.7 7406.7      1.2 7406.7 7406.7
+1|57|95 End                         0.2 7406.9 7406.9      0.2 7406.9 7406.9
+1|58|55 Polynomial                 34.8 7441.7 7441.7     34.8 7441.7 7441.7
+1|59|87 Beginning of Loop           0.3 7442.0 7442.0      0.3 7442.0 7442.0
+ Execution times in the loop are calculated for one pass only.
+1|60|37 Z=X*F                       1.2 7443.2 7443.2      1.2 7443.2 7443.2
+1|61|95 End                         0.2 7443.4 7443.4      0.2 7443.4 7443.4
+1|62|87 Beginning of Loop           0.3 7443.7 7443.7      0.3 7443.7 7443.7
+ Execution times in the loop are calculated for one pass only.
+1|63|37 Z=X*F                       1.2 7444.9 7444.9      1.2 7444.9 7444.9
+1|64|34 Z=X+F                       1.1 7446.0 7446.0      1.1 7446.0 7446.0
+1|65|95 End                         0.2 7446.2 7446.2      0.2 7446.2 7446.2
+1|66|86 Do                          0.3 7446.5 7446.5      0.3 7446.5 7446.5
+ Output Flag Set @ 166 for Array 1
+1|67|80 Set Active Storage Area     0.3 7446.8 7446.8      0.3 7446.8 7446.8
+1|68|70 Sample                      0.2 7447.0 7447.0      0.9 7447.7 7447.7
+ Output Data 1 Values
+1|69|70 Sample                      0.2 7447.2 7447.2      0.9 7448.6 7448.6
+ Output Data 1 Values
+1|70|77 Real Time                   0.2 7447.4 7447.4      3.8 7452.4 7452.4
+ Output Data 3 Values
+1|71|70 Sample                      0.2 7447.6 7447.6      2.9 7455.3 7455.3
+ Output Data 6 Values
+1|72|70 Sample                      0.2 7447.8 7447.8      5.3 7460.6 7460.6
+ Output Data 12 Values
+1|73|70 Sample                      0.2 7448.0 7448.0      2.9 7463.5 7463.5
+ Output Data 6 Values
+1|74|70 Sample                      0.2 7448.2 7448.2      2.9 7466.4 7466.4
+ Output Data 6 Values
+1|75|70 Sample                      0.2 7448.4 7448.4      5.3 7471.7 7471.7
+ Output Data 12 Values
+1|76|70 Sample                      0.2 7448.6 7448.6      2.9 7474.6 7474.6
+ Output Data 6 Values
+1|77|70 Sample                      0.2 7448.8 7448.8      2.9 7477.5 7477.5
+ Output Data 6 Values
+1|78|70 Sample                      0.2 7449.0 7449.0      2.9 7480.4 7480.4
+ Output Data 6 Values
+1|79|70 Sample                      0.2 7449.2 7449.2      0.9 7481.3 7481.3
+ Output Data 1 Values
+
+Program Table 1 Execution Interval   20.000 Seconds
+
+Table 1 Estimated Total Program Execution Time in msec 7449.2 w/Output 7481.3
+
+Table 1 Estimated Total Final Storage Locations used per day 289440
+
+
+
+Estimated Total Final Storage Locations used per day 289440

@@ -1,0 +1,75 @@
+Final Storage Label File for:  VOR_SMEX.csi
+Date:  3/7/2011
+Time:  11:51:45
+
+10 Output_Table 600.00 Sec
+1 10 L
+2 Stat_ID  L
+3 Proj24_ID  L
+4 Year_RTM  L
+5 Day_RTM  L
+6 Hour_Minute_RTM  L
+7 PICO_SM_1  L
+8 PICO_SM_2  L
+9 PICO_SM_3  L
+10 PICO_SM_4  L
+11 PICO_SM_5  L
+12 PICO_SM_6  L
+13 HS_1  L
+14 HS_2  L
+15 HS_3  L
+16 HS_4  L
+17 HS_5  L
+18 HS_6  L
+19 HS_7  L
+20 HS_8  L
+21 HS_9  L
+22 HS_10  L
+23 HS_11  L
+24 HS_12  L
+25 TEMP107_1  L
+26 TEMP107_2  L
+27 TEMP107_3  L
+28 TEMP107_4  L
+29 TEMP107_5  L
+30 TEMP107_6  L
+31 PICO_T_1  L
+32 PICO_T_2  L
+33 PICO_T_3  L
+34 PICO_T_4  L
+35 PICO_T_5  L
+36 PICO_T_6  L
+37 HSraw_1  L
+38 HSraw_2  L
+39 HSraw_3  L
+40 HSraw_4  L
+41 HSraw_5  L
+42 HSraw_6  L
+43 HSraw_7  L
+44 HSraw_8  L
+45 HSraw_9  L
+46 HSraw_10  L
+47 HSraw_11  L
+48 HSraw_12  L
+49 MPS_1_1  L
+50 MPS_1_2  L
+51 MPS_1_3  L
+52 MPS_1_4  L
+53 MPS_1_5  L
+54 MPS_1_6  L
+55 EC_5U_1  L
+56 EC_5U_2  L
+57 EC_5U_3  L
+58 EC_5U_4  L
+59 EC_5U_5  L
+60 EC_5U_6  L
+61 EC_5_1  L
+62 EC_5_2  L
+63 EC_5_3  L
+64 EC_5_4  L
+65 EC_5_5  L
+66 EC_5_6  L
+67 BattV  L
+
+
+Estimated Total Final Storage Locations used per day 9648

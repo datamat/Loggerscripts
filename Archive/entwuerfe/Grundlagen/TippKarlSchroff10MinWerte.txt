@@ -1,0 +1,47 @@
+	
+	Re: Logger Programm
+	Karl Schroff  
+	to:
+	peter.waldner
+	26.03.2013 10:20
+	Show Details
+
+
+
+History:	This message has been replied to.
+
+
+
+Guten Tag Peter,
+
+ich habe kurz einen rudimentären Test gemacht mit der vorgeschlagenen 
+Konfiguration*) und bin der Meinung, dass es so funktioniert.
+
+Gute Zeit und maximale Erfolge ;-)
+Beste Grüsse
+karl
+
+*)  bei mir:
+- Intervall 10 sec.
+- P3 --> Loc 1
+- P31 --> X=1; Z=11
+- P92 --> 1 Minute
+- P72 --> Loc 1
+- P92 --> 10 Minute
+- P72 --> Loc 11
+
+Kommt man da draus oder soll ich das Miniprogramm schicken?
+PC - MAC Hürde wäre machbar ;-)
+
+
+
+
+
+On Mar 25, 2013, at 5:13 PM, <peter.waldner@wsl.ch> <peter.waldner@wsl.ch> 
+wrote:
+
+Lieber Karl
+Vielen Dank! Es ist immer noch aktuell und wir werden das so machen.
+Beste Gruesse
+Peter Waldner
+

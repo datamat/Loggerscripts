@@ -1,0 +1,153 @@
+'CR1000 Series Datalogger
+'To create a different opening program template, type in new
+'instructions and select Template | Save as Default Template
+'date:
+'program author:
+
+' Declare Public Variables
+Public PTemp, batt_volt
+
+' Declare Communication Variables
+Public FlagFTP As Long
+Public DataLine As String * 1000
+Public DataFile As Long
+Public pppIPAddress As String * 30
+Public pppCloseSuccess As Boolean
+Public pppOpenState As Boolean
+Public pppOpenCount As Long
+Public FTPSendSuccess As Boolean
+Public NTPOffset As Long
+Public FTPCount As Long
+
+' Declare GSM-Modem Konfiguration variables
+Public FlagConfigGSM As Long
+Public GSMCommandString As String * 100
+Public GSMAnswer As String * 1000
+Dim    SerialInput As String * 100
+
+' Declare Ftp Variables
+Const cFTP_IP       =   "ftp.wsl.ch"
+Const cFTP_User     =   "lwf_gprs"
+Const cFTP_Pwd      =   "rpg08.wl"
+Const cDataFileName =   "USR:LocalData.dat"
+Const cFTPFileName  =   "Test.txt"
+
+'Define Data Tables
+DataTable (Test,1,1000)
+	DataInterval (0,10,Sec,10)
+	Minimum (1,batt_volt,FP2,0,False)
+	Sample (1,PTemp,FP2)
+EndTable
+
+
+'Define Subroutines
+'- SubAppend: DataRecord an File auf USR: auf Logger anhaengen  (Peter Waldner, 14.9.2015)
+Sub SubAppend
+        ' "2014-09-14 00:00:00",RecordNr="1",DataTable
+        DataLine=Mid(DataLine,1,21)&","&"1"&Mid(DataLine,22,Len(DataLine)-22)&CHR(10)
+        DataFile=FileOpen(cDataFileName,"a",-1)
+        FileWrite(DataFile,DataLine,0)
+        FileClose(DataFile)
+EndSub
+
+'- SUBConfigGSM: Seriell-Befehle an GSM-/GPRS-Modem (Wavecom  -  RS232, 9600baud)  
+Sub SUBConfigGSM
+  Dim i As Long
+  SerialOpen(comRS232,9600,0,100,100)
+  Delay(1,200,mSec)
+  SerialFlush(comRS232)
+  SerialOut(comRS232,GSMCommandString & CHR(13),"",1,10)
+  GSMAnswer = ""
+  For i = 1 To 10
+    SerialIn(SerialInput,comRS232,100,13,100)
+    GSMAnswer = GSMAnswer & SerialInput
+  Next i
+  SerialFlush(comRS232)
+  SerialClose(comRS232)
+  Delay(1,2000,mSec)
+EndSub '---   End SUBConfigGSM   
+
+'Main Program
+BeginProg
+	Scan (10,Sec,0,0)
+		PanelTemp (PTemp,250)
+		Battery (batt_volt)
+		'Enter other measurement instructions
+		'Call Output Tables
+		'Example:
+		If TimeIntoInterval(0,10,Sec) Then
+  		CallTable Test
+      GetRecord(DataLine,Test,1)
+ 		  Call SubAppend
+    EndIf
+    
+    ' --------
+    ' Communication
+     
+     ' --------
+     ' Wavecom Fastrack Xtend FXT009
+     '    c.f. 
+     ' Defining and using a PDP Context Definition ID <CID>
+     '    c.f Modem_Wavecom_AT_Command_Interface_Guide_Open_AT_Firmware_v6-57f.pdf p. 435ff
+
+     ' Read defined CID's .
+     GSMCommandString = "AT+CGDCONT=?"
+     Call SUBConfigGSM
+     ' Delete CID 1 .
+     GSMCommandString = "AT+CGDCONT=1"
+     Call SUBConfigGSM
+     ' Define CID 1 .
+     ' AT+CGDCONT=<cid>,<PDP_type>,<APN>,<PDP_addr>,<d_comp>,<h_comp>
+       ' cid: 1=
+     GSMCommandString = "AT+CGDCONT=1,""IP"",""wsl.swisscom.ch"";"
+     Call SUBConfigGSM
+     
+     ' GPRS Network Registration Status: 
+       ' Answer 0=not,1=home, 2=search, 3=denied, 4=unknown, 5=roaming 
+     GSMCommandString = "AT+CGREG=?"
+     Call SUBConfigGSM
+
+     ' GPRS Allow (/Disallow=0) Modem to establish a GPRS connection
+     GSMCommandString = "AT+CGATT=1"
+     Call SUBConfigGSM
+
+     ' Ask Modem to activate PDP Context CID=1 now (GPRS Datenverbindung aufbauen)
+       ' AT+CGACT=<state>,<cid>
+     GSMCommandString = "AT+CGACT=1,1"
+     Call SUBConfigGSM
+
+     ' Ask Modem to de-activate PDP Context CID=1 now (GPRS Datenverbindung schliessen)
+       ' AT+CGACT=<state>,<cid>
+     GSMCommandString = "AT+CGACT=0,1"
+     Call SUBConfigGSM
+
+     
+     ' GPRS Quality of Service
+       ' Answer: <CID>,precedence,delay,reliability,peak,mean
+     GSMCommandString = "AT+CGQREG=?"
+     Call SUBConfigGSM
+
+     ' Ask Modem activate PDP Context CID=1 if Logger asks for (Logger kann GPRS Datenverbindung aufbauen)
+     GSMCommandString = "ATD*99***1#"
+     Call SUBConfigGSM
+
+
+     ' Ask Modem activate PDP Context CID=1 for Logger 
+     GSMCommandString = "AT+CGDATA=1"
+     Call SUBConfigGSM
+
+
+          
+     ' Open PPP
+     pppIPAddress = PPPOpen
+
+     ' ftp
+     FTPSendSuccess=FTPClient(cFTP_IP,cFTP_User,cFTP_Pwd,cDataFileName,cFTPFileName,0)
+     FileManage(cDataFileName,8)
+
+     ' Close PPP
+     PPPClose
+
+	NextScan
+EndProg
+

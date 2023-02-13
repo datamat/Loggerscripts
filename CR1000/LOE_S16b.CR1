@@ -1,0 +1,462 @@
+' WSL automatic measurement station Loetschental LOE_S16b
+' Number/access: 41793129157-3.wsl.ch, 105
+
+' S T A T I O N   C O N F I G
+' ---------------------------------------------------------------
+Const SName As String = "002051"
+Const SFull As String = "LOE_S16b"
+Const StatL As String = SName + "_" + SFull
+Public HasATMOS41 As Boolean = 0
+Public HasATMOS14 As Boolean = 0
+Public HasCam As Boolean = 0
+Public HasDendros As Boolean = 0
+Public HasSapflow As Boolean = 0
+Public HasEC5 As Boolean = 1
+Public HasMPS As Boolean = 1
+Public HasTensiomark As Boolean = 0
+
+' D E F I N I T I O N S
+' ---------------------------------------------------------------
+' Camera
+Public CamOn As Boolean : Public CamStat As String * 40 = "Off"
+Public IsDay As Boolean
+
+' FTP connections
+Const FTPCRUsr = "loetschental"
+Const FTPCRPw = "Loetschentalschoenestal"
+
+' Miscellaneous and sensors
+Const SenOff = "NAN" : Public Bt, PTemp : Units Bt = Volts
+Units PTemp = Deg C : Public rTime (9) : Public monthr
+Public LithiumBatt : Units LithiumBatt = V
+
+' S U B R O U T I N E S
+' ---------------------------------------------------------------
+' Camera taking fantastic pictures
+Sub SubCam ()
+  Battery (Bt) : RealTime (rTime())
+  monthr = rTime (2) : IsDay = 0
+  If TimeIsBetween (459,940,1440,Min) AND monthr = 1 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (422,986,1440,Min) AND monthr = 2 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (370,1027,1440,Min) AND monthr = 3 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (370,1130,1440,Min) AND monthr = 4 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (322,1170,1440,Min) AND monthr = 5 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (302,1198,1440,Min) AND monthr = 6 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (319,1193,1440,Min) AND monthr = 7 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (356,1152,1440,Min) AND monthr = 8 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (396,1093,1440,Min) AND monthr = 9 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (437,1034,1440,Min) AND monthr = 10 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (422,927,1440,Min) AND monthr = 11 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (457,913,1440,Min) AND monthr = 12 Then
+    IsDay = 1
+  EndIf
+  ' If camera has power takes pictures every hour during the day
+  If TimeIsBetween (58,3,60,Min) AND IsDay AND Bt >= 12.5 Then
+    SW12 (1) : CamOn = 1 : CamStat = "Hourly pictures"
+  Else
+    SW12 (0) : CamOn = 0 : CamStat = "Off"
+  EndIf
+EndSub
+
+' Correct some data by minimum and maximum limits
+Sub SUBCheckRange (LVal,LMin,LMax)
+  If (LVal >= LMax) OR (LVal <= LMin) Then LVal = SenOff
+EndSub
+
+' Get lithium battery voltage
+Sub SubStatus ()
+  PanelTemp (PTemp,250) : Battery (Bt)
+  LithiumBatt = Status.LithiumBattery (1,1)
+EndSub
+
+' M E A S U R E M E N T S
+' ---------------------------------------------------------------
+' Dendrometers, SE 1-4
+Public Dendro_1 : Units Dendro_1 = micro m
+Public Dendro_2 : Units Dendro_2 = micro m
+Public Dendro_3 : Units Dendro_3 = micro m
+Public Dendro_4 : Units Dendro_4 = micro m
+
+' Sapflow, SE 5-8
+Public Sapflow_1 : Units Sapflow_1 = mV
+Public Sapflow_2 : Units Sapflow_2 = mV
+Public Sapflow_3 : Units Sapflow_3 = mV
+Public Sapflow_4 : Units Sapflow_4 = mV
+
+' Meteo measured with ATMOS41, SDI-12 C5, always ID0
+Public ATMOS41 (18)
+'C! + D0! command variables
+Alias ATMOS41 (1) = Solar : Units Solar = W m-2
+Alias ATMOS41 (2) = Precipitation : Units Precipitation = mm
+Alias ATMOS41 (3) = Strikes : Units Strikes = counts
+Alias ATMOS41 (4) = StrikeDistance : Units StrikeDistance = km
+'C! + D1! command variables
+Alias ATMOS41 (5) = WindSpeed : Units WindSpeed = m s-1
+Alias ATMOS41 (6) = WindDirection : Units WindDirection = Deg
+Alias ATMOS41 (7) = GustWindSpeed1 : Units GustWindSpeed1 = m s-1
+'C! + D2! command variables
+Alias ATMOS41 (8) = AirTemp41 : Units AirTemp41 = Deg C
+Alias ATMOS41 (9) = Vapor_Pressure41 : Units Vapor_Pressure41 = kPa
+Alias ATMOS41 (10) = AtmPressure41 : Units AtmPressure41 = kPa
+Alias ATMOS41 (11) = RelHumidity41 : Units RelHumidity41 = %
+Alias ATMOS41 (12) = RelHumidityTemp41 : Units RelHumidityTemp41 = Deg C
+'C! + D3! command variables
+Alias ATMOS41 (13) = XOrientation : Units XOrientation = Deg
+Alias ATMOS41 (14) = YOrientation : Units YOrientation = Deg
+Alias ATMOS41 (15) = nullValue
+'C! + D4! command variables
+Alias ATMOS41 (16) = N_Wind : Units N_Wind = m s-1
+Alias ATMOS41 (17) = E_Wind : Units E_Wind = m s-1
+Alias ATMOS41 (18) = GustWindSpeed2 : Units GustWindSpeed2 = m s-1
+
+' Meteo measured with ATMOS14, SDI-12 C5
+Public ATMOS14 (4)
+Alias ATMOS14 (1) = Vapor_Pressure14 : Units Vapor_Pressure14 = kPa
+Alias ATMOS14 (2) = AirTemp14 : Units AirTemp14 = Deg C
+Alias ATMOS14 (3) = RelHumidity14 : Units RelHumidity14 = %
+Alias ATMOS14 (4) = AtmPressure14 : Units AtmPressure14 = kPa
+
+' Other variables
+Public AirTemp, Vapor_Pressure, RelHumidity, AtmPressure
+Dim SatVPCalc, Ea : Public VPD, Dewp ' VPD and Dewpoint
+Units VPD = kPa : Units Dewp = Deg C
+Units Vapor_Pressure = kPa : Units AirTemp = Deg C
+Units RelHumidity = % : Units AtmPressure = kPa
+
+' EC5 (legacy sensors), SE 9-13
+Public EC10cmact (4), EC70cmact (4), ECU (8)
+Units EC10cmact = m3 m-3 : Units EC70cmact = m3 m-3
+Units ECU = mV
+
+' MPS-2 (legacy sensors), SDI-12, C3
+Public MPS_1 (2)
+Alias MPS_1 (1) = MPS_1PSI : Units MPS_1PSI = kPa
+Alias MPS_1 (2) = MPS_1Temp : Units MPS_1Temp = Deg C
+Public MPS_2 (2)
+Alias MPS_2 (1) = MPS_2PSI : Units MPS_2PSI = kPa
+Alias MPS_2 (2) = MPS_2Temp : Units MPS_2Temp = Deg C
+Public MPS_3 (2)
+Alias MPS_3 (1) = MPS_3PSI : Units MPS_3PSI = kPa
+Alias MPS_3 (2) = MPS_3Temp : Units MPS_3Temp = Deg C
+Public MPS_4 (2)
+Alias MPS_4 (1) = MPS_4PSI : Units MPS_4PSI = kPa
+Alias MPS_4 (2) = MPS_4Temp : Units MPS_4Temp = Deg C
+
+' Tensiomark sensors
+Public SDI12(2), TM_SWP (2), TM_temp (2)
+Units TM_SWP = hPa : Units TM_temp = Deg C
+
+DataTable (Main,1,-1)
+  DataInterval (0,10,Min,0)
+  Average (1,Dendro_1,IEEE4,0) : FieldNames ("Dendro_S16b_WW")
+  Average (1,Dendro_2,IEEE4,0) : FieldNames ("Dendro_S16b_XX")
+  Average (1,Dendro_3,IEEE4,0) : FieldNames ("Dendro_S16b_YY")
+  Average (1,Dendro_4,IEEE4,0) : FieldNames ("Dendro_S16b_ZZ")
+  Average (1,Sapflow_1,FP2,0) : FieldNames ("Sapflow_S16b_WW")
+  Average (1,Sapflow_2,FP2,0) : FieldNames ("Sapflow_S16b_XX")
+  Average (1,Sapflow_3,FP2,0) : FieldNames ("Sapflow_S16b_YY")
+  Average (1,Sapflow_4,FP2,0) : FieldNames ("Sapflow_S16b_ZZ")
+  Average (1,AirTemp,FP2,0) : FieldNames ("AirTemp_S16b")
+  Average (1,Vapor_Pressure,FP2,0) : FieldNames ("Vapor_Pressure_S16b")
+  Average (1,AtmPressure,FP2,0) : FieldNames ("AtmPressure_S16b")
+  Average (1,RelHumidity,FP2,0) : FieldNames ("RelHumidity_S16b")
+  Average (1,ATMOS41 (1),FP2,0) : FieldNames ("SolarRadiation_S16b")
+  Totalize (1,ATMOS41 (2),FP2,0) : FieldNames ("Precipitation_S16b")
+  Totalize (1,ATMOS41 (3),FP2,0) : FieldNames ("Strikes_S16b")
+  Average (1,ATMOS41 (4),FP2,0) : FieldNames ("StrikeDistance_S16b")
+  Average (1,ATMOS41 (5),FP2,0) : FieldNames ("Windspeed_S16b")
+  Average (1,ATMOS41 (6),FP2,0) : FieldNames ("WindDirection_S16b")
+  Average (1,ATMOS41 (16),FP2,0) : FieldNames ("N_Wind_S16b")
+  Average (1,ATMOS41 (17),FP2,0) : FieldNames ("E_Wind_S16b")
+  Average (1,ATMOS41 (7),FP2,0) : FieldNames ("GustWindSpeed1_S16b")
+  Average (1,ATMOS41 (18),FP2,0) : FieldNames ("GustWindSpeed2_S16b")
+  Average (1,ATMOS41 (12),FP2,0) : FieldNames ("RelHumidityTemp_S16b")
+  Average (1,ATMOS41 (13),FP2,0) : FieldNames ("XOrientation_S16b")
+  Average (1,ATMOS41 (14),FP2,0) : FieldNames ("YOrientation_S16b")
+  Average (1,EC10cmact (1),FP2,0) : FieldNames ("EC5_10cm_1_S16b")
+  Average (1,EC10cmact (2),FP2,0) : FieldNames ("EC5_10cm_2_S16b")
+  Average (1,EC10cmact (3),FP2,0) : FieldNames ("EC5_10cm_3_S16b")
+  Average (1,EC10cmact (4),FP2,0) : FieldNames ("EC5_10cm_4_S16b")
+  Average (1,EC70cmact (1),FP2,0) : FieldNames ("EC5_70cm_1_S16b")
+  Average (1,EC70cmact (2),FP2,0) : FieldNames ("EC5_70cm_2_S16b")
+  Average (1,EC70cmact (3),FP2,0) : FieldNames ("EC5_70cm_3_S16b")
+  Average (1,EC70cmact (4),FP2,0) : FieldNames ("EC5_70cm_4_S16b")
+  Average (2,MPS_1,FP2,0) : FieldNames ("MPS_10cm_1_S16b")
+  Average (2,MPS_2,FP2,0) : FieldNames ("MPS_10cm_2_S16b")
+  Average (2,MPS_3,FP2,0) : FieldNames ("MPS_70cm_1_S16b")
+  Average (2,MPS_4,FP2,0) : FieldNames ("MPS_70cm_2_S16b")
+  Minimum (1,Bt,FP2,0,0) : FieldNames ("MinBattVolt_S16b")
+  Average (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp_S16b")
+  Minimum (1,LithiumBatt,FP2,0,0) : FieldNames ("AvgLithiumBatt_S16b")
+EndTable
+
+DataTable (MainRAW,1,10000) ' Something will be the minimum
+  DataInterval (0,1,Min,0) ': CardOut (0,5000000)
+  Sample (1,Dendro_1,IEEE4,0) : FieldNames ("Dendro_S16b_WW")
+  Sample (1,Dendro_2,IEEE4,0) : FieldNames ("Dendro_S16b_XX")
+  Sample (1,Dendro_3,IEEE4,0) : FieldNames ("Dendro_S16b_YY")
+  Sample (1,Dendro_4,IEEE4,0) : FieldNames ("Dendro_S16b_ZZ")
+  Sample (1,Sapflow_1,FP2,0) : FieldNames ("Sapflow_S16b_WW")
+  Sample (1,Sapflow_2,FP2,0) : FieldNames ("Sapflow_S16b_XX")
+  Sample (1,Sapflow_3,FP2,0) : FieldNames ("Sapflow_S16b_YY")
+  Sample (1,Sapflow_4,FP2,0) : FieldNames ("Sapflow_S16b_ZZ")
+  Sample (1,AirTemp,FP2,0) : FieldNames ("AirTemp_S16b")
+  Sample (1,Vapor_Pressure,FP2,0) : FieldNames ("Vapor_Pressure_S16b")
+  Sample (1,AtmPressure,FP2,0) : FieldNames ("AtmPressure_S16b")
+  Sample (1,RelHumidity,FP2,0) : FieldNames ("RelHumidity_S16b")
+  Sample (1,ATMOS41 (1),FP2,0) : FieldNames ("SolarRadiation_S16b")
+  Totalize (1,ATMOS41 (2),FP2,0) : FieldNames ("Precipitation_S16b")
+  Totalize (1,ATMOS41 (3),FP2,0) : FieldNames ("Strikes_S16b")
+  Sample (1,ATMOS41 (4),FP2,0) : FieldNames ("StrikeDistance_S16b")
+  Sample (1,ATMOS41 (5),FP2,0) : FieldNames ("Windspeed_S16b")
+  Sample (1,ATMOS41 (6),FP2,0) : FieldNames ("WindDirection_S16b")
+  Sample (1,ATMOS41 (16),FP2,0) : FieldNames ("N_Wind_S16b")
+  Sample (1,ATMOS41 (17),FP2,0) : FieldNames ("E_Wind_S16b")
+  Sample (1,ATMOS41 (7),FP2,0) : FieldNames ("GustWindSpeed1_S16b")
+  Sample (1,ATMOS41 (18),FP2,0) : FieldNames ("GustWindSpeed2_S16b")
+  Sample (1,ATMOS41 (12),FP2,0) : FieldNames ("RelHumidityTemp_S16b")
+  Sample (1,ATMOS41 (13),FP2,0) : FieldNames ("XOrientation_S16b")
+  Sample (1,ATMOS41 (14),FP2,0) : FieldNames ("YOrientation_S16b")
+  Sample (1,EC10cmact (1),FP2,0) : FieldNames ("EC5_10cm_1_S16b")
+  Sample (1,EC10cmact (2),FP2,0) : FieldNames ("EC5_10cm_2_S16b")
+  Sample (1,EC10cmact (3),FP2,0) : FieldNames ("EC5_10cm_3_S16b")
+  Sample (1,EC10cmact (4),FP2,0) : FieldNames ("EC5_10cm_4_S16b")
+  Sample (1,EC70cmact (1),FP2,0) : FieldNames ("EC5_70cm_1_S16b")
+  Sample (1,EC70cmact (2),FP2,0) : FieldNames ("EC5_70cm_2_S16b")
+  Sample (1,EC70cmact (3),FP2,0) : FieldNames ("EC5_70cm_3_S16b")
+  Sample (1,EC70cmact (4),FP2,0) : FieldNames ("EC5_70cm_4_S16b")
+  Sample (2,MPS_1,FP2,0) : FieldNames ("MPS_10cm_1_S16b")
+  Sample (2,MPS_2,FP2,0) : FieldNames ("MPS_10cm_2_S16b")
+  Sample (2,MPS_3,FP2,0) : FieldNames ("MPS_70cm_1_S16b")
+  Sample (2,MPS_4,FP2,0) : FieldNames ("MPS_70cm_2_S16b")
+  Minimum (1,Bt,FP2,0,0) : FieldNames ("MinBattVolt_S16b")
+  Sample (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp_S16b")
+  Minimum (1,LithiumBatt,FP2,0,0) : FieldNames ("AvgLithiumBatt_S16b")
+EndTable
+
+' Standard meteo measurements
+Sub SubMain ()
+  ' Dendrometers, SE 1-4
+  If TimeIntoInterval (0,30,Sec) Then
+    If HasDendros Then
+      BrHalf(Dendro_1,1,mv2500C,1,2,1,2500,True,0,_50Hz,20000,0)
+      SUBCheckRange (Dendro_1,0,25000)
+      BrHalf(Dendro_2,1,mv2500C,2,2,1,2500,True,0,_50Hz,20000,0)
+      SUBCheckRange (Dendro_2,0,25000)
+      BrHalf(Dendro_3,1,mv2500C,3,2,1,2500,True,0,_50Hz,20000,0)
+      SUBCheckRange (Dendro_3,0,25000)
+      BrHalf(Dendro_4,1,mv2500C,4,2,1,2500,True,0,_50Hz,20000,0)
+      SUBCheckRange (Dendro_4,0,25000)
+    Else
+      Dendro_1 = SenOff : Dendro_2 = SenOff
+      Dendro_3 = SenOff : Dendro_4 = SenOff
+    EndIf
+  EndIf
+
+  Delay(1,2,Sec)
+  ' Sapflow, SE 5-12 = Diffs Channels 3-6
+  If TimeIntoInterval (0,30,Sec) Then
+    If HasSapflow Then
+      VoltDiff (Sapflow_1,1,mV2_5C,3,True,0,_50Hz,1,0)
+      SUBCheckRange (Sapflow_1,-1,10)
+      VoltDiff (Sapflow_2,1,mV2_5C,4,True,0,_50Hz,1,0)
+      SUBCheckRange (Sapflow_2,-1,10)
+      VoltDiff (Sapflow_3,1,mV2_5C,5,True,0,_50Hz,1,0)
+      SUBCheckRange (Sapflow_3,-1,10)
+      VoltDiff (Sapflow_4,1,mV2_5C,6,True,0,_50Hz,1,0)
+      SUBCheckRange (Sapflow_4,-1,10)
+    Else
+      Sapflow_1 = SenOff : Sapflow_2 = SenOff
+      Sapflow_3 = SenOff : Sapflow_4 = SenOff
+    EndIf
+  EndIf
+
+  ' ATMOS41 via SDI12 (always on)
+  If TimeIntoInterval (0,60,Sec) Then
+    If HasATMOS41 Then
+      SDI12Recorder (ATMOS41,5,0,"C!",1,0)
+      Vapor_Pressure = Vapor_Pressure41
+      AirTemp = AirTemp41
+      RelHumidity = RelHumidity41*100
+      AtmPressure = AtmPressure41
+    Else
+      ATMOS41 = SenOff
+      Vapor_Pressure41 = SenOff : AirTemp41 = SenOff
+      RelHumidity41 = SenOff : AtmPressure41 = SenOff
+    EndIf
+  EndIf
+
+  ' ATMOS14 via SDI12 (always on)
+  If TimeIntoInterval (0,60,Sec) Then
+    If HasATMOS14 Then
+      SDI12Recorder (ATMOS14,5,0,"C!",1,0)
+      Vapor_Pressure = Vapor_Pressure14
+      AirTemp = AirTemp14
+      RelHumidity = RelHumidity14*100
+      AtmPressure = AtmPressure14
+    Else
+      ATMOS14 = SenOff
+      Vapor_Pressure14 = SenOff : AirTemp14 = SenOff
+      RelHumidity14 = SenOff : AtmPressure14 = SenOff
+    EndIf
+  EndIf
+
+  ' Dewpoint and VPD calculation
+  If TimeIntoInterval (0,60,Sec) Then
+    If (HasATMOS41 OR HasATMOS14) Then
+      DewPoint (Dewp,AirTemp,RelHumidity)
+      Call SUBCheckRange (Dewp,-10,30)
+      SatVP (SatVPCalc,AirTemp)
+      Ea = (RelHumidity/100)*SatVPCalc
+      VPD = SatVPCalc-Ea
+    Else
+      AirTemp = SenOff : RelHumidity = SenOff : Dewp = SenOff
+      Vapor_Pressure = SenOff : VPD = SenOff : AtmPressure = SenOff
+      AirTemp = SenOff : Vapor_Pressure = SenOff
+      RelHumidityTemp41 = SenOff
+      Precipitation = SenOff : Strikes = SenOff : StrikeDistance = SenOff
+      WindSpeed = SenOff : WindDirection = SenOff : GustWindSpeed1 = SenOff
+      N_Wind = SenOff : E_Wind = SenOff : GustWindSpeed2 = SenOff
+      XOrientation = SenOff : YOrientation = SenOff
+    EndIf
+  EndIf
+
+  ' EC5, SE 19-16 (hat nur Platz fuer 4)
+  If HasEC5 Then
+    If TimeIntoInterval (0,60,Sec) Then
+      BrHalf (ECU (1),1,mv2500C,9,1,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (2),1,mv2500C,10,1,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (3),1,mv2500C,11,1,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (4),1,mv2500C,12,1,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (5),1,mv2500C,13,3,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (6),1,mv2500C,14,3,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (7),1,mv2500C,15,3,1,2500,0,10000,250,2500,0)
+      BrHalf (ECU (8),1,mv2500C,16,3,1,2500,0,10000,250,2500,0)
+      EC10cmact (1) = (ECU (1) * 0.00119) - 0.4
+      SUBCheckRange (EC10cmact (1),-0.1,1)
+      EC10cmact (2) = (ECU (2) * 0.00119) - 0.4
+      SUBCheckRange (EC10cmact (2),-0.1,1)
+      EC70cmact (1) = (ECU (3) * 0.00119) - 0.4
+      SUBCheckRange (EC70cmact (1),-0.1,1)
+      EC70cmact (2) = (ECU (4) * 0.00119) - 0.4
+      SUBCheckRange (EC70cmact (2),-0.1,1)
+      EC10cmact (3) = (ECU (5) * 0.00119) - 0.4
+      SUBCheckRange (EC10cmact (3),-0.1,1)
+      EC10cmact (4) = (ECU (6) * 0.00119) - 0.4
+      SUBCheckRange (EC10cmact (4),-0.1,1)
+      EC70cmact (3) = (ECU (7) * 0.00119) - 0.4
+      SUBCheckRange (EC70cmact (3),-0.1,1)
+      EC70cmact (4) = (ECU (8) * 0.00119) - 0.4
+      SUBCheckRange (EC70cmact (4),-0.1,1)
+    EndIf
+  Else
+    ECU = SenOff : EC10cmact (1) = SenOff : EC10cmact (2) = SenOff
+    EC70cmact (1) = SenOff : EC70cmact (2) = SenOff
+  EndIf
+
+  ' MPS-2, SDI-12
+  If TimeIntoInterval (0,60,Sec) Then
+    If HasMPS Then
+      SDI12Recorder (MPS_1,3,5,"M!",1,0)
+      If MPS_1PSI = SenOff Then MPS_1Temp = SenOff
+      SDI12Recorder (MPS_2,3,6,"M!",1,0)
+      If MPS_2PSI = SenOff Then MPS_2Temp = SenOff
+      SDI12Recorder (MPS_3,3,7,"M!",1,0)
+      If MPS_3PSI = SenOff Then MPS_3Temp = SenOff
+      SDI12Recorder (MPS_4,3,8,"M!",1,0)
+      If MPS_4PSI = SenOff Then MPS_4Temp = SenOff
+    Else
+      MPS_1PSI = SenOff : MPS_1Temp = SenOff
+      MPS_2PSI = SenOff : MPS_2Temp = SenOff
+      MPS_3PSI = SenOff : MPS_3Temp = SenOff
+      MPS_4PSI = SenOff : MPS_4Temp = SenOff
+    EndIf
+  EndIf
+
+  If HasTensiomark AND TimeIntoInterval (0,20,Min) Then
+    PortSet (6,1) : Delay (1,5,Sec)
+    SDI12 = SenOff
+    SDI12Recorder (SDI12 (),7,"1","M!",1,0,-1,1)
+    SDI12Recorder (SDI12 (),7,"1","R0!",1,0,-1)
+    TM_SWP (1) = -1*(10.0^(SDI12 (2)))
+    TM_temp (1) = SDI12 (1)
+    SDI12 = SenOff
+    SDI12Recorder (SDI12 (),7,"2","M!",1,0,-1,1)
+    SDI12Recorder (SDI12 (),7,"2","R0!",1,0,-1)
+    TM_SWP (2) = -1*(10.0^(SDI12 (2)))
+    TM_temp (2) = SDI12 (1)
+    SDI12 = SenOff
+    Delay (1,5,Sec) : PortSet (6,0)
+  Else
+    SDI12 (1) = SenOff : SDI12 (2) = SenOff
+    TM_SWP (1) = SenOff : TM_temp (1) = SenOff
+    TM_SWP (2) = SenOff : TM_temp (2) = SenOff
+  EndIf
+EndSub
+
+' M A I N   P R O G R A M
+' ---------------------------------------------------------------
+SequentialMode ' needed so that Scans run after each other
+
+BeginProg
+  SetStatus ("StationName",StatL) : SetStatus ("USRDriveSize",0)
+  SetStatus ("HTTPEnabled",1) : SetStatus ("FTPEnabled",1)
+  SetStatus ("FTPUsername",FTPCRUsr) : SetStatus ("PingEnabled",1)
+  SetStatus ("TelnetEnabled",1) : SetStatus ("FTPPassword",FTPCRPw)
+
+  ' Before voltage is given to sensors, values bogus
+  ATMOS41 = SenOff : ATMOS14 = SenOff
+  MPS_1PSI = SenOff : MPS_1Temp = SenOff
+  MPS_2PSI = SenOff : MPS_2Temp = SenOff
+  MPS_3PSI = SenOff : MPS_3Temp = SenOff
+  MPS_4PSI = SenOff : MPS_4Temp = SenOff
+  SDI12 = SenOff : TM_SWP = SenOff : TM_temp = SenOff
+  ECU = SenOff : EC10cmact = SenOff : EC70cmact = SenOff
+  Dendro_1 = SenOff : Dendro_2 = SenOff
+  Dendro_3 = SenOff : Dendro_4 = SenOff
+  Sapflow_1 = SenOff : Sapflow_2 = SenOff
+  Sapflow_3 = SenOff : Sapflow_4 = SenOff : PortSet (8,1)
+  AirTemp = SenOff : Vapor_Pressure = SenOff
+  RelHumidity = SenOff : AtmPressure = SenOff : RelHumidityTemp41 = SenOff
+  Precipitation = SenOff : Strikes = SenOff : StrikeDistance = SenOff
+  WindSpeed = SenOff : WindDirection = SenOff : GustWindSpeed1 = SenOff
+  N_Wind = SenOff : E_Wind = SenOff : GustWindSpeed2 = SenOff
+  XOrientation = SenOff : YOrientation = SenOff : VPD = SenOff
+  Dewp = SenOff : RelHumidity41 = SenOff : AirTemp14 = SenOff
+  RelHumidity14 = SenOff : AtmPressure14 = SenOff
+
+  ' Main Scan
+  Scan (10,Sec,0,0)
+    Call SubStatus ()
+    Call SubMain ()
+    CallTable Main
+    CallTable MainRAW
+  NextScan
+
+  ' SlowScan
+  SlowSequence
+  Scan (1,Min,0,0)
+    Delay (0,1,Sec)
+    RealTime (rTime()) : monthr = rTime (2)
+    If (monthr = 12 OR monthr = 1 OR monthr = 2) Then
+      PortSet (8,0)
+      Sapflow_1 = SenOff : Sapflow_2 = SenOff
+      Sapflow_3 = SenOff : Sapflow_4 = SenOff
+    Else
+      PortSet (8,1)
+    EndIf
+    If HasCam Then Call SubCam ()
+  NextScan
+  EndSequence
+EndProg

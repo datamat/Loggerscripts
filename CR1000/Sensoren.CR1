@@ -1,0 +1,88 @@
+'CR1000
+'Created by Short Cut (4.0)
+
+'Declare Variables and Units
+Public BattV
+Public PTemp_C
+Public Pulse
+Public SRADcur, PARcur, DWNDcur
+Public TAIRcur1, RHUMcur1, TAIRde1, RHUMde1
+Public TAIRcur2, RHUMcur2, TAIRde2, RHUMde2
+Public TAIRcur3, RHUMcur3, TAIRde3, RHUMde3
+Public Status1 As String
+Public Status2 As String
+Public Status3 As String
+Public TAIRcurRef, RHUMcurRef
+
+Const MultiSRAD = 100
+Const OffSRAD = 0
+Const MultiPAR = 100
+Const OffPAR = 0
+
+Units BattV=Volts
+Units PTemp_C=Deg C
+Units Pulse=Counts/Hz
+
+'Define Data Tables
+DataTable(Table1,True,-1)
+	DataInterval(0,1440,Min,10)
+	Sample(1,BattV,FP2)
+	Sample(1,PTemp_C,FP2)
+EndTable
+
+'Main Program
+BeginProg
+	'Main Scan
+	Scan(5,Sec,1,0)
+		'Default CR1000 Datalogger Battery Voltage measurement 'BattV'
+		Battery(BattV)
+		'Default CR1000 Datalogger Wiring Panel Temperature measurement 'PTemp_C'
+		PanelTemp(PTemp_C,_50Hz)
+		'Generic Pulse measurement 'Pulse'
+		PulseCount(Pulse,1,1,2,0,1,0)
+		'Call Data Tables and Store Data
+		BrHalf (DWNDcur,1,mV2500,1,Vx1,1,2500,0,20000,250,357,0)
+		Delay (0,1,Sec)
+		VoltSe (SRADcur,1,mV25,2,0,10000,250,MultiSRAD,OffSRAD)
+		Delay (0,1,Sec)
+		VoltSe (PARcur,1,mV250,3,0,10000,250,MultiPAR,OffPAR)
+	  'Delay (0,1,Sec)
+		VoltSe (RHUMcur1,1,mv2500,4,0,0,250,0.1,0) 
+		'Delay (0,1,Sec)
+		VoltSe (TAIRcur1,1,mv2500,5,0,0,250,0.1,-40)
+		'Delay (0,1,Sec)
+    VoltSe (RHUMcur2,1,mv2500,6,0,0,250,0.1,0) 
+		'Delay (0,1,Sec)
+		VoltSe (TAIRcur2,1,mv2500,7,0,0,250,0.1,-40)
+		'Delay (0,1,Sec)
+		VoltSe (RHUMcur3,1,mv2500,8,0,0,250,0.1,0) 
+		'Delay (0,1,Sec)
+		VoltSe (TAIRcur3,1,mv2500,9,0,0,250,0.1,-40)
+		'Delay (0,1,Sec)
+		VoltSe (RHUMcurRef,1,mv2500,15,0,0,250,0.1,0) 
+		'Delay (0,1,Sec)
+		VoltSe (TAIRcurRef,1,mv2500,16,0,0,250,0.1,-40)
+    TAIRde1 = TAIRcurRef-TAIRcur1
+    RHUMde1 = RHUMcurRef-RHUMcur1
+    TAIRde2 = TAIRcurRef-TAIRcur2
+    RHUMde2 = RHUMcurRef-RHUMcur2
+    TAIRde3 = TAIRcurRef-TAIRcur3
+    RHUMde3 = RHUMcurRef-RHUMcur3
+    If ABS (TAIRde1) < 1.5 AND ABS (RHUMde1) < 1 Then
+      Status1 = "Good"
+    Else
+      Status1 = "No Good"
+    EndIf
+        If ABS (TAIRde2) < 1.5 AND ABS (RHUMde2) < 1 Then
+      Status2 = "Good"
+    Else
+      Status2 = "No Good"
+    EndIf
+        If ABS (TAIRde3) < 1.5 AND ABS (RHUMde3) < 1 Then
+      Status3 = "Good"
+    Else
+      Status3 = "No Good"
+    EndIf
+		CallTable Table1
+	NextScan
+EndProg

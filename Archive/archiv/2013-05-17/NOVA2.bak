@@ -1,0 +1,779 @@
+;{CR10X}
+;
+;Programm fuer Station Novaggio Physiologie (10 Saftflusssensoren (Multiplexer), 10 Dendrometer (Multiplexer),
+;10 Bodenfeuchtesensoren (CR10X))
+;
+;Mittelwertbildung alle 10 Minuten
+;Version 2.0 : 5.5.08 RZ
+
+;==============================================================================
+; Station:
+; --------
+;   o Serial Number:       Z20081 - Nova1
+;   o Location:            Novaggio
+;   o Call Number:         079 209 50 76
+;   o Connection:
+;   o Service Window:
+;
+; Program:
+; --------
+;   + Station Program 1:     Port 1: AM16/32A reset
+;                            Port 2: AM16/32A clock
+;                            Port 3: leer
+;                            Port 4: GSM Ignition (high = ON)
+;                            Port 5: SOL (12V):
+;                            Port 6: SOL (12V): ECHO-Speisung
+;                            Port 7: SOL (GND): Dendro-Speisung (5V Logger)
+;                            Port 8: SOL (GND): Sapflow-Speisung
+;
+;                            Flag 1:
+;                            Flag 2:
+;                            Flag 3:
+;                            Flag 4: High = GSM ON (Zeitfenster verlaenger)
+;                            Flag 5:
+;                            Flag 6: high = ECHO AUS
+;                            Flag 7: high = Dendrometerspeisung AUS
+;                            Flag 8: high = Sapflowspeisung AUS
+;
+;
+
+;   o Source Code:         Nova1.CSI
+;   o Author:              Roman Zweifel / WSL
+;   o Version:             2.0 (Mai 2008)
+;
+; Table 4 Parameters:
+; -------------------
+; @@00  Station ID = Speicherintervall [10]
+; @@01  Execution Interval Table 1 [10s]
+; @@02  Stationsnummer [..]
+; @@03  Projektnummer [..]
+; @@04
+; @@05
+; @@06
+
+
+
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+
+;-------------------------- Stationsstatus ---------------------------
+1:  Z=F x 10^n (P30)
+ 1: 70       F
+ 2: 00       n, Exponent of 10
+ 3: 34       Z Loc [ Stat_Nr__ ]
+
+
+2:  Z=F x 10^n (P30)
+ 1: 21       F
+ 2: 00       n, Exponent of 10
+ 3: 35       Z Loc [ Proj_Nr   ]
+
+
+3:  Batt Voltage (P10)
+ 1: 31       Loc [ BattVolt  ]
+
+
+4:  Internal Temperature (P17)
+ 1: 32       Loc [ CR10XTemp ]
+
+
+5:  If (X<=>Y) (P88)
+ 1: 31       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 33       Y Loc [ Batt_Min  ]
+ 4: 30       Then Do
+
+
+
+     6:  Z=X (P31)
+      1: 31       X Loc [ BattVolt  ]
+      2: 33       Z Loc [ Batt_Min  ]
+
+
+
+7:  End (P95)
+
+
+
+
+8:  If time is (P92)
+ 1: 5        Minutes (Seconds --) into a
+ 2: 1440     Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+
+9:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 33       Loc [ Batt_Min  ]
+
+10:  Minimum (P74)^23980
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 31       Loc [ BattVolt  ]
+
+11:  Maximum (P73)^7352
+ 1: 1        Reps
+ 2: 00       Time Option
+ 3: 31       Loc [ BattVolt  ]
+
+
+
+12:  Read Ports (P25)
+ 1: 1        Mask (0..255)
+ 2: 38       Loc [ Ctr1      ]
+
+
+13:  Read Ports (P25)
+ 1: 2        Mask (0..255)
+ 2: 39       Loc [ Ctr2      ]
+
+
+14:  Read Ports (P25)
+ 1: 4        Mask (0..255)
+ 2: 40       Loc [ Ctr3      ]
+
+
+15:  Read Ports (P25)
+ 1: 8        Mask (0..255)
+ 2: 41       Loc [ Ctr4      ]
+
+16:  Read Ports (P25)
+ 1: 16       Mask (0..255)
+ 2: 42       Loc [ Ctr5      ]
+
+
+17:  Read Ports (P25)
+ 1: 32       Mask (0..255)
+ 2: 43       Loc [ Ctr6      ]
+
+
+18:  Read Ports (P25)
+ 1: 64       Mask (0..255)
+ 2: 44       Loc [ Ctr7      ]
+
+19:  Read Ports (P25)
+ 1: 128      Mask (0..255)
+ 2: 45       Loc [ Ctr8      ]
+
+
+
+;--------------------------- Programmsteuerung -----------------------------
+;---------------------- Batt-Spannungsabhaengigkeit ------------------
+
+
+20:  If Flag/Port (P91)
+ 1: 28       Do if Flag 8 is Low
+ 2: 30       Then Do
+
+     21:  Do (P86)
+      1: 48       Set Port 8 High
+
+22:  Else (P94)
+
+     23:  Do (P86)
+      1: 58       Set Port 8 Low
+
+24:  End (P95)
+
+
+25:  If Flag/Port (P91)
+ 1: 26       Do if Flag 6 is Low
+ 2: 30       Then Do
+
+     26:  Do (P86)
+      1: 46       Set Port 6 High
+
+27:  Else (P94)
+
+     28:  Do (P86)
+      1: 56       Set Port 6 Low
+
+29:  End (P95)
+
+30:  If Flag/Port (P91)
+ 1: 27       Do if Flag 7 is Low
+ 2: 30       Then Do
+
+     31:  Do (P86)
+      1: 47       Set Port 7 High
+
+32:  Else (P94)
+
+     33:  Do (P86)
+      1: 57       Set Port 7 Low
+
+34:  End (P95)
+
+
+
+
+35:  If (X<=>F) (P89)
+ 1: 31       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 11.9     F
+ 4: 30       Then Do
+
+     36:  Do (P86)
+      1: 58       Set Port 8 Low
+
+     37:  Do (P86)
+      1: 18       Set Flag 8 High
+
+38:  End (P95)
+
+
+39:  If (X<=>F) (P89)
+ 1: 31       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 11.8     F
+ 4: 30       Then Do
+
+     40:  Do (P86)
+      1: 56       Set Port 6 Low
+
+     41:  Do (P86)
+      1: 16       Set Flag 6 High
+
+42:  End (P95)
+
+43:  If (X<=>F) (P89)
+ 1: 31       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 11.6     F
+ 4: 30       Then Do
+
+     44:  Do (P86)
+      1: 57       Set Port 7 Low
+
+     45:  Do (P86)
+      1: 17       Set Flag 7 High
+
+46:  End (P95)
+
+
+
+47:  If Flag/Port (P91)
+ 1: 18       Do if Flag 8 is High
+ 2: 30       Then Do
+
+48:  If (X<=>F) (P89)
+ 1: 33       X Loc [ Batt_Min  ]
+ 2: 3        >=
+ 3: 12.0     F
+ 4: 28       Set Flag 8 Low
+
+49:  End (P95)
+
+
+50:  If Flag/Port (P91)
+ 1: 16       Do if Flag 6 is High
+ 2: 30       Then Do
+
+51:  If (X<=>F) (P89)
+ 1: 33       X Loc [ Batt_Min  ]
+ 2: 3        >=
+ 3: 11.9     F
+ 4: 26       Set Flag 6 Low
+
+52:  End (P95)
+
+53:  If Flag/Port (P91)
+ 1: 17       Do if Flag 7 is High
+ 2: 30       Then Do
+
+54:  If (X<=>F) (P89)
+ 1: 33       X Loc [ Batt_Min  ]
+ 2: 3        >=
+ 3: 11.8     F
+ 4: 27       Set Flag 7 Low
+
+55:  End (P95)
+
+
+
+
+;------------------------- Messungen auf dem Logger ------------------------
+
+
+56:  Excite-Delay (SE) (P4)
+ 1: 10       Reps
+ 2: 5        2500 mV Slow Range
+ 3: 3        SE Channel
+ 4: 2        Excite all reps w/Exchan 2
+ 5: 1        Delay (0.01 sec units)
+ 6: 2500     mV Excitation
+ 7: 21       Loc [ Echo_1    ]
+ 8: .00119   Multiplier
+ 9: -0.4     Offset
+
+;Multiplier und Offset gemaess Manual fuer EC-5. Fuer exakte Messungen ist eine Eichung mit der
+;entsprechenden Kabellaenge und des Bodentyps notwendig.
+
+
+
+
+
+
+;--------------------------- Subroutinenaufruf -----------------------------
+
+; --- Multiplexer-Ansteuerung und Messungen auf dem Multiplexer ---
+57:  Do (P86)
+ 1: 1        Call Subroutine 1
+
+; --- GSM ---
+58:  Do (P86)
+ 1: 2        Call Subroutine 2
+
+
+
+
+
+
+;------------- Mittelung & Abspeicherung der Messdaten ----------------------
+
+59:  If time is (P92) ;Messwert-Enderfassung alle 10 Minuten
+ 1: 0000     Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+; Array ID entspricht dem Messintervall in den Daten (erste Kolonne)
+60:  Set Active Storage Area (P80)^26755
+ 1: 1        Final Storage Area 1
+ 2: 10       Array ID
+
+
+61:  Sample (P70)^29306
+ 1: 1        Reps
+ 2: 34       Loc [ Stat_Nr__ ]
+
+62:  Sample (P70)^8196
+ 1: 1        Reps
+ 2: 35       Loc [ Proj_Nr   ]
+
+
+63:  Real Time (P77) ^20252;Festlegung des zu speichernden Datum-/Zeitformats
+ 1: 1110     Year,Day,Hour/Minute (midnight = 0000)
+
+
+64:  Resolution (P78)
+ 1: 1        High Resolution
+
+
+65:  Average (P71)^6045;Mittelwertbildung der Saftflussmesswerte
+ 1: 45       Reps
+ 2: 1        Loc [ Sap_1     ]
+
+
+
+66:  Resolution (P78)
+ 1: 0        Low Resolution
+
+;-------------------------------- Table 2 ----------------------------------
+
+*Table 2 Program
+  02: 0.0000    Execution Interval (seconds)
+
+
+
+
+
+;-------------------------------- Subroutinen ------------------------------
+
+
+*Table 3 Subroutines
+
+;-------- Subroutine Multiplexer --------
+
+1:  Beginning of Subroutine (P85)
+ 1: 1        Subroutine 1
+
+2:  Do (P86)
+ 1: 41       Set Port 1 High ;Aktivieren des Multiplexers (AM16/32A)
+
+3:  Beginning of Loop (P87) ;Start des Messdurchlaufs fuer 10 Granier-Sensoren
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+4:  Step Loop Index (P90) ;Festlegen der richtigen Reihenfolge der Input Locations
+ 1: 1        Step
+
+5:  Do (P86) ;Aktivieren des Clock-Impulses fuer AM16/32A
+ 1: 72       Pulse Port 2
+
+6:  Excitation with Delay (P22) ;10ms Pause zwischen den Einzelmessungen
+ 1: 01       Ex Channel
+ 2: 0000     Delay W/Ex (units = 0.01 sec)
+ 3: 1        Delay After Ex (units = 0.01 sec)
+ 4: 0000     mV Excitation
+
+7:  Volt (Diff) (P2) ;Messinstruktion fuer Saftflusssensoren und Umrechnung in Grad C
+ 1: 1        Reps
+ 2: 31       2.5 mV 50 Hz Rejection Range
+ 3: 01       DIFF Channel
+ 4: 1     -- Loc [ Sap_1     ]
+ 5: 25       Mult
+ 6: 0.0      Offset
+
+8:  End (P95) ;Ende des Messdurchlaufs fuer Saftflussensoren
+
+; Start Messdurchlauf fuer 10 Punktdendrometer
+9:  Beginning of Loop (P87)
+ 1: 0000     Delay
+ 2: 10       Loop Count
+
+
+     10:  Step Loop Index (P90)
+      1: 1        Step
+
+
+     11:  Do (P86)
+      1: 72       Pulse Port 2
+
+     12:  Excitation with Delay (P22)
+      1: 01       Ex Channel
+      2: 0000     Delay W/Ex (0.01 sec units)
+      3: 5        Delay After Ex (0.01 sec units)
+      4: 0000     mV Excitation
+
+13:  Volt (Diff) (P2) ;Messinstruktion fuer Saftflusssensoren und Umrechnung in Grad C
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 01       DIFF Channel
+ 4: 11    -- Loc [ Dend_1    ]
+ 5: 1        Mult
+ 6: 0.0      Offset
+
+
+14:  End (P95)
+
+
+; Hier sind noch weiter Multiplexer-Eingaenge frei programmierbar. Im Moment leer.
+
+15:  Do (P86)
+ 1: 51       Set Port 1 Low ;Deaktivieren des AM416
+
+
+16:  End (P95)
+
+
+;--------------------------------------- GSM ------------------------------------------
+
+; Subroutine 2 Datenkommunikation ueber Siemens GSM (Port 4)
+; Innerhalb der Zeitgrenzen kann mit dem Flag 4 die Natelkommunikation
+; permanent aufrecht erhalten werden. Wird das Flag 4 nicht auf high gesetzt
+; bleibt das Natel jeweils die zweiten 10 Minuten jeder vollen Stunde von 9:00 bis 18:00 eingeschaltet
+; Eine automatische Einschaltung des GSM erfolgt, wenn die Batterie_V > 13.0 V ist.
+
+17:  Beginning of Subroutine (P85)
+ 1: 2        Subroutine 2
+
+18:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 1        Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+19:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 36       Loc [ Zeit_HHMM ]
+
+20:  Real Time (P77)^16064
+ 1: 20       Hour/Minute (midnight = 2400)
+
+
+; wenn Batterie-Ladung < 10.5 V, Natel ausschalten
+21:  If (X<=>F) (P89)
+ 1: 31       X Loc [ BattVolt  ]
+ 2: 4        <
+ 3: 10.5     F
+ 4: 30       Then Do
+
+22:  Do (P86)
+ 1: 24       Set Flag 4 Low
+
+23:  Do (P86)
+ 1: 54       Set Port 4 Low
+
+24:  End (P95)
+
+; Jede Stunde wird Flag 4 einmal auf 0 gesetzt (volle Stunde).
+; Damit bleibt Natel auch nach maueller einschaltung max. 60 min eingeschaltet.
+; Ausnahme bleibt bei Batteriespannung > 13.0 V
+
+
+25:  If time is (P92)
+ 1: 00       Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+26:  Do (P86)
+ 1: 24       Set Flag 4 Low
+
+
+27:  End (P95)
+
+
+
+;Uebertragungszeit von xx bis yy jeweils 10 Min einer Stunde
+; von xx:11 bis xx:zz (7h bis 17h30)
+
+
+28:  If (X<=>F) (P89)
+ 1: 36       X Loc [ Zeit_HHMM ]
+ 2: 3        >=
+ 3: 700      F
+ 4: 30       Then Do
+
+; wenn Batterie-Ladung > 13.0 V, Natel einschalten
+29:  If (X<=>F) (P89)
+ 1: 31       X Loc [ BattVolt  ]
+ 2: 3        >=
+ 3: 13.0     F
+ 4: 14       Set Flag 4 High
+
+
+30:  If time is (P92)
+ 1: 10       Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+31:  Z=F (P30)
+ 1: 1        F
+ 2: 00       Exponent of 10
+ 3: 37       Z Loc [ FlagKontr ]
+
+32:  Do (P86)
+ 1: 44       Set Port 4 High
+
+
+33:  End (P95)
+
+34:  If time is (P92)
+ 1: 20       Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+
+35:  Z=F (P30)
+ 1: 0        F
+ 2: 00       Exponent of 10
+ 3: 37       Z Loc [ FlagKontr ]
+
+36:  End (P95)
+
+37:  End (P95)
+
+38:  If (X<=>F) (P89)
+ 1: 36       X Loc [ Zeit_HHMM ]
+ 2: 3        >=
+ 3: 1730     F
+ 4: 30       Then Do
+
+
+39:  Do (P86)
+ 1: 24       Set Flag 4 Low
+
+40:  Z=F (P30)
+ 1: 0        F
+ 2: 0        Exponent of 10
+ 3: 37       Z Loc [ FlagKontr ]
+
+41:  End (P95)
+
+;-------------------- Kommunikationsfenster Start ---------------------
+
+
+42:  If (X<=>F) (P89)
+ 1: 36       X Loc [ Zeit_HHMM ]
+ 2: 1        =
+ 3: 0615     F
+ 4: 30       Then Do
+
+     43:  Z=F x 10^n (P30)
+      1: 1        F
+      2: 00       n, Exponent of 10
+      3: 37       Z Loc [ FlagKontr ]
+
+
+     44:  Do (P86)
+      1: 44       Set Port 4 High
+
+
+
+45:  End (P95)
+
+46:  If (X<=>F) (P89)
+ 1: 36       X Loc [ Zeit_HHMM ]
+ 2: 1        =
+ 3: 0630     F
+ 4: 30       Then Do
+
+     47:  Z=F x 10^n (P30)
+      1: 0.0      F
+      2: 00       n, Exponent of 10
+      3: 37       Z Loc [ FlagKontr ]
+
+48:  End (P95)
+
+
+;-------------------- Kommunikationsfenster End ---------------------
+
+
+
+49:  If Flag/Port (P91)
+ 1: 14       Do if Flag 4 is High
+ 2: 44       Set Port 4 High
+
+50:  If Flag/Port (P91)
+ 1: 24       Do if Flag 4 is Low
+ 2: 30       Then Do
+
+51:  If (X<=>F) (P89)
+ 1: 37       X Loc [ FlagKontr ]
+ 2: 1        =
+ 3: 0        F
+ 4: 54       Set Port 4 Low
+
+52:  End (P95)
+
+53:  End (P95)
+
+End Program
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-Input Locations-
+1 Sap_1     7 1 1
+2 Sap_2     3 1 0
+3 Sap_3     11 1 0
+4 Sap_4     11 1 0
+5 Sap_5     11 1 0
+6 Sap_6     11 1 0
+7 Sap_7     11 1 0
+8 Sap_8     11 1 0
+9 Sap_9     11 1 0
+10 Sap_10    11 1 0
+11 Dend_1    3 1 1
+12 Dend_2    3 1 0
+13 Dend_3    11 1 0
+14 Dend_4    11 1 0
+15 Dend_5    11 1 0
+16 Dend_6    11 1 0
+17 Dend_7    11 1 0
+18 Dend_8    11 1 0
+19 Dend_9    11 1 0
+20 Dend_10   19 1 0
+21 Echo_1    5 0 1
+22 Echo_2    11 0 1
+23 Echo_3    9 0 1
+24 Echo_4    9 0 1
+25 Echo_5    9 0 1
+26 Echo_6    9 0 1
+27 Echo_7    9 0 1
+28 Echo_8    9 0 1
+29 Echo_9    9 0 1
+30 Echo_10   17 0 1
+31 BattVolt  1 9 1
+32 CR10XTemp 1 0 1
+33 Batt_Min  1 4 2
+34 Stat_Nr__ 1 1 1
+35 Proj_Nr   1 1 1
+36 Zeit_HHMM 1 4 1
+37 FlagKontr 1 1 5
+38 Ctr1      1 0 1
+39 Ctr2      1 0 1
+40 Ctr3      1 0 1
+41 Ctr4      1 0 1
+42 Ctr5      1 0 1
+43 Ctr6      1 0 1
+44 Ctr7      1 0 1
+45 Ctr8      1 0 1
+46 _________ 1 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-Final Storage Area 2-
+0
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X Compile Setting-
+3
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,Year_RTM,20252
+0,Day_RTM
+0,Hour_Minute_RTM
+1,Sap_1_AVG~1,6045
+1,Sap_2_AVG~2
+1,Sap_3_AVG~3
+1,Sap_4_AVG~4
+1,Sap_5_AVG~5
+1,Sap_6_AVG~6
+1,Sap_7_AVG~7
+1,Sap_8_AVG~8
+1,Sap_9_AVG~9
+1,Sap_10_AVG~10
+1,Dend_1_AVG~11
+1,Dend_2_AVG~12
+1,Dend_3_AVG~13
+1,Dend_4_AVG~14
+1,Dend_5_AVG~15
+1,Dend_6_AVG~16
+1,Dend_7_AVG~17
+1,Dend_8_AVG~18
+1,Dend_9_AVG~19
+1,Dend_10_AVG~20
+1,Echo_1_AVG~21
+1,Echo_2_AVG~22
+1,Echo_3_AVG~23
+1,Echo_4_AVG~24
+1,Echo_5_AVG~25
+1,Echo_6_AVG~26
+1,Echo_7_AVG~27
+1,Echo_8_AVG~28
+1,Echo_9_AVG~29
+1,Echo_10_AVG~30
+1,BattVolt_AVG~31
+1,CR10XTemp_AVG~32
+1,Batt_Min_AVG~33
+1,Stat_Nr___AVG~34
+1,Proj_Nr_AVG~35
+1,Zeit_HHMM_AVG~36
+1,FlagKontr_AVG~37
+1,Ctr1_AVG~38
+1,Ctr2_AVG~39
+1,Ctr3_AVG~40
+1,Ctr4_AVG~41
+1,Ctr5_AVG~42
+1,Ctr6_AVG~43
+1,Ctr7_AVG~44
+1,Ctr8_AVG~45
+2,Proj_Nr~35,8196
+3,10,26755
+4,Stat_Nr__~34,29306
+5,Hour_Minute_RTM,16064
+6,BattVolt_MIN~31,23980
+7,BattVolt_MAX~31,7352

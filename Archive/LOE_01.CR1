@@ -1,0 +1,64 @@
+'CR1000
+'Program to switch on/off Granier every 15' and switching off them between (0-4' clock), and between day 316 and 75 to save battery
+
+'Declare Variables and Units
+Public PanelTemp
+Public Batt_Volt
+Public Granier(3)
+Public Dendr(4)
+Public rTime(9)
+Public DOY
+
+Units PanelTemp=Deg C
+Units Batt_Volt=Volts
+Units Granier=mV
+Units Dendr=mm
+
+
+'Define Data Tables
+DataTable(Table1,True,-1)
+	DataInterval(0,15,Min,10)
+	Average(1,Batt_Volt,FP2,False)
+	Average (3,Granier(1),FP2,False)
+	Average (4,Dendr(1),IEEE4,False)
+	Average (1,PanelTemp,FP2,False)
+
+	
+EndTable
+
+'Main Program
+BeginProg
+	Scan(60,Sec,1,0)
+	  ' CR1000 internal temperature
+	  PanelTemp (PanelTemp,250)
+	 
+	  
+		'Default Datalogger Battery Voltage measurement Batt_Volt:
+		Battery(Batt_Volt)
+		RealTime (rTime())
+		
+		'define Day Of the Year
+		DOY=rTime(9)
+		
+		'Generic Differential Voltage measurements Granier(1):
+		VoltDiff(Granier(1),3,mV2_5,1,True,0,_50Hz,1.0,0.0)
+		
+		' BrHalf da come risultato il rapporto tra la tensione misurata e quella di eccitazione
+		' quind la conversione in mm e' il dato in uscita X Vex  X il coeff. di cal. 
+		BrHalf (Dendr(1),1,mV250,7,Vx1,1,250,False ,0,_50Hz,20,0)
+	  BrHalf (Dendr(2),1,mV250,8,Vx1,1,250,False ,0,_50Hz,20,0)
+    BrHalf (Dendr(3),1,mV250,9,Vx1,1,250,False ,0,_50Hz,20,0)
+    BrHalf (Dendr(4),1,mV250,10,Vx1,1,250,False ,0,_50Hz,20,0)
+
+		'switchoff if vbatt <11 (on if >=12) and between gg 329 and 64
+       
+   
+    If (Batt_Volt < 11 OR  DOY <=64 OR DOY >=329) Then SW12(0)  
+    If (Batt_Volt >= 12 AND DOY > 64 AND DOY <329) Then SW12(1)    
+  
+  
+
+		'Call Data Tables and Store Data
+		CallTable(Table1)
+	NextScan
+EndProg
