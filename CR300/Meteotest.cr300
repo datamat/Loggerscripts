@@ -1,0 +1,419 @@
+'Logger: Campbell CR300
+'Router Conel SmartStart, RS232 Schnittstelle ueber Port 2000
+'Projekt: Meteo Wald Bafu
+'Standort: ????
+'Messung: allgemeine Wetterstation und Bodenfeuchte
+'Funktion/Parameter:
+'- Auslesen Kombisensor Atmos 41 via SDI12
+'- Auslesen zweier Bodenfeuchtesensoren Teros21 via SDI12
+
+
+'Version
+
+'V12019-12-05 mib initial setup
+'V2 2020-01-15 mib/mm Routersteuerung via Push-Button-Switch
+'V3 2020-02-07 cs/mib 10min interval und
+'V4 2020-02-11 cs store data in main-scan to get correct min,avg bat12
+'                 use TimeIsBetween to activate router for 2 minutes constantly
+'V5 2020-03-13 cs 1-sec scan fuer bat, router status / SDI12 in slowscna
+'                 eigene Tabelle (data_bat) fuer 1-sec daten, werden im slow scan ausgelesen
+'                 eigene Tabelle fuer SDI12 daten = data_10min
+'V6 2020-03-13 cs routerstatus nur in 1-sec scan, standard ist OFF
+'                 OS Version taeglich auslesen und speichern in data_day
+'V7 2020-03-27 cs  SDI12 Loesung mit Option -1,1 wird der C! Befehl abgesetzt und anschliessend anzahl ms gewartet bis Messdaten abgeholt werden
+'                 im Terminal gut sichtbar, dass ohne Option 1 bei Wait die D! Befehle vor dem C! Befehl ausgefuert werden.
+
+
+'------------------------------------------------------------------------
+
+'Messintervall in Anzahl Minuten - Standard = alle 10 min abspeichern
+Const interval_min = 10          'min
+
+'Scanintervall in Anzahl Sekunden - Standard = 1 sec
+'use
+Const scan_interval = 1          'sec
+
+'Scanintervall in Anzahl Sekunden Slow
+Const scan_interval_slow = 10    'min
+
+'------------------------------------------------------------------------
+'Reihenfolge der Identifikation entspricht Anzeige auf loggerlink APP
+'deshalb Reihenfolge gemaess Wichtigkeit..
+'zuerst Arbeitsparameter
+'dann Messwerte
+'dann helper, diese allenfalls als DIM unsichtbar machen
+
+'Variablendeklaration Statusvariablen
+Public routerstatus
+
+Public button
+Public button_counter
+Const button_max_online = 300   '300s online, auch wenn Knopf vergessen
+
+Public service                  'manueller online schalter
+Const service_max_online = 3600 '3600s online, auch wenn vergesse
+
+'identification logger serial number
+Public loggersn As String * 20
+
+'Variablendeklaration Atmos 41 Sensor
+Public Atmos(14)
+
+Alias Atmos(1)=ghi
+Alias Atmos(2)=rr
+Alias Atmos(3)=strike
+Alias Atmos(4)=strikedist
+Alias Atmos(5)=ff
+Alias Atmos(6)=dd
+Alias Atmos(7)=fx
+Alias Atmos(8)=ta
+Alias Atmos(9)=vp
+Alias Atmos(10)=qfe
+Alias Atmos(11)=rh
+Alias Atmos(12)=trh
+Alias Atmos(13)=tiltx
+Alias Atmos(14)=tilty
+
+'Variablendeklaration Teros 21 Sensoren
+Public Teros1(2)
+Alias Teros1(1)=ss1    'soil suction, Saugspannung
+Alias Teros1(2)=ts1    'temperature soil
+
+Public Teros2(2)
+Alias Teros2(1)=ss2    'soil suction, Saugspannung
+Alias Teros2(2)=ts2    'temperature soil
+
+Public bat12
+Dim bat12_Avg, bat12_Min, routerstatus_Avg
+Public tint
+
+'helper to get keep previous value
+Dim ff_prev
+Dim dd_prev
+Dim fx_prev
+Dim wind_invalid
+
+'Meta information, seriennummer, firmware
+'meta data with serial, firmware - once a day
+Public atmosmeta As String * 100
+Public teros1meta As String * 100
+Public teros2meta As String * 100
+
+Public ProcTime, ProcSlowTime, SkipScan
+Public loggeros As String * 50
+
+'Einheitendeklaration
+Units bat12=Volt
+Units tint=Deg C
+Units ghi=W/m^2
+Units rr=mm
+Units strike=count
+Units strikedist=km
+Units ff=m/s
+Units dd=degrees
+Units fx=m/s
+Units ta=Deg C
+Units vp=hPa
+Units qfe=hPa
+Units rh=%
+Units trh=Deg C
+Units tiltx=degrees
+Units tilty=degrees
+
+Units ss1=kPa
+Units ts1=Deg C
+
+Units ss2=kPa
+Units ts2=Deg C
+
+Units ProcTime=usec
+Units ProcSlowTime=usec
+
+'Define Data Tables
+DataTable(data_bat,True,-1)
+
+  DataInterval(0,interval_min,Min,10)
+
+  'LoggerID
+  Sample (1, loggersn, String)
+  Average(1,bat12,FP2,False)
+  Minimum(1,bat12,FP2,False,False)
+  Average(1,tint,FP2,False)
+  Minimum(1,tint,FP2,False,False)
+  Average(1,routerstatus,FP2,False)
+
+EndTable
+
+'Define Data Tables
+DataTable(data_10min,True,-1)
+
+  DataInterval(0,interval_min,Min,10)
+
+  'LoggerID
+  Sample (1, loggersn, String)
+
+  Sample(1,ta,FP2)
+  FieldNames("ta_Avg")
+  Sample(1,rh,FP2)
+  FieldNames("rh_Avg")
+  Sample(1,rr,IEEE4)
+  FieldNames("rr_Sum")
+  Sample(1,ghi,FP2)
+  FieldNames("ghi_Avg")
+
+  Sample(1,ff,FP2)
+  FieldNames("ff_Avg")
+  Sample(1,dd,FP2)
+  FieldNames("dd_Avg")
+  Sample (1,fx,FP2)
+  FieldNames("ff_Max")
+  Sample(1,wind_invalid,UINT2)
+  FieldNames("windquality_Avg"
+
+  Sample(1,vp,IEEE4)
+  FieldNames("vp_Avg")
+  Sample(1,qfe,IEEE4)
+  FieldNames("qfe_Avg")
+
+  Sample(1,trh,FP2)
+  FieldNames("trt_Avg")
+  Sample(1,tiltx,FP2)
+  FieldNames("tiltx_Avg")
+  Sample(1,tilty,FP2)
+  FieldNames("tilty_Avg")
+
+  Sample(1,strike,FP2)
+  FieldNames("strike_Sum")
+  Sample(1,strikedist,IEEE4)
+  FieldNames("strikedist_Avg")
+
+  Sample(1,ss1,IEEE4)
+  Sample(1,ts1,FP2)
+
+  Sample(1,ss2,IEEE4)
+  Sample(1,ts2,FP2)
+
+  '10min status info
+  Sample(1,routerstatus_Avg, FP2)
+  Sample(1,bat12_Avg,FP2)
+  Sample(1,bat12_Min,FP2)
+EndTable
+
+'Define Data Tables
+DataTable(data_day, True,-1)
+
+  DataInterval(0,1,day,10)
+
+  'logger identification
+  Sample (1,loggersn,String)
+  Sample (1,loggeros,String)
+
+  'sensor identification
+  Sample(1,atmosmeta,String)
+  Sample(1,teros1meta,String)
+  Sample(1,teros2meta,String)
+
+  'Router-Status
+  Average(1,routerstatus,FP2,False)
+
+  'status information
+  Average(1,bat12,FP2,False)
+  Maximum(1,bat12,FP2,False, False)
+  Minimum(1,bat12,FP2,False, False)
+
+  Average(1,tint,FP2,False)
+  Minimum(1,tint,FP2,False,False)
+  Maximum(1,tint,FP2,False,False)
+
+  'Diagnose
+  Average(1,ProcTime,UINT4,False)
+  Maximum(1,ProcTime,UINT4,False,False)
+  Minimum(1,ProcTime,UINT4,False,False)
+
+  Average(1,ProcSlowTime,UINT4,False)
+  Maximum(1,ProcSlowTime,UINT4,False,False)
+  Minimum(1,ProcSlowTime,UINT4,False,False)
+
+  Sample (1,SkipScan,FP2)
+EndTable
+
+'== alle SDI12 Messungen ================================================
+'werden regulaer alle 10min gestartet
+'oder bei Button = 1 alle 10 Sekunden = Inbetriebnahme, Test
+Sub MetaSensor ()
+  SDI12Recorder(atmosmeta,1,0,"I!",1,0,-1,1)
+  SDI12Recorder(teros1meta,1,1,"I!",1,0,-1,1)
+  SDI12Recorder(teros2meta,1,2,"I!",1,0,-1,1)
+EndSub
+
+
+'Messung der SDI12 Sensoren
+Sub MeasureSensor()
+  '-- ATMOS 41 --------------------------------------------------------
+  'Atmos 41 Compact Digital Weather Sensor measurements
+  'ghi', 'rr', 'strike', 'strikedist', 'ff', 'dd',
+  'fx', 'ta', 'vp', qfe', 'rh', 'trh','tiltx', and 'tilty'
+  'Get data from Atmos 41 Compact Digital Weather Sensor
+  SDI12Recorder(Atmos(),1,0,"C!",1,0,-1,1)
+
+  'High winds with rain can temporarily interfere with sonic wind measurements causing the
+  'sensor to output invalid winds of -9999 OR -9990.
+  'The following instructions set all wind measurements less than 0 to the previous valid
+  'wind measurements. This will "flat-line" the measurements until the sensor is able to
+  'make good readings again. The Invalid_Wind variable will be set to 1 when a wind
+  'measurement is invalid. For troubleshooting purposes, it is highly recommended that you
+  'Totalize the Invalid_Wind variable in any output tables you define that include wind
+  'speed AND/OR direction data from the Atmos 41.
+  If ff < 0 Then
+    ff = ff_prev
+    dd = dd_prev
+    fx = fx_prev
+    wind_invalid = 1
+  Else
+    wind_invalid = 0
+  EndIf
+  ' keep old data in variable
+  ff_prev = ff
+  dd_prev = dd
+  fx_prev = fx
+
+  'Convert fractional relative humidity into percent relative humidity
+  rh=rh*100
+
+  'keine negative Einstrahlung speichern..
+  If ghi < 0 Then
+    ghi = 0
+  EndIf
+
+  'Convert vapor pressure in kPa to hPa
+  vp=vp*10
+
+  'Convert barometric pressure in kPa to hPa
+  qfe=qfe*10
+
+  '-- TEROS21 ---------------------------------------------------------
+  '-1   Fill the entire array with NAN
+  SDI12Recorder(Teros1(),C1,1,"C!",1,0,-1,1)
+  'Reset all Generic SDI-12 Sensor measurements if NaN is returned to SDI12(1)
+  'If Teros1(1)=NaN Then Move(Teros1(),3,NaN,1)
+  'sollte bereits mit dem -1 im SDI12 Recorder erledigt sein
+
+  SDI12Recorder(Teros2(),C1,2,"C!",1,0,-1,1)
+  'Reset all Generic SDI-12 Sensor measurements if NaN is returned to SDI12_2(1)
+  'If Teros2(1)=NaN Then Move(Teros2(),3,NaN,1)
+  'sollte bereits mit dem -1 im SDI12 Recorder erledigt sein
+EndSub
+
+'Main Program ===========================================================
+BeginProg
+
+  'initial settings
+  service = 0
+  button = 0
+  button_counter = 0
+
+  'initial definition
+  ff_prev = 0
+  dd_prev = 0
+  fx_prev = 0
+  wind_invalid = False
+
+  ' Logger SN aus Status auslesen
+  loggersn   = Status.SerialNumber
+  loggeros   = Status.OSVersion
+  
+  'aktiviere Wartungsknopf, gibt 2.5 Volt auf den Ausgang Vx1
+  ExciteV (Vx1,2500,0)
+
+  ' read sensor meta
+  MetaSensor ()
+
+  '== 1 second SCAN =====================================================
+  Scan(scan_interval,Sec,1,0)
+    
+    'default router status for each scan is OFF
+    routerstatus = 0
+
+    'status information about battery, internal temperatur
+    Battery(bat12)
+    PanelTemp(tint,60)
+
+    '(1) Uhrzeit, egal bei welcher Batteriespannung 12:00 - 12:03
+    '++ Datenabholen um 12:01
+    '++ Zeit synchronisation um 12:01:30
+    '(2) Knopfdruck 'button': on/off, max fuer  5 Minuten online
+    '(3) Variable 'service':  on/off, max fuer 60 Minuten online
+
+    '(1) Uhrzeitsteuerung
+    'first IF is true for one hour between 12 and 13
+    If TimeIsBetween (12,13,24,Hr) Then
+      'seconde IF is true for 2 minutes start 0, ends < 3
+      If TimeIsBetween (0,3,60,Min) Then
+        routerstatus = 1
+      EndIf
+    EndIf
+
+    '(2) Wartungsknopf
+    'lese Status Knopf
+    PortGet (button,C2)
+
+    If (button > 0 ) Then
+      If (button_counter < button_max_online)
+        'zahler geht bis maximal 300, anschliessend nicht mehr weiter
+        button_counter = button_counter + 1
+        routerstatus = 1
+
+        'schnell Messung fuer Betriebstest, alle 10 Sekunden
+        If button_counter MOD 10 = 0 Then
+          MeasureSensor()
+        EndIf
+      EndIf
+    Else
+      'sobald button wieder OFF ist wird zahler zurueckgesetzt
+      button_counter = 0
+    EndIf
+
+    '(3) Service Variabel, maximal 1 hour
+    If (service > 0 ) AND (service <= service_max_online) Then
+      routerstatus = 1
+      service = service + 1
+      If service MOD 20 = 0 Then
+          MeasureSensor()
+        EndIf
+    Else
+      'reset service after max online
+      service = 0
+    EndIf
+
+    ' Switch Router on/off
+    SW12(routerstatus)
+
+    'Diagnose
+    ProcTime = Status.ProcessTime
+    ProcSlowTime = Status.SlowProcTime
+    SkipScan = Status.SkippedScan
+
+    'Call Data Tables and Store Data in main scan to get avg/max correct
+    CallTable data_bat
+    CallTable data_day   ' needs to be here to get bat, tint available in daily table
+  NextScan
+
+  ' Slow Scan Abfrage Sensoren SDI12 - nur alle 10min ===================
+  SlowSequence
+  Scan(scan_interval_slow,Min,1,0)
+    MeasureSensor()
+    bat12_Avg = data_bat.bat12_Avg(1)
+    bat12_Min = data_bat.bat12_Min(1)
+    routerstatus_Avg = data_bat.routerstatus_Avg(1)
+    CallTable data_10min
+  NextScan
+  EndSequence
+
+  ' Slow Scan Abfrage Sensoren Information - nur 1x taeglich =============
+  SlowSequence
+  Scan(1,Day,1,0)
+    MetaSensor()
+  NextScan
+  EndSequence
+
+EndProg

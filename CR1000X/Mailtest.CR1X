@@ -1,0 +1,84 @@
+'CR1000X Series
+'Created by Short Cut (4.0)
+
+'Declare Variables and Units
+Public BattV
+Public PTemp_C
+Public Pulse
+Public SRADcur, PARcur, DWNDcur
+
+Const MultiSRAD = 100
+Const OffSRAD = 0
+Const MultiPAR = 100
+Const OffPAR = 0
+
+Units BattV=Volts
+Units PTemp_C=Deg C
+Units Pulse=Counts/Hz
+
+Const SFull As String = "CR1000X"
+Const ToAddr = "lwfmeteo@gmail.com"
+Public Subject As String = "Daytest: Boot"
+Const CRLF = CHR(13)+CHR(10) : Dim Message As String * 250
+Public MailSuc : Public SrvResponse As String * 50
+Public Ofst As Float
+
+' *** Connection mailing
+Sub Connectmail ()
+  Battery (BattV)  
+	Message = SFull + " is connected, voltage is " + BattV + " V."
+	MailSuc = EmailRelay (ToAddr,Subject,Message,SrvResponse)
+	Erase (Message)
+EndSub
+
+'Define Data Tables
+DataTable(Table2,True,-1)
+	DataInterval(0,1440,Min,10)
+	Minimum(1,BattV,FP2,False,False)
+EndTable
+
+'Main Program
+BeginProg
+	'Main Scan
+	Delay (0,10,Sec)
+  Call ConnectMail ()
+
+	Scan(10,Sec,1,0)
+		'Default CR1000X Datalogger Battery Voltage measurement 'BattV'
+		Battery(BattV)
+		'Default CR1000X Datalogger Wiring Panel Temperature measurement 'PTemp_C'
+		PanelTemp(PTemp_C,50)
+		'Generic Pulse measurement 'Pulse'
+		PulseCount(Pulse,1,P1,1,0,1,0)
+		BrHalf (DWNDcur,1,mV5000,2,Vx1,1,2500,0,20000,250,357,0)
+		Delay (0,1,Sec)
+		VoltSe (SRADcur,1,mV200,5,0,10000,250,MultiSRAD,OffSRAD)
+		Delay (0,1,Sec)
+		VoltSe (PARcur,1,mV200,8,0,10000,250,MultiPAR,OffPAR)
+		'Call Data Tables and Store Data
+		CallTable Table2
+	NextScan
+
+  ' SlowScan
+  SlowSequence
+    Scan (30,Min,0,0)
+      If TimeIsBetween (0,1,7,Day) AND TimeIsBetween (960,1020,1440,Min) Then
+        ' 960 = 16 Uhr (sollte Local sein)
+        Subject = "Daytest: 0 to 1"
+        Delay (0,50,Sec)
+        Call ConnectMail ()
+      Else
+        Subject = "Daytest: Boot"
+      EndIf
+      If TimeIsBetween (1,2,7,Day) AND TimeIsBetween (960,1020,1440,Min) Then
+        ' 960 = 16 Uhr (sollte Local sein)
+        Subject = "Daytest: 1 to 2"
+        Delay (0,50,Sec)
+        Call ConnectMail ()
+      Else
+        Subject = "Daytest: Boot"
+      EndIf
+      Ofst = NetworkTimeProtocol ("0.europe.pool.ntp.org",3600,100)
+    NextScan
+  EndSequence
+EndProg

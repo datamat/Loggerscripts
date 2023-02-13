@@ -1,0 +1,184 @@
+;{CR10X-TD}
+;
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+
+; Station 2
+1:  Z=F x 10^n (P30)
+ 1: 2        F
+ 2: 00       n, Exponent of 10
+ 3: 1        Z Loc [ StatID         ]
+
+2:  Internal Temperature (P17)
+ 1: 4        Loc [ PTemp          ]
+
+3:  Batt Voltage (P10)
+ 1: 5        Loc [ Bt             ]
+
+; Lithium battery
+4:  Status Monitor (P130)
+ 1: 3        Lithium Battery (volts)
+ 2: 6        Loc [ LithiumBatt    ]
+
+; Wind speed (m/2)
+5:  Pulse (P3)
+ 1: 1        Reps
+ 2: 1        Pulse Channel 1
+ 3: 22       Switch Closure, Output Hz
+ 4: 2        Loc [ Wspeed         ]
+ 5: 1.25     Multiplier
+ 6: 0.0      Offset
+
+; Wind direction (degrees)
+6:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 1        Delay (0.01 sec units)
+ 6: 1000     mV Excitation
+ 7: 3        Loc [ Wdir           ]
+ 8: 0.36     Multiplier
+ 9: 0.0      Offset
+
+7:  Data Table (P84)^27593
+ 1: 0.0      Seconds into Interval
+ 2: 60       Seconds Interval
+ 3: 0.0      (0 = auto allocate, -x = redirect to inloc x)
+ 4: Main                      Table Name
+
+8:  Sample (P70)^13016
+ 1: 1        Reps
+ 2: 1        Loc [ StatID         ]
+
+9:  Wind Vector (P69)^97
+ 1: 1        Reps
+ 2: 0        Samples per Sub-Interval
+ 3: 0        S, theta(1), sigma(theta(1)) with polar sensor
+ 4: 2        Wind Speed/East Loc [ Wspeed         ]
+ 5: 3        Wind Direction/North Loc [ Wdir           ]
+
+10:  Totalize (P72)^27192
+ 1: 1        Reps
+ 2: 2        Loc [ Wspeed         ]
+
+11:  Maximum (P73)^21526
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 2        Loc [ Wspeed         ]
+
+12:  Average (P71)^17685
+ 1: 1        Reps
+ 2: 3        Loc [ Wdir           ]
+
+13:  Sample (P70)^1010
+ 1: 1        Reps
+ 2: 3        Loc [ Wdir           ]
+
+14:  Average (P71)^5742
+ 1: 1        Reps
+ 2: 4        Loc [ PTemp          ]
+
+15:  Minimum (P74)^6810
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 5        Loc [ Bt             ]
+
+16:  Minimum (P74)^19272
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 6        Loc [ LithiumBatt    ]
+
+*Table 2 Program
+  02: 0         Execution Interval (seconds)
+
+*Table 3 Subroutines
+
+End Program
+
+
+
+
+
+
+
+
+-Input Locations-
+1 StatID         1 1 1
+2 Wspeed         1 3 1
+3 Wdir           1 3 1
+4 PTemp          1 1 1
+5 Bt             1 1 1
+6 LithiumBatt    1 1 1
+7 ______________ 1 0 0
+8 ______________ 1 1 0
+9 ______________ 1 0 0
+10 ______________ 1 0 0
+11 ______________ 1 0 0
+12 ______________ 1 0 0
+13 ______________ 1 0 0
+14 ______________ 1 0 0
+15 ______________ 0 0 0
+16 ______________ 0 0 0
+17 ______________ 0 0 0
+18 ______________ 0 0 0
+19 ______________ 0 0 0
+20 ______________ 0 0 0
+21 ______________ 0 0 0
+22 ______________ 0 0 0
+23 ______________ 0 0 0
+24 ______________ 0 0 0
+25 ______________ 0 0 0
+26 ______________ 0 0 0
+27 ______________ 0 0 0
+28 ______________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X RS-232 Setting-
+-1
+-PakBus-
+1
+1
+0
+0
+0
+1
+0
+0
+0
+0
+1
+1
+0
+DR=0
+0
+0
+0
+0
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+-DLD File Labels-
+-1
+-Final Storage Labels-
+0,TMSTAMP,27593
+0,RECNBR
+1,StatID~1,13016
+2,Wspeed_MAX~2,21526
+3,PTemp_AVG~4,5742
+4,Bt_MIN~5,6810
+5,LithiumBatt_MIN~6,19272
+6,Wdir_AVG~3,17685
+7,{Wdir_CUR~3,1010
+8,Wspeed_S_WVT~2,97
+8,Wdir_D1_WVT~3
+8,Wdir_SD1_WVT~3
+9,Wspeed_TOT~2,27192

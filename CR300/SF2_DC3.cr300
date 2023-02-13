@@ -1,0 +1,197 @@
+'W/O:  CCSL022337
+'Customer:  test
+'Date: 22nd October 2020
+'Campbell Scientific Contact:  Greg Simpson
+'
+'This program is named HyShade123
+'AU contact: test
+'It collects signals from 6 SFS2 sapflow sensors mounted on a multiplexer and 2 Dendrometer monted on the datalogger
+'
+'Wiring for Cr300 Series to rail to Dendrometers
+' Dendrometer1
+'    2H: Rail Signal1 +         Color white (Wh)        
+'    2L: Rail Signal1 -         Color Brown (Bn)
+'    Vx2: Rail + 2500 mV        Color Green (Gn)
+'    G:  Rail - G               Color Yellow (Ye)
+'    Ground LOG: Rail Shield    Color metal blank
+'
+' Dendrometer2
+'    3H: Rail Signal2 +         Color white (Wh)        
+'    3L: Rail Signal2 -         Color Brown (Bn)
+'    Vx2: Rail + 2500 mV        Color Green (Gn)
+'    G:  Rail - G               Color Yellow (Ye)
+'    Ground LOG: Rail Shield    Color metal blank
+'
+'-Wiring For CR300 Series- to AM16/32 multiplexer
+'    1H: AM16/32 ODD H
+'    1L: AM16/32 ODD L
+'    SW12V: AM16/32 12V
+'    G: AM16/32 G
+'    C1: AM16/32 CLK
+'    C2: AM16/32 RES
+'
+'-Wiring For AM16/32 multiplexer to rail to sensor
+
+' SF2HE Sapflow Sensor 1
+'    1H: Rail Signal1 +          Color white (Wh)        
+'    1L: Rail Signal1 -          Color Brown (Bn)
+'    12V: Rail Heater + 12V      Color Green (Gn)
+'    G:  Rail Heater -   G       Color Yellow (Ye)
+'    Ground LOG: Rail Shield     Color metal blank
+'
+' SF2HE Sapflow Sensor 2
+'    2H: Rail Signal2 +          Color white (Wh)        
+'    2L: Rail Signal2 -          Color Brown (Bn)
+'    12V: Rail Heater + 12V      Color Green (Gn)
+'    G:  Rail Heater -   G       Color Yellow (Ye)
+'    Ground LOG: Rail Shield     Color metal blank
+'
+' SF2HE Sapflow Sensor 3
+'    3H: Rail Signal3 +          Color white (Wh)        
+'    3L: Rail Signal3 -          Color Brown (Bn)
+'    12V: Rail Heater + 12V      Color Green (Gn)
+'    G:  Rail Heater -   G       Color Yellow (Ye)
+'    Ground LOG: Rail Shield     Color metal blank
+'
+' SF2HE Sapflow Sensor 4
+'    4H: Rail Signal4 +          Color white (Wh)        
+'    4L: Rail Signal4 -          Color Brown (Bn)
+'    12V: Rail Heater + 12V      Color Green (Gn)
+'    G:  Rail Heater -   G       Color Yellow (Ye)
+'    Ground LOG: Rail Shield     Color metal blank
+'
+' SF2HE Sapflow Sensor 5
+'    5H: Rail Signal5 +          Color white (Wh)        
+'    5L: Rail Signal5 -          Color Brown (Bn)
+'    12V: Rail Heater + 12V      Color Green (Gn)
+'    G:  Rail Heater -   G       Color Yellow (Ye)
+'    Ground LOG: Rail Shield     Color metal blank
+'
+' SF2HE Sapflow Sensor 6
+'    6H: Rail Signal6 +          Color white (Wh)        
+'    6L: Rail Signal6 -          Color Brown (Bn)
+'    12V: Rail Heater + 12V      Color Green (Gn)
+'    G:  Rail Heater -   G       Color Yellow (Ye)
+'    Ground LOG: Rail Shield     Color metal blank
+
+
+'-Measurement Labels-
+'
+'Declare Constants
+Const SCAN_INTERVAL_Sap = 60 'Scan rate in secs.
+Const OUTPUT_INTERVAL_Sap = 10 'Data Table Sapflow output interval in minutes.  
+
+'Declare Variables and Units
+Public BattV
+Public PTemp_C
+'Array for Dendrometer
+Public Dendro_um_Arr(2)
+'Array for SapFlow
+Public LCount As Long
+Public SF2HE_uV_Arr(6)
+Public SF2HE_dT_Arr(6)
+'Individual Sapflow sensors
+Alias SF2HE_uV_Arr(1)=SF2HE_1_uV
+Alias SF2HE_uV_Arr(2)=SF2HE_2_uV
+Alias SF2HE_uV_Arr(3)=SF2HE_3_uV
+Alias SF2HE_uV_Arr(4)=SF2HE_4_uV
+Alias SF2HE_uV_Arr(5)=SF2HE_5_uV
+Alias SF2HE_uV_Arr(6)=SF2HE_6_uV
+Alias SF2HE_dT_Arr(1)=SF2HE_1_dT
+Alias SF2HE_dT_Arr(2)=SF2HE_2_dT
+Alias SF2HE_dT_Arr(3)=SF2HE_3_dT
+Alias SF2HE_dT_Arr(4)=SF2HE_4_dT
+Alias SF2HE_dT_Arr(5)=SF2HE_5_dT
+Alias SF2HE_dT_Arr(6)=SF2HE_6_dT
+Alias Dendro_um_Arr(1) = Dendro_1_um
+Alias Dendro_um_Arr(2) = Dendro_2_um
+
+Units BattV=Volts
+Units PTemp_C=Deg C
+Units SF2HE_1_uV= uV
+Units SF2HE_1_dT= Deg C
+Units SF2HE_2_uV= uV
+Units SF2HE_2_dT= Deg C
+Units SF2HE_3_uV= uV
+Units SF2HE_3_dT= Deg C
+Units SF2HE_4_uV= uV
+Units SF2HE_4_dT= Deg C
+Units SF2HE_5_uV= uV
+Units SF2HE_5_dT= Deg C
+Units SF2HE_6_uV= uV
+Units SF2HE_6_dT= Deg C
+Units Dendro_1_um= Microns
+Units Dendro_2_um= Microns
+
+'Define Data Tables
+DataTable(Table3,True,-1)
+  DataInterval(0,1440,Min,10)
+  Minimum(1,BattV,FP2,False,False)
+EndTable
+
+DataTable(Sapflow,True,-1)
+  DataInterval(0,OUTPUT_INTERVAL_Sap,Min,10)
+  Average(1,BattV,FP2,False)
+  Average(1,PTemp_C,FP2,False)
+  Average(1,SF2HE_1_uV,FP2,False)
+  Average(1,SF2HE_1_dT,FP2,False)
+  Average(1,SF2HE_2_uV,FP2,False)
+  Average(1,SF2HE_2_dT,FP2,False)
+  Average(1,SF2HE_3_uV,FP2,False)
+  Average(1,SF2HE_3_dT,FP2,False)
+  Average(1,SF2HE_4_uV,FP2,False)
+  Average(1,SF2HE_4_dT,FP2,False)
+  Average(1,SF2HE_5_uV,FP2,False)
+  Average(1,SF2HE_5_dT,FP2,False)
+  Average(1,SF2HE_6_uV,FP2,False)
+  Average(1,SF2HE_6_dT,FP2,False)
+EndTable
+
+DataTable(Dendrometer,True,-1)
+  DataInterval(0,OUTPUT_INTERVAL_Sap,Min,10)
+  Average(1,BattV,FP2,False)
+  Average(1,PTemp_C,FP2,False)
+  Average(1,Dendro_1_um,IEEE4,False)'Jinhen
+  Average(1,Dendro_2_um,IEEE4,False)'Jinhen
+EndTable
+
+'Main Program
+BeginProg
+
+  SW12 (1)  'SW12V Permanently on for AM16/32 power
+  
+  'Main Scan
+
+  Scan(SCAN_INTERVAL_Sap,Sec,1,0)
+
+    'Default CR300 Datalogger Battery Voltage measurement 'BattV'
+    Battery(BattV)
+    'Default CR300 Datalogger Processor Temperature measurement 'PTemp_C'
+    PanelTemp(PTemp_C,50)
+    'Turn AM16/32B Multiplexer on
+    PortSet(2,1)
+    Delay(0,150,mSec)
+    'Reset counter
+    LCount=1
+    'Begin measurement loop
+    SubScan(0,uSec,6) 'measures 6 sets
+      'Switch to next AM16/32B Multiplexer channel
+      PulsePort(1,10000)
+      'Make measurements
+       VoltDiff (SF2HE_uV_Arr(LCount),1,mv34,1,True ,0,60,1000,0)
+      'Convert to deg G
+       SF2HE_dT_Arr(LCount) = SF2HE_uV_Arr(LCount)/40
+      'Increment counter according to measurement mode
+      LCount=LCount+1
+    NextSubScan
+    'Turn AM16/32 Multiplexer off
+    PortSet(2,0)
+    'Measurement of Dendrometer
+    ExciteV (Vx2,2500,0)
+    VoltDiff(Dendro_um_Arr,2,mV2500,2,True,0,_50Hz,10.16,0)'Jinchen
+    'Call Sapflow Data Table and Store Dat
+    CallTable Sapflow
+    CallTable Dendrometer
+    CallTable Table3
+  NextScan
+EndProg

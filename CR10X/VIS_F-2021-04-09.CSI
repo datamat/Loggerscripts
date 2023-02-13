@@ -1,0 +1,2206 @@
+;{CR10X}
+;Programm Retrieved 9.4.2021 from VIS_F Peter Waldner
+;{CR10X}
+*Table 1 Program
+  01: 1.0000    Execution Interval (seconds)
+
+1:  Z=F x 10^n (P30)
+ 1: 34       F @@1
+ 2: 0        n, Exponent of 10
+ 3: 1        Z Loc [ _________ ]
+
+2:  Z=F x 10^n (P30)
+ 1: 1        F @@2
+ 2: 0        n, Exponent of 10
+ 3: 2        Z Loc [ _________ ]
+
+3:  Z=F x 10^n (P30)
+ 1: 0        F @@3
+ 2: 0        n, Exponent of 10
+ 3: 3        Z Loc [ _________ ]
+
+4:  Z=F x 10^n (P30)
+ 1: 0        F @@4
+ 2: 0        n, Exponent of 10
+ 3: 4        Z Loc [ _________ ]
+
+5:  Z=F x 10^n (P30)
+ 1: 4        F @@5
+ 2: 0        n, Exponent of 10
+ 3: 5        Z Loc [ _________ ]
+
+6:  Z=F x 10^n (P30)
+ 1: 0        F @@6
+ 2: 0        n, Exponent of 10
+ 3: 6        Z Loc [ _________ ]
+
+7:  Z=F x 10^n (P30)
+ 1: 0        F @@7
+ 2: 0        n, Exponent of 10
+ 3: 7        Z Loc [ _________ ]
+
+8:  Z=F x 10^n (P30)
+ 1: 0        F @@8
+ 2: 0        n, Exponent of 10
+ 3: 8        Z Loc [ _________ ]
+
+9:  If (X<=>F) (P89)
+ 1: 2        X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+10:  Z=F x 10^n (P30)
+ 1: 1        F @@10
+ 2: 0        n, Exponent of 10
+ 3: 10       Z Loc [ _________ ]
+
+11:  Z=F x 10^n (P30)
+ 1: 1        F @@11
+ 2: 0        n, Exponent of 10
+ 3: 11       Z Loc [ _________ ]
+
+12:  Z=F x 10^n (P30)
+ 1: 1        F @@12
+ 2: 0        n, Exponent of 10
+ 3: 12       Z Loc [ _________ ]
+
+13:  Z=F x 10^n (P30)
+ 1: 1        F @@13
+ 2: 0        n, Exponent of 10
+ 3: 13       Z Loc [ _________ ]
+
+14:  Z=F x 10^n (P30)
+ 1: 1        F @@14
+ 2: 0        n, Exponent of 10
+ 3: 14       Z Loc [ _________ ]
+
+15:  Z=F x 10^n (P30)
+ 1: 1        F @@15
+ 2: 0        n, Exponent of 10
+ 3: 15       Z Loc [ _________ ]
+
+16:  Z=F x 10^n (P30)
+ 1: 1        F @@16
+ 2: 0        n, Exponent of 10
+ 3: 16       Z Loc [ _________ ]
+
+17:  If (X<=>F) (P89)
+ 1: 14       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+18:  Pulse (P3)
+ 1: 1        Reps
+ 2: 1        Pulse Channel 1
+ 3: 22       Switch Closure, Output Hz
+ 4: 25       Loc [ _________ ]
+ 5: 1.25     Multiplier
+ 6: 0        Offset
+
+19:  Else (P94)
+
+20:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 25       Z Loc [ _________ ]
+
+21:  End (P95)
+
+22:  If (X<=>F) (P89)
+ 1: 15       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+23:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 4        SE Channel
+ 4: 2        Excite all reps w/Exchan 2
+ 5: 1        Delay (0.01 sec units)
+ 6: 1000     mV Excitation
+ 7: 26       Loc [ _________ ]
+ 8: .36      Multiplier
+ 9: 0        Offset
+
+24:  Else (P94)
+
+25:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 26       Z Loc [ _________ ]
+
+26:  End (P95)
+
+27:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+28:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 36       Loc [ _________ ]
+
+29:  Wind Vector (P69)^29544
+ 1: 1        Reps
+ 2: 0        Samples per Sub-Interval
+ 3: 0        S, theta(1), sigma(theta(1)) with polar sensor
+ 4: 25       Wind Speed/East Loc [ _________ ]
+ 5: 26       Wind Direction/North Loc [ _________ ]
+
+30:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 152      Loc [ _________ ]
+
+31:  Maximum (P73)^32711
+ 1: 1        Reps
+ 2: 0        Value Only
+ 3: 25       Loc [ _________ ]
+
+32:  Wind Vector (P69)^16295
+ 1: 1        Reps
+ 2: 0        Samples per Sub-Interval
+ 3: 1        S, theta(1) with polar sensor
+ 4: 25       Wind Speed/East Loc [ _________ ]
+ 5: 26       Wind Direction/North Loc [ _________ ]
+
+33:  End (P95)
+
+34:  If (X<=>F) (P89)
+ 1: 15       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+35:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 37       Z Loc [ _________ ]
+
+36:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 38       Z Loc [ _________ ]
+
+37:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 154      Z Loc [ _________ ]
+
+38:  End (P95)
+
+39:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+40:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 31       Loc [ _________ ]
+
+41:  Standard Deviation (P82)^22426
+ 1: 5        Reps
+ 2: 21       Sample Loc [ _________ ]
+
+42:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+43:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 30       Loc [ _________ ]
+
+44:  Standard Deviation (P82)^13054
+ 1: 1        Reps
+ 2: 20       Sample Loc [ _________ ]
+
+45:  If (X<=>F) (P89)
+ 1: 16       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+46:  Pulse (P3)
+ 1: 1        Reps
+ 2: 2        Pulse Channel 2
+ 3: 2        Switch Closure, All Counts
+ 4: 27       Loc [ _________ ]
+ 5: .2       Multiplier
+ 6: 0        Offset
+
+47:  Else (P94)
+
+48:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 27       Z Loc [ _________ ]
+
+49:  End (P95)
+
+50:  Z=X (P31)
+ 1: 27       X Loc [ _________ ]
+ 2: 78       Z Loc [ _________ ]
+
+51:  Z=X (P31)
+ 1: 20       X Loc [ _________ ]
+ 2: 93       Z Loc [ _________ ]
+
+52:  Z=X (P31)
+ 1: 30       X Loc [ _________ ]
+ 2: 95       Z Loc [ _________ ]
+
+53:  If (X<=>F) (P89)
+ 1: 2        X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+54:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 10       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+55:  Set Active Storage Area (P80)^22895
+ 1: 1        Final Storage Area 1
+ 2: 10       Array ID
+
+56:  Sample (P70)^9612
+ 1: 1        Reps
+ 2: 1        Loc [ _________ ]
+
+57:  Sample (P70)^6030
+ 1: 1        Reps
+ 2: 2        Loc [ _________ ]
+
+58:  Real Time (P77)^15326
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+59:  Average (P71)^29177
+ 1: 4        Reps
+ 2: 21       Loc [ _________ ]
+
+60:  Sample (P70)^27630
+ 1: 2        Reps
+ 2: 153      Loc [ _________ ]
+
+61:  Sample (P70)^593
+ 1: 5        Reps
+ 2: 31       Loc [ _________ ]
+
+62:  Sample (P70)^31960
+ 1: 1        Reps
+ 2: 38       Loc [ _________ ]
+
+63:  Sample (P70)^18654
+ 1: 1        Reps
+ 2: 152      Loc [ _________ ]
+
+64:  Average (P71)^25921
+ 1: 1        Reps
+ 2: 93       Loc [ _________ ]
+
+65:  Totalize (P72)^15769
+ 1: 1        Reps
+ 2: 78       Loc [ _________ ]
+
+66:  Sample (P70)^22643
+ 1: 1        Reps
+ 2: 95       Loc [ _________ ]
+
+67:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+68:  Set Active Storage Area (P80)^1597
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+69:  Sample (P70)^6585
+ 1: 1        Reps
+ 2: 1        Loc [ _________ ]
+
+70:  Sample (P70)^4193
+ 1: 1        Reps
+ 2: 2        Loc [ _________ ]
+
+71:  Real Time (P77)^606
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+72:  Average (P71)^4865
+ 1: 1        Reps
+ 2: 20       Loc [ _________ ]
+
+73:  Totalize (P72)^22533
+ 1: 1        Reps
+ 2: 27       Loc [ _________ ]
+
+74:  Sample (P70)^11934
+ 1: 1        Reps
+ 2: 30       Loc [ _________ ]
+
+75:  End (P95)
+
+76:  If (X<=>F) (P89)
+ 1: 3        X Loc [ _________ ]
+ 2: 1        =
+ 3: 2        F
+ 4: 30       Then Do
+
+77:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+78:  Set Active Storage Area (P80)^2885
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+79:  Sample (P70)^28073
+ 1: 1        Reps
+ 2: 1        Loc [ _________ ]
+
+80:  Sample (P70)^30009
+ 1: 1        Reps
+ 2: 3        Loc [ _________ ]
+
+81:  Real Time (P77)^14215
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+82:  Average (P71)^7907
+ 1: 10       Reps @@35
+ 2: 50       Loc [ _________ ]
+
+83:  Average (P71)^429
+ 1: 4        Reps @@36
+ 2: 60       Loc [ _________ ]
+
+84:  End (P95)
+
+85:  If (X<=>F) (P89)
+ 1: 4        X Loc [ _________ ]
+ 2: 1        =
+ 3: 3        F
+ 4: 30       Then Do
+
+86:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+87:  Set Active Storage Area (P80)^6592
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+88:  Sample (P70)^19426
+ 1: 1        Reps
+ 2: 1        Loc [ _________ ]
+
+89:  Sample (P70)^2700
+ 1: 1        Reps
+ 2: 4        Loc [ _________ ]
+
+90:  Real Time (P77)^12075
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+91:  Average (P71)^6524
+ 1: 2        Reps @@51
+ 2: 84       Loc [ _________ ]
+
+92:  Average (P71)^998
+ 1: 2        Reps @@52
+ 2: 82       Loc [ _________ ]
+
+93:  End (P95)
+
+94:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 240      Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+95:  Set Active Storage Area (P80)^7991
+ 1: 2        Final Storage Area 2
+ 2: 240      Array ID
+
+96:  Sample (P70)^4928
+ 1: 1        Reps
+ 2: 1        Loc [ _________ ]
+
+97:  Sample (P70)^29960
+ 1: 1        Reps
+ 2: 5        Loc [ _________ ]
+
+98:  Real Time (P77)^12891
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+99:  Average (P71)^18627
+ 1: 2        Reps
+ 2: 90       Loc [ _________ ]
+
+100:  Average (P71)^6126
+ 1: 1        Reps
+ 2: 149      Loc [ _________ ]
+
+101:  If (X<=>F) (P89)
+ 1: 6        X Loc [ _________ ]
+ 2: 1        =
+ 3: 5        F
+ 4: 30       Then Do
+
+102:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+103:  Set Active Storage Area (P80)^16919
+ 1: 1        Final Storage Area 1
+ 2: 60       Array ID
+
+104:  Sample (P70)^5642
+ 1: 1        Reps
+ 2: 1        Loc [ _________ ]
+
+105:  Sample (P70)^28442
+ 1: 1        Reps
+ 2: 6        Loc [ _________ ]
+
+106:  Real Time (P77)^25122
+ 1: 1220     Year,Day,Hour/Minute (midnight = 2400)
+
+107:  Average (P71)^22764
+ 1: 1        Reps
+ 2: 110      Loc [ _________ ]
+
+108:  Average (P71)^21599
+ 1: 1        Reps
+ 2: 111      Loc [ _________ ]
+
+109:  Average (P71)^6026
+ 1: 1        Reps
+ 2: 112      Loc [ _________ ]
+
+110:  Average (P71)^1736
+ 1: 1        Reps
+ 2: 113      Loc [ _________ ]
+
+111:  Average (P71)^17659
+ 1: 2        Reps @@69
+ 2: 114      Loc [ _________ ]
+
+112:  Average (P71)^15971
+ 1: 2        Reps
+ 2: 118      Loc [ _________ ]
+
+113:  End (P95)
+
+114:  Do (P86)
+ 1: 7        Call Subroutine 7
+
+115:  Do (P86)
+ 1: 8        Call Subroutine 8
+
+116:  If time is (P92)
+ 1: 1290     Minutes (Seconds --) into a
+ 2: 1440     Interval (same units as above)
+ 3: 30       Then Do
+
+117:  If (X<=>F) (P89)
+ 1: 90       X Loc [ _________ ]
+ 2: 3        >=
+ 3: 11.5     F @@98
+ 4: 30       Then Do
+
+118:  If (X<=>F) (P89)
+ 1: 90       X Loc [ _________ ]
+ 2: 4        <
+ 3: 12       F @@99
+ 4: 9        Call Subroutine 9
+
+119:  End (P95)
+
+120:  End (P95)
+
+*Table 2 Program
+  01: 10.0000   Execution Interval (seconds)
+
+1:  If (X<=>F) (P89)
+ 1: 10       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+2:  Do (P86)
+ 1: 46       Set Port 6 High
+
+3:  Excitation with Delay (P22)
+ 1: 3        Ex Channel
+ 2: 0        Delay W/Ex (0.01 sec units)
+ 3: 10       Delay After Ex (0.01 sec units)
+ 4: 0        mV Excitation
+
+4:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 2        SE Channel
+ 4: 20       Loc [ _________ ]
+ 5: .1       Multiplier
+ 6: 0        Offset
+
+5:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 3        SE Channel
+ 4: 21       Loc [ _________ ]
+ 5: .1       Multiplier
+ 6: -40      Offset
+
+6:  Do (P86)
+ 1: 56       Set Port 6 Low
+
+7:  Else (P94)
+
+8:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 20       Z Loc [ _________ ]
+
+9:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 21       Z Loc [ _________ ]
+
+10:  End (P95)
+
+11:  If (X<=>F) (P89)
+ 1: 11       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+12:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 3        25 mV Slow Range
+ 3: 7        SE Channel
+ 4: 22       Loc [ _________ ]
+ 5: 100      Multiplier
+ 6: 0        Offset
+
+13:  Else (P94)
+
+14:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 22       Z Loc [ _________ ]
+
+15:  End (P95)
+
+16:  If (X<=>F) (P89)
+ 1: 12       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+17:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 3        25 mV Slow Range
+ 3: 8        SE Channel
+ 4: 23       Loc [ _________ ]
+ 5: 100      Multiplier
+ 6: 0        Offset
+
+18:  Else (P94)
+
+19:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 23       Z Loc [ _________ ]
+
+20:  End (P95)
+
+21:  If (X<=>F) (P89)
+ 1: 13       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+22:  Do (P86)
+ 1: 47       Set Port 7 High
+
+23:  Excitation with Delay (P22)
+ 1: 3        Ex Channel
+ 2: 0        Delay W/Ex (0.01 sec units)
+ 3: 10       Delay After Ex (0.01 sec units)
+ 4: 0        mV Excitation
+
+24:  Volt (Diff) (P2)
+ 1: 1        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 3        DIFF Channel
+ 4: 24       Loc [ _________ ]
+ 5: 9.407    Multiplier @@9
+ 6: 0        Offset @@19
+
+25:  Do (P86)
+ 1: 57       Set Port 7 Low
+
+26:  Else (P94)
+
+27:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 24       Z Loc [ _________ ]
+
+28:  End (P95)
+
+29:  If (X<=>F) (P89)
+ 1: 3        X Loc [ _________ ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+30:  Z=F x 10^n (P30)
+ 1: 1        F @@70
+ 2: 0        n, Exponent of 10
+ 3: 40       Z Loc [ _________ ]
+
+31:  Z=F x 10^n (P30)
+ 1: 1        F @@71
+ 2: 0        n, Exponent of 10
+ 3: 42       Z Loc [ _________ ]
+
+32:  Z=F x 10^n (P30)
+ 1: 1        F @@72
+ 2: 0        n, Exponent of 10
+ 3: 43       Z Loc [ _________ ]
+
+33:  Z=F x 10^n (P30)
+ 1: 1        F @@73
+ 2: 0        n, Exponent of 10
+ 3: 44       Z Loc [ _________ ]
+
+34:  Z=F x 10^n (P30)
+ 1: 1        F @@74
+ 2: 0        n, Exponent of 10
+ 3: 45       Z Loc [ _________ ]
+
+35:  Z=F x 10^n (P30)
+ 1: 1        F @@75
+ 2: 0        n, Exponent of 10
+ 3: 46       Z Loc [ _________ ]
+
+36:  Z=F x 10^n (P30)
+ 1: 1        F @@76
+ 2: 0        n, Exponent of 10
+ 3: 47       Z Loc [ _________ ]
+
+37:  Z=F x 10^n (P30)
+ 1: 1        F @@77
+ 2: 0        n, Exponent of 10
+ 3: 48       Z Loc [ _________ ]
+
+38:  Z=F x 10^n (P30)
+ 1: 1        F @@78
+ 2: 0        n, Exponent of 10
+ 3: 49       Z Loc [ _________ ]
+
+39:  Z=F x 10^n (P30)
+ 1: 1        F @@79
+ 2: 0        n, Exponent of 10
+ 3: 39       Z Loc [ _________ ]
+
+40:  Z=F x 10^n (P30)
+ 1: 1        F @@94
+ 2: 0        n, Exponent of 10
+ 3: 41       Z Loc [ _________ ]
+
+41:  Z=F x 10^n (P30)
+ 1: 1        F @@95
+ 2: 0        n, Exponent of 10
+ 3: 64       Z Loc [ _________ ]
+
+42:  Z=F x 10^n (P30)
+ 1: 1        F @@96
+ 2: 0        n, Exponent of 10
+ 3: 65       Z Loc [ _________ ]
+
+43:  Z=F x 10^n (P30)
+ 1: 1        F @@97
+ 2: 0        n, Exponent of 10
+ 3: 66       Z Loc [ _________ ]
+
+44:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+45:  Do (P86)
+ 1: 53       Set Port 3 Low
+
+46:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (0.01 sec units)
+ 3: 100      Delay After Ex (0.01 sec units)
+ 4: 0        mV Excitation
+
+47:  Do (P86)
+ 1: 41       Set Port 1 High
+
+48:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 6        Loop Count
+
+49:  Do (P86)
+ 1: 72       Pulse Port 2
+
+50:  End (P95)
+
+51:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 5        Loop Count
+
+52:  Do (P86)
+ 1: 72       Pulse Port 2
+
+53:  Step Loop Index (P90)
+ 1: 2        Step
+
+54:  Volt (Diff) (P2)
+ 1: 2        Reps
+ 2: 4        250 mV Slow Range
+ 3: 5        DIFF Channel
+ 4: 50    -- Loc [ _________ ]
+ 5: 1        Multiplier
+ 6: 0        Offset
+
+55:  End (P95)
+
+56:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+57:  Do (P86)
+ 1: 43       Set Port 3 High
+
+58:  Do (P86)
+ 1: 41       Set Port 1 High
+
+59:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 6        Loop Count
+
+60:  Do (P86)
+ 1: 72       Pulse Port 2
+
+61:  End (P95)
+
+62:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 1        Loop Count
+
+63:  Do (P86)
+ 1: 72       Pulse Port 2
+
+64:  Step Loop Index (P90)
+ 1: 4        Step
+
+65:  Excite-Delay (SE) (P4)
+ 1: 4        Reps
+ 2: 5        2500 mV Slow Range
+ 3: 9        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 15       Delay (0.01 sec units)
+ 6: 2500     mV Excitation
+ 7: 60    -- Loc [ _________ ]
+ 8: 1        Multiplier
+ 9: 0        Offset
+
+66:  End (P95)
+
+67:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+68:  If (X<=>F) (P89)
+ 1: 40       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+69:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 50       Z Loc [ _________ ]
+
+70:  End (P95)
+
+71:  If (X<=>F) (P89)
+ 1: 42       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+72:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 51       Z Loc [ _________ ]
+
+73:  End (P95)
+
+74:  If (X<=>F) (P89)
+ 1: 43       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+75:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 52       Z Loc [ _________ ]
+
+76:  End (P95)
+
+77:  If (X<=>F) (P89)
+ 1: 44       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+78:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 53       Z Loc [ _________ ]
+
+79:  End (P95)
+
+80:  If (X<=>F) (P89)
+ 1: 45       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+81:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 54       Z Loc [ _________ ]
+
+82:  End (P95)
+
+83:  If (X<=>F) (P89)
+ 1: 46       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+84:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 55       Z Loc [ _________ ]
+
+85:  End (P95)
+
+86:  If (X<=>F) (P89)
+ 1: 47       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+87:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 56       Z Loc [ _________ ]
+
+88:  End (P95)
+
+89:  If (X<=>F) (P89)
+ 1: 48       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+90:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 57       Z Loc [ _________ ]
+
+91:  End (P95)
+
+92:  If (X<=>F) (P89)
+ 1: 49       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+93:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 58       Z Loc [ _________ ]
+
+94:  End (P95)
+
+95:  If (X<=>F) (P89)
+ 1: 39       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+96:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 59       Z Loc [ _________ ]
+
+97:  End (P95)
+
+98:  If (X<=>F) (P89)
+ 1: 41       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+99:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 60       Z Loc [ _________ ]
+
+100:  End (P95)
+
+101:  If (X<=>F) (P89)
+ 1: 64       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+102:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 61       Z Loc [ _________ ]
+
+103:  End (P95)
+
+104:  If (X<=>F) (P89)
+ 1: 65       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+105:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 62       Z Loc [ _________ ]
+
+106:  End (P95)
+
+107:  If (X<=>F) (P89)
+ 1: 66       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+108:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 63       Z Loc [ _________ ]
+
+109:  End (P95)
+
+110:  End (P95)
+
+111:  End (P95)
+
+112:  If (X<=>F) (P89)
+ 1: 4        X Loc [ _________ ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+113:  Z=F x 10^n (P30)
+ 1: 1        F @@39
+ 2: 0        n, Exponent of 10
+ 3: 70       Z Loc [ _________ ]
+
+114:  Z=F x 10^n (P30)
+ 1: 1        F @@40
+ 2: 0        n, Exponent of 10
+ 3: 71       Z Loc [ _________ ]
+
+115:  Z=F x 10^n (P30)
+ 1: 1        F @@41
+ 2: 0        n, Exponent of 10
+ 3: 72       Z Loc [ _________ ]
+
+116:  Z=F x 10^n (P30)
+ 1: 1        F @@42
+ 2: 0        n, Exponent of 10
+ 3: 73       Z Loc [ _________ ]
+
+117:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+118:  Do (P86)
+ 1: 48       Set Port 8 High
+
+119:  Do (P86)
+ 1: 43       Set Port 3 High
+
+120:  Do (P86)
+ 1: 41       Set Port 1 High
+
+121:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 4        Loop Count
+
+122:  Do (P86)
+ 1: 72       Pulse Port 2
+
+123:  End (P95)
+
+124:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 1        Loop Count
+
+125:  Do (P86)
+ 1: 72       Pulse Port 2
+
+126:  Step Loop Index (P90)
+ 1: 2        Step
+
+127:  Period Average (SE) (P27)
+ 1: 2        Reps
+ 2: 4        200 kHz Max Freq @ 2 V Peak to Peak, Period Output
+ 3: 9        SE Channel
+ 4: 10       No. of Cycles
+ 5: 5        Timeout (0.01 sec units)
+ 6: 80    -- Loc [ _________ ]
+ 7: .001     Multiplier
+ 8: 0        Offset
+
+128:  End (P95)
+
+129:  Do (P86)
+ 1: 53       Set Port 3 Low
+
+130:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+131:  Do (P86)
+ 1: 58       Set Port 8 Low
+
+132:  End (P95)
+
+133:  End (P95)
+
+134:  If (X<=>F) (P89)
+ 1: 71       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+135:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above) @@46
+ 3: 30       Then Do
+
+136:  Do (P86)
+ 1: 41       Set Port 1 High
+
+137:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 5        Loop Count
+
+138:  Do (P86)
+ 1: 72       Pulse Port 2
+
+139:  End (P95)
+
+140:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 1        Loop Count
+
+141:  Do (P86)
+ 1: 72       Pulse Port 2
+
+142:  Step Loop Index (P90)
+ 1: 2        Step
+
+143:  Temp (107) (P11)
+ 1: 2        Reps
+ 2: 9        SE Channel
+ 3: 1        Excite all reps w/E1
+ 4: 82    -- Loc [ _________ ]
+ 5: 1        Multiplier
+ 6: 0        Offset
+
+144:  End (P95)
+
+145:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+146:  End (P95)
+
+147:  If (X<=>F) (P89)
+ 1: 70       X Loc [ _________ ]
+ 2: 1        =
+ 3: 1        F
+ 4: 30       Then Do
+
+148:  Polynomial (P55)
+ 1: 2        Reps
+ 2: 80       X Loc [ _________ ]
+ 3: 84       F(X) Loc [ _________ ]
+ 4: -220.14  C0
+ 5: 365.89   C1
+ 6: -114.96  C2
+ 7: 0        C3
+ 8: 0        C4
+ 9: 0        C5
+
+149:  End (P95)
+
+150:  If (X<=>F) (P89)
+ 1: 70       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+151:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 84       Z Loc [ _________ ]
+
+152:  End (P95)
+
+153:  If (X<=>F) (P89)
+ 1: 71       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+154:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 82       Z Loc [ _________ ]
+
+155:  End (P95)
+
+156:  If (X<=>F) (P89)
+ 1: 72       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+157:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 85       Z Loc [ _________ ]
+
+158:  End (P95)
+
+159:  If (X<=>F) (P89)
+ 1: 73       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+160:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 83       Z Loc [ _________ ]
+
+161:  End (P95)
+
+162:  End (P95)
+
+163:  If (X<=>F) (P89)
+ 1: 5        X Loc [ _________ ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+164:  Batt Voltage (P10)
+ 1: 90       Loc [ _________ ]
+
+165:  Internal Temperature (P17)
+ 1: 91       Loc [ _________ ]
+
+166:  Status Monitor (P130)
+ 1: 3        Lithium Battery (volts)
+ 2: 149      Loc [ _________ ]
+
+167:  End (P95)
+
+168:  If (X<=>F) (P89)
+ 1: 6        X Loc [ _________ ]
+ 2: 2        <>
+ 3: 0        F
+ 4: 30       Then Do
+
+169:  Z=F x 10^n (P30)
+ 1: 1        F @@57
+ 2: 0        n, Exponent of 10
+ 3: 97       Z Loc [ _________ ]
+
+170:  Z=F x 10^n (P30)
+ 1: 1        F @@58
+ 2: 0        n, Exponent of 10
+ 3: 98       Z Loc [ _________ ]
+
+171:  Z=F x 10^n (P30)
+ 1: 1        F @@59
+ 2: 0        n, Exponent of 10
+ 3: 99       Z Loc [ _________ ]
+
+172:  Z=F x 10^n (P30)
+ 1: 1        F @@60
+ 2: 0        n, Exponent of 10
+ 3: 100      Z Loc [ _________ ]
+
+173:  Z=F x 10^n (P30)
+ 1: 1        F @@80
+ 2: 0        n, Exponent of 10
+ 3: 101      Z Loc [ _________ ]
+
+174:  Z=F x 10^n (P30)
+ 1: 1        F @@81
+ 2: 0        n, Exponent of 10
+ 3: 102      Z Loc [ _________ ]
+
+175:  Z=F x 10^n (P30)
+ 1: 1        F @@82
+ 2: 0        n, Exponent of 10
+ 3: 103      Z Loc [ _________ ]
+
+176:  Z=F x 10^n (P30)
+ 1: 1        F @@83
+ 2: 0        n, Exponent of 10
+ 3: 104      Z Loc [ _________ ]
+
+177:  Z=F x 10^n (P30)
+ 1: 1        F @@84
+ 2: 0        n, Exponent of 10
+ 3: 105      Z Loc [ _________ ]
+
+178:  Z=F x 10^n (P30)
+ 1: 1        F @@85
+ 2: 0        n, Exponent of 10
+ 3: 106      Z Loc [ _________ ]
+
+179:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 60       Interval (same units as above)
+ 3: 30       Then Do
+
+180:  Do (P86)
+ 1: 41       Set Port 1 High
+
+181:  Do (P86)
+ 1: 43       Set Port 3 High
+
+182:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (0.01 sec units)
+ 3: 300      Delay After Ex (0.01 sec units)
+ 4: 0        mV Excitation
+
+183:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 1        Loop Count @@63
+
+184:  Do (P86)
+ 1: 72       Pulse Port 2
+
+185:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 9        SE Channel
+ 4: 110      Loc [ _________ ]
+ 5: .1       Multiplier
+ 6: -40      Offset
+
+186:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 10       SE Channel
+ 4: 111      Loc [ _________ ]
+ 5: .1       Multiplier
+ 6: 0        Offset
+
+187:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 11       SE Channel
+ 4: 112      Loc [ _________ ]
+ 5: .1       Multiplier
+ 6: -40      Offset
+
+188:  Volt (SE) (P1)
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 12       SE Channel
+ 4: 113      Loc [ _________ ]
+ 5: .1       Multiplier
+ 6: 0        Offset
+
+189:  End (P95)
+
+190:  Do (P86)
+ 1: 53       Set Port 3 Low
+
+191:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+192:  If (X<=>F) (P89)
+ 1: 97       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+193:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 110      Z Loc [ _________ ]
+
+194:  End (P95)
+
+195:  If (X<=>F) (P89)
+ 1: 99       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+196:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 111      Z Loc [ _________ ]
+
+197:  End (P95)
+
+198:  If (X<=>F) (P89)
+ 1: 98       X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+199:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 112      Z Loc [ _________ ]
+
+200:  End (P95)
+
+201:  If (X<=>F) (P89)
+ 1: 100      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+202:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 113      Z Loc [ _________ ]
+
+203:  End (P95)
+
+204:  Do (P86)
+ 1: 41       Set Port 1 High
+
+205:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 1        Loop Count
+
+206:  Do (P86)
+ 1: 72       Pulse Port 2
+
+207:  End (P95)
+
+208:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 2        Loop Count
+
+209:  Do (P86)
+ 1: 72       Pulse Port 2
+
+210:  Step Loop Index (P90)
+ 1: 1        Step
+
+211:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (0.01 sec units)
+ 3: 6        Delay After Ex (0.01 sec units)
+ 4: 0        mV Excitation
+
+212:  Temp (107) (P11)
+ 1: 1        Reps
+ 2: 9        SE Channel
+ 3: 33       Excite all reps w/E3, 50Hz, 10ms delay
+ 4: 114   -- Loc [ _________ ]
+ 5: 1        Multiplier
+ 6: 0        Offset
+
+213:  Temp (107) (P11)
+ 1: 1        Reps
+ 2: 10       SE Channel
+ 3: 33       Excite all reps w/E3, 50Hz, 10ms delay
+ 4: 118   -- Loc [ _________ ]
+ 5: 1        Multiplier
+ 6: 0        Offset
+
+214:  End (P95)
+
+215:  Do (P86)
+ 1: 51       Set Port 1 Low
+
+216:  If (X<=>F) (P89)
+ 1: 101      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+217:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 114      Z Loc [ _________ ]
+
+218:  End (P95)
+
+219:  If (X<=>F) (P89)
+ 1: 102      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+220:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 115      Z Loc [ _________ ]
+
+221:  End (P95)
+
+222:  If (X<=>F) (P89)
+ 1: 103      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+223:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 116      Z Loc [ _________ ]
+
+224:  End (P95)
+
+225:  If (X<=>F) (P89)
+ 1: 104      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+226:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 117      Z Loc [ _________ ]
+
+227:  End (P95)
+
+228:  If (X<=>F) (P89)
+ 1: 105      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+229:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 118      Z Loc [ _________ ]
+
+230:  End (P95)
+
+231:  If (X<=>F) (P89)
+ 1: 106      X Loc [ _________ ]
+ 2: 1        =
+ 3: 0        F
+ 4: 30       Then Do
+
+232:  Z=F x 10^n (P30)
+ 1: -999     F
+ 2: 0        n, Exponent of 10
+ 3: 119      Z Loc [ _________ ]
+
+233:  End (P95)
+
+234:  End (P95)
+
+235:  End (P95)
+
+*Table 3 Subroutines
+
+1:  Beginning of Subroutine (P85)
+ 1: 7        Subroutine 7
+
+2:  Z=X*F (P37)
+ 1: 91       X Loc [ _________ ]
+ 2: -.03     F
+ 3: 128      Z Loc [ _________ ]
+
+3:  If Flag/Port (P91)
+ 1: 44       Do if Port 4 is High
+ 2: 30       Then Do
+
+4:  Z=X+F (P34)
+ 1: 128      X Loc [ _________ ]
+ 2: -.6      F
+ 3: 128      Z Loc [ _________ ]
+
+5:  End (P95)
+
+6:  Z=X+F (P34)
+ 1: 128      X Loc [ _________ ]
+ 2: 14.2     F
+ 3: 129      Z Loc [ _________ ]
+
+7:  If (X<=>F) (P89)
+ 1: 129      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 14       F
+ 4: 30       Then Do
+
+8:  Z=F x 10^n (P30)
+ 1: 14       F
+ 2: 0        n, Exponent of 10
+ 3: 129      Z Loc [ _________ ]
+
+9:  End (P95)
+
+10:  If Flag/Port (P91)
+ 1: 11       Do if Flag 1 is High
+ 2: 30       Then Do
+
+11:  Do (P86)
+ 1: 44       Set Port 4 High
+
+12:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 240      Interval (same units as above)
+ 3: 21       Set Flag 1 Low
+
+13:  Else (P94)
+
+14:  If (X<=>Y) (P88)
+ 1: 90       X Loc [ _________ ]
+ 2: 3        >=
+ 3: 129      Y Loc [ _________ ]
+ 4: 30       Then Do
+
+15:  Do (P86)
+ 1: 44       Set Port 4 High
+
+16:  Else (P94)
+
+17:  Do (P86)
+ 1: 54       Set Port 4 Low
+
+18:  End (P95)
+
+19:  End (P95)
+
+20:  End (P95)
+
+21:  Beginning of Subroutine (P85)
+ 1: 8        Subroutine 8
+
+22:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 1        Interval (same units as above)
+ 3: 10       Set Output Flag High (Flag 0)
+
+23:  Set Active Storage Area (P80)
+ 1: 3        Input Storage Area
+ 2: 138      Loc [ _________ ]
+
+24:  Real Time (P77)^10225
+ 1: 20       Hour/Minute (midnight = 2400)
+
+25:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 300      F @@92
+ 4: 12       Set Flag 2 High
+
+26:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 315      F @@93
+ 4: 22       Set Flag 2 Low
+
+27:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 845      F @@90
+ 4: 12       Set Flag 2 High
+
+28:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 900      F @@91
+ 4: 22       Set Flag 2 Low
+
+29:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 1000     F
+ 4: 30       Then Do
+
+30:  If (X<=>F) (P89)
+ 1: 90       X Loc [ _________ ]
+ 2: 3        >=
+ 3: 12.8     F
+ 4: 12       Set Flag 2 High
+
+31:  End (P95)
+
+32:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 1330     F
+ 4: 30       Then Do
+
+33:  If (X<=>F) (P89)
+ 1: 90       X Loc [ _________ ]
+ 2: 3        >=
+ 3: 12.6     F
+ 4: 12       Set Flag 2 High
+
+34:  End (P95)
+
+35:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 1430     F
+ 4: 22       Set Flag 2 Low
+
+36:  If (X<=>F) (P89)
+ 1: 90       X Loc [ _________ ]
+ 2: 4        <
+ 3: 12       F
+ 4: 30       Then Do
+
+37:  If (X<=>F) (P89)
+ 1: 90       X Loc [ _________ ]
+ 2: 3        >=
+ 3: 11.7     F
+ 4: 30       Then Do
+
+38:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 1        =
+ 3: 2129     F
+ 4: 30       Then Do
+
+39:  Do (P86)
+ 1: 12       Set Flag 2 High
+
+40:  Do (P86)
+ 1: 26       Set Flag 6 Low
+
+41:  End (P95)
+
+42:  If (X<=>F) (P89)
+ 1: 138      X Loc [ _________ ]
+ 2: 1        =
+ 3: 2140     F
+ 4: 30       Then Do
+
+43:  Do (P86)
+ 1: 16       Set Flag 6 High
+
+44:  Do (P86)
+ 1: 22       Set Flag 2 Low
+
+45:  End (P95)
+
+46:  End (P95)
+
+47:  End (P95)
+
+48:  If Flag/Port (P91)
+ 1: 12       Do if Flag 2 is High
+ 2: 45       Set Port 5 High
+
+49:  If Flag/Port (P91)
+ 1: 22       Do if Flag 2 is Low
+ 2: 55       Set Port 5 Low
+
+50:  If Flag/Port (P91)
+ 1: 22       Do if Flag 2 is Low
+ 2: 30       Then Do
+
+51:  If Flag/Port (P91)
+ 1: 53       Do if Port 3 is Low
+ 2: 30       Then Do
+
+52:  Do (P86)
+ 1: 27       Set Flag 7 Low
+
+53:  Do (P86)
+ 1: 28       Set Flag 8 Low
+
+54:  If Flag/Port (P91)
+ 1: 28       Do if Flag 8 is Low
+ 2: 30       Then Do
+
+55:  Z=F x 10^n (P30)
+ 1: 0        F
+ 2: 0        n, Exponent of 10
+ 3: 150      Z Loc [ _________ ]
+
+56:  End (P95)
+
+57:  End (P95)
+
+58:  If Flag/Port (P91)
+ 1: 43       Do if Port 3 is High
+ 2: 17       Set Flag 7 High
+
+59:  If Flag/Port (P91)
+ 1: 17       Do if Flag 7 is High
+ 2: 30       Then Do
+
+60:  If Flag/Port (P91)
+ 1: 28       Do if Flag 8 is Low
+ 2: 30       Then Do
+
+61:  Z=F x 10^n (P30)
+ 1: -30      F
+ 2: 0        n, Exponent of 10
+ 3: 150      Z Loc [ _________ ]
+
+62:  Do (P86)
+ 1: 18       Set Flag 8 High
+
+63:  End (P95)
+
+64:  If time is (P92)
+ 1: 0        Minutes (Seconds --) into a
+ 2: 1        Interval (same units as above)
+ 3: 30       Then Do
+
+65:  Z=Z+1 (P32)
+ 1: 150      Z Loc [ _________ ]
+
+66:  End (P95)
+
+67:  If (X<=>F) (P89)
+ 1: 150      X Loc [ _________ ]
+ 2: 3        >=
+ 3: -60      F
+ 4: 45       Set Port 5 High
+
+68:  If (X<=>F) (P89)
+ 1: 150      X Loc [ _________ ]
+ 2: 3        >=
+ 3: 0        F
+ 4: 55       Set Port 5 Low
+
+69:  End (P95)
+
+70:  End (P95)
+
+71:  End (P95)
+
+72:  Beginning of Subroutine (P85)
+ 1: 9        Subroutine 9
+
+73:  Initiate Telecommunications (P97)
+ 1: 72       Generic Modem/9600 Baud
+ 2: 6        Disabled when User Flag 6 is High
+ 3: 20       Seconds Call Time Limit
+ 4: 60       Seconds Before Fast Attempts
+ 5: 2        Fast Attempts
+ 6: 0        Minutes Before Slow Attempts
+ 7: 148      Failures Loc [ _________ ]
+ 8: 0        Call-Back ID
+
+74:  Extended Parameters 4 Digit (P68)
+ 1: 87       Option
+ 2: 10       Option
+ 3: 69       Option
+ 4: 10       Option
+ 5: 65       Option
+ 6: 84       Option
+ 7: 43       Option
+ 8: 67       Option
+
+75:  Extended Parameters 4 Digit (P68)
+ 1: 77       Option
+ 2: 71       Option
+ 3: 70       Option
+ 4: 61       Option
+ 5: 49       Option
+ 6: 13       Option
+ 7: 87       Option
+ 8: 20       Option
+
+76:  Extended Parameters 4 Digit (P68)
+ 1: 87       Option
+ 2: 10       Option
+ 3: 69       Option
+ 4: 23       Option
+ 5: 65       Option
+ 6: 84       Option
+ 7: 43       Option
+ 8: 67       Option
+
+77:  Extended Parameters 4 Digit (P68)
+ 1: 77       Option
+ 2: 71       Option
+ 3: 83       Option
+ 4: 61       Option
+ 5: 34       Option
+ 6: 43       Option
+ 7: 52       Option
+ 8: 49       Option
+
+78:  Extended Parameters 4 Digit (P68)
+ 1: 55       Option
+ 2: 57       Option
+ 3: 50       Option
+ 4: 48       Option
+ 5: 56       Option
+ 6: 51       Option
+ 7: 54       Option
+ 8: 50       Option
+
+79:  Extended Parameters 4 Digit (P68)
+ 1: 55       Option
+ 2: 34       Option
+ 3: 13       Option
+ 4: 82       Option
+ 5: 3        Option
+ 6: 10       Option
+ 7: 62       Option
+ 8: 32       Option
+
+80:  Extended Parameters 4 Digit (P68)
+ 1: 69       Option
+ 2: 17       Option
+ 3: 66       Option
+ 4: 97       Option
+ 5: 116      Option
+ 6: 116      Option
+ 7: 101      Option
+ 8: 114      Option
+
+81:  Extended Parameters 4 Digit (P68)
+ 1: 105      Option
+ 2: 101      Option
+ 3: 32       Option
+ 4: 76       Option
+ 5: 87       Option
+ 6: 70       Option
+ 7: 51       Option
+ 8: 52       Option
+
+82:  Extended Parameters 4 Digit (P68)
+ 1: 32       Option
+ 2: 61       Option
+ 3: 32       Option
+ 4: 73       Option
+ 5: 90       Option
+ 6: 69       Option
+ 7: 2        Option
+ 8: 86       Option
+
+83:  Extended Parameters 4 Digit (P68)
+ 1: 26       Option
+ 2: 68       Option
+ 3: 100      Option
+ 4: 0        Option
+ 5: 0        Option
+ 6: 0        Option
+ 7: 0        Option
+ 8: 0        Option
+
+84:  End (P95)
+
+End Program
+
+-Input Locations-
+1 _________ 1 6 1
+2 _________ 1 4 1
+3 _________ 1 3 1
+4 _________ 1 3 1
+5 _________ 1 2 1
+6 _________ 1 3 1
+7 _________ 1 0 1
+8 _________ 1 0 1
+9 _________ 0 0 0
+10 _________ 1 1 1
+11 _________ 1 1 1
+12 _________ 1 1 1
+13 _________ 1 1 1
+14 _________ 1 1 1
+15 _________ 1 2 1
+16 _________ 1 1 1
+17 _________ 0 0 0
+18 _________ 0 0 0
+19 _________ 0 0 0
+20 _________ 1 3 2
+21 _________ 1 2 2
+22 _________ 1 2 2
+23 _________ 1 2 2
+24 _________ 1 2 2
+25 _________ 1 4 2
+26 _________ 1 2 2
+27 _________ 1 2 2
+28 _________ 0 0 0
+36 _________ 1 0 1
+152 _________ 1 1 1
+37 _________ 1 0 1
+38 _________ 1 1 1
+154 _________ 1 1 1
+31 _________ 1 1 1
+30 _________ 1 2 1
+78 _________ 1 1 1
+93 _________ 1 1 1
+95 _________ 1 1 1
+153 _________ 1 1 0
+50 _________ 5 1 2
+60 _________ 5 1 2
+84 _________ 5 1 2
+82 _________ 5 1 2
+90 _________ 1 8 1
+149 _________ 1 1 1
+110 _________ 1 1 2
+111 _________ 1 1 2
+112 _________ 1 1 2
+113 _________ 1 1 2
+114 _________ 1 1 2
+118 _________ 1 1 2
+40 _________ 1 1 1
+42 _________ 1 1 1
+43 _________ 1 1 1
+44 _________ 1 1 1
+45 _________ 1 1 1
+46 _________ 1 1 1
+47 _________ 1 1 1
+48 _________ 1 1 1
+49 _________ 1 1 1
+39 _________ 1 1 1
+41 _________ 1 1 1
+64 _________ 1 1 1
+65 _________ 1 1 1
+66 _________ 1 1 1
+51 _________ 17 1 2
+52 _________ 1 1 1
+53 _________ 1 1 1
+54 _________ 1 1 1
+55 _________ 1 1 1
+56 _________ 1 1 1
+57 _________ 1 1 1
+58 _________ 1 1 1
+59 _________ 1 1 1
+61 _________ 9 1 2
+62 _________ 9 1 2
+63 _________ 17 1 2
+70 _________ 1 2 1
+71 _________ 1 2 1
+72 _________ 1 1 1
+73 _________ 1 1 1
+80 _________ 5 1 1
+85 _________ 17 1 2
+83 _________ 17 1 2
+91 _________ 1 2 1
+97 _________ 1 1 1
+98 _________ 1 1 1
+99 _________ 1 1 1
+100 _________ 1 1 1
+101 _________ 1 1 1
+102 _________ 1 1 1
+103 _________ 1 1 1
+104 _________ 1 1 1
+105 _________ 1 1 1
+106 _________ 1 1 1
+115 _________ 1 1 1
+116 _________ 1 0 1
+117 _________ 1 0 1
+119 _________ 1 1 1
+128 _________ 1 2 2
+129 _________ 1 2 2
+138 _________ 1 9 1
+150 _________ 1 2 3
+148 _________ 1 0 1
+81 _________ 17 1 1
+-Program Security-
+9044
+9045
+0
+-Mode 4-
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+19
+35
+36
+39
+40
+41
+42
+46
+51
+52
+57
+58
+59
+60
+63
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+-Final Storage Area 2-
+1024
+-CR10X ID-
+0
+-CR10X Power Up-
+0
+-CR10X Compile Setting-
+0
+-CR10X RS-232 Setting-
+-1
+-DLD File Labels-
+0
+-Final Storage Labels-
+0,__________S_WVT~25,29544
+0,__________D1_WVT~26
+0,__________SD1_WVT~26
+1,__________MAX~25,32711
+2,__________S_WVT~25,16295
+2,__________D1_WVT~26
+3,__________STD~21,22426
+3,__________STD~22
+3,__________STD~23
+3,__________STD~24
+3,__________STD~25
+4,__________STD~20,13054
+5,10,22895
+6,_________~1,9612
+7,_________~2,6030
+8,Year_RTM,15326
+8,Day_RTM
+8,Hour_Minute_RTM
+9,__________AVG~21,29177
+9,__________AVG~22
+9,__________AVG~23
+9,__________AVG~24
+10,_________~153,27630
+10,_________~154
+11,_________~31,593
+11,_________~32
+11,_________~33
+11,_________~34
+11,_________~35
+12,_________~38,31960
+13,_________~152,18654
+14,__________AVG~93,25921
+15,__________TOT~78,15769
+16,_________~95,22643
+17,60,1597
+18,_________~1,6585
+19,_________~2,4193
+20,Year_RTM,606
+20,Day_RTM
+20,Hour_Minute_RTM
+21,__________AVG~20,4865
+22,__________TOT~27,22533
+23,_________~30,11934
+24,60,2885
+25,_________~1,28073
+26,_________~3,30009
+27,Year_RTM,14215
+27,Day_RTM
+27,Hour_Minute_RTM
+28,__________AVG~50,7907
+28,__________AVG~51
+28,__________AVG~52
+28,__________AVG~53
+28,__________AVG~54
+28,__________AVG~55
+28,__________AVG~56
+28,__________AVG~57
+28,__________AVG~58
+28,__________AVG~59
+29,__________AVG~60,429
+29,__________AVG~61
+29,__________AVG~62
+29,__________AVG~63
+30,60,6592
+31,_________~1,19426
+32,_________~4,2700
+33,Year_RTM,12075
+33,Day_RTM
+33,Hour_Minute_RTM
+34,__________AVG~84,6524
+34,__________AVG~85
+35,__________AVG~82,998
+35,__________AVG~83
+36,240,7991
+37,_________~1,4928
+38,_________~5,29960
+39,Year_RTM,12891
+39,Day_RTM
+39,Hour_Minute_RTM
+40,__________AVG~90,18627
+40,__________AVG~91
+41,__________AVG~149,6126
+42,60,16919
+43,_________~1,5642
+44,_________~6,28442
+45,Year_RTM,25122
+45,Day_RTM
+45,Hour_Minute_RTM
+46,__________AVG~110,22764
+47,__________AVG~111,21599
+48,__________AVG~112,6026
+49,__________AVG~113,1736
+50,__________AVG~114,17659
+50,__________AVG~115
+51,__________AVG~118,15971
+51,__________AVG~119
+52,Hour_Minute_RTM,10225

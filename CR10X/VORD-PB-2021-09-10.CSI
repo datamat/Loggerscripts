@@ -1,0 +1,524 @@
+;{CR10X-TD}
+;-------------------------------------------------------------
+; Stationsnr:             35
+; Stationsort:            Vordemwald Bestand.
+; Logger:                 Dendro-Logger
+
+; x Datenkommunikation:     Umschaltung des M20T 079 239 44 62
+; x                         durch Logger Meteostation.
+; x Zeitfenster:            s. Loggerprogramm VOR_B.CSI
+; x Autor:                  markasub ag, Waldner
+; x Version:                NUR DENDRO
+; x CR10X In Betrieb:       von 27.4.2007 bis 4.2021
+;
+; Projekt Nr.:            2
+; - 20 Dendrometer Typ 1 Dial   am Dendro-Multiplexer messen
+; - 12 Dendrometer Typ 2 Buegel am Dendro-Multiplexer messen
+;
+; Flag Usage:
+;  Flag 1: Flag high, wenn Port-Grundeinstellung durchgefuehrt.
+;  Flag 2:
+;  Flag 3:
+;  Flag 4:
+;  Flag 5:
+;  Flag 6:
+;  Flag 7:
+;  Flag 8: Saugspannungen messen high=ein, low=aus (low)
+;
+; Ports Usage (Grundeinstellung)
+;  Port 1: input
+;  Port 2: input
+;  Port 3: input
+;  Port 4: RES Dendro-Multiplexer (low)
+;  Port 5: CLK Dendro-Multiplexer (low)
+;  Port 6: high: Typ 1, low: Typ 2 (high)
+;  Port 7: input
+;  Port 8: input
+
+; ---------------------------------------------------------------
+; CR10X VORD with PakBus Operating System (ab April 2021)
+; RS-232 Connection to VOW (PakBus Address 50)
+;  Wiring:
+;  CR10X.CS I/O (DB9 female)  - (DB9 male) CS I/O.SC932C  ...
+;  ... SC932C.RS232 (DB25 male) -
+;  ... .DB9.Pin5 (RS232 Signal Ground) - (RS232 COM1 Signal Ground)  G.CR1000
+;      .DB9.Pin2 (RS232 Rx)            - (RS232 COM1 Tx)            C1.CR1000
+;      .DB9.Pin3 (RS232 Tx)            - (RS232 COM1 Rx)            C2.CR1000
+
+; In Betrieb     ab 4. 2021
+
+; Aenderungen 10.9.2021
+; - Typ 2 Buegel: 250 mV and new also 2500 mV range measurement
+
+;=============================================================
+*Table 1 Program
+  01: 600       Execution Interval (seconds)
+
+;-------------------------
+; Stationsnummer
+
+1:  Z=F (P30)
+ 1: 35       F
+ 2: 00       Exponent of 10
+ 3: 35       Z Loc [ IDStation      ]
+
+; Projektnummer
+
+2:  Z=F (P30)
+ 1: 2        F
+ 2: 00       Exponent of 10
+ 3: 36       Z Loc [ IDProj         ]
+
+; 10-Min Intervall
+
+3:  Z=F (P30)
+ 1: 10       F
+ 2: 00       Exponent of 10
+ 3: 37       Z Loc [ Intervall10    ]
+
+
+
+; Call Subroutine 80: Ports-Grundeinstellung
+
+4:  If Flag/Port (P91)
+ 1: 21       Do if Flag 1 is Low
+ 2: 80       Call Subroutine 80
+
+
+;--------------------------
+; Messen Dendrometer
+
+; Dendro-Multiplexer einschalten (RES=high)
+
+5:  Do (P86)
+ 1: 44       Set Port 4 High
+
+
+; -------------------------------
+; 20 Dendrometer Typ 1 Dial messen
+;
+; DialDendrometer D4, UMS Umweltanalytische Mess-Systeme GmBH, Muenchen, 2005
+; Versorgung U  2500 mV Excitation 
+; Signal:    S  =  11.6 mV mm-1 V-1 * l * U
+; Umfangzuwachs: l (mm) = S / 11.6 mV mm-1 V-1 * 2.5 V
+; 
+; Loop Dendrometer 1-20
+; ----
+6:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 10       Loop Count
+
+; Dendro-Multiplexer weiterschalten
+7:  Do (P86)
+ 1: 75       Pulse Port 5
+
+8:  Step Loop Index (P90)
+ 1: 2        Step
+
+; Dendrometer messen: Spannung an SE-Channel 1
+9:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 15       2500 mV Fast Range
+ 3: 1        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 15       Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 1     -- Loc [ Dendro_1       ]
+ 8: 1        Mult
+ 9: 0        Offset
+
+; Dendrometer messen: Spannung an SE-Channel 3
+10:  Excite-Delay (SE) (P4)
+ 1: 1        Reps
+ 2: 15       2500 mV Fast Range
+ 3: 3        SE Channel
+ 4: 1        Excite all reps w/Exchan 1
+ 5: 15       Delay (units 0.01 sec)
+ 6: 2500     mV Excitation
+ 7: 2     -- Loc [ Dendro_2       ]
+ 8: 1        Mult
+ 9: 0        Offset
+
+11:  End (P95)
+; --- End Loop Dendrometer 1-20
+
+
+; -------------------------------
+; 12 Dendrometer Typ 2 messen
+
+; Buegeldendrometer D6, UMS Umweltanalytische Mess-Systeme GmBH, Muenchen, 2007
+; Versorgung U 7.32 V (Spezialteil, Markasub AG). 
+; Signal     S = -0.114 mV mm-1 V-1 * l * U
+; Umfangzuwachs l (mm) = S / -0.114 mV mm-1 V-1 * U
+
+; Vom Typ 1 auf Typ 2 umschalten (...)
+12:  Do (P86)
+ 1: 56       Set Port 6 Low
+
+; Warten
+13:  Excitation with Delay (P22)
+ 1: 1        Ex Channel
+ 2: 0        Delay W/Ex (units = 0.01 sec)
+ 3: 100      Delay After Ex (units = 0.01 sec)
+ 4: 0        mV Excitation
+
+; Loop Dendrometer 21-32
+; ----
+14:  Beginning of Loop (P87)
+ 1: 0        Delay
+ 2: 6        Loop Count
+
+15:  Do (P86)
+ 1: 75       Pulse Port 5
+
+16:  Step Loop Index (P90)
+ 1: 2        Step
+
+; Denrometer messen: DIFF-Channel 1
+17:  Volt (Diff) (P2)
+ 1: 1        Reps
+ 2: 34       250 mV 50 Hz Rejection Range
+ 3: 1        DIFF Channel
+ 4: 21    -- Loc [ Dendro_21      ]
+ 5: 1        Mult
+ 6: 0        Offset
+
+; Dendrometer messen: DIFF-Channel 2
+18:  Volt (Diff) (P2)
+ 1: 1        Reps
+ 2: 34       250 mV 50 Hz Rejection Range
+ 3: 2        DIFF Channel
+ 4: 22    -- Loc [ Dendro_22      ]
+ 5: 1        Mult
+ 6: 0        Offset
+
+; Denrometer HV messen: DIFF-Channel 1
+19:  Volt (Diff) (P2)
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 1        DIFF Channel
+ 4: 61    -- Loc [ DendHV_21      ]
+ 5: 1        Mult
+ 6: 0        Offset
+
+; Dendrometer HV messen: DIFF-Channel 2
+20:  Volt (Diff) (P2)
+ 1: 1        Reps
+ 2: 35       2500 mV 50 Hz Rejection Range
+ 3: 2        DIFF Channel
+ 4: 62    -- Loc [ DendHV_22      ]
+ 5: 1        Mult
+ 6: 0        Offset
+
+; Use 2500 mV range (HV) instead of 250 mV range
+21:  If (X<=>F) (P89)
+ 1: 21    -- X Loc [ Dendro_21      ]
+ 2: 04       <
+ 3: -2500    F
+ 4: 30       Then Do
+
+     22:  Z=X (P31)
+      1: 61    -- X Loc [ DendHV_21      ]
+      2: 21    -- Z Loc [ Dendro_21      ]
+
+23:  End (P95)
+
+24:  If (X<=>F) (P89)
+ 1: 22    -- X Loc [ Dendro_22      ]
+ 2: 04       <
+ 3: -2500    F
+ 4: 30       Then Do
+
+     25:  Z=X (P31)
+      1: 62    -- X Loc [ DendHV_22      ]
+      2: 22    -- Z Loc [ Dendro_22      ]
+
+26:  End (P95)
+
+27:  End (P95)
+; ---- End Loop Dendrometer 21-32
+
+; Zurueckschalten von Typ 2 auf Typ 1
+28:  Do (P86)
+ 1: 46       Set Port 6 High
+
+
+; Dendro-Multiplexer ausschalten (RES=low)
+
+29:  Do (P86)
+ 1: 54       Set Port 4 Low
+
+; Ende Messen Dendrometer
+;---------------------
+
+
+;---------------------
+; Messen Logger
+
+; Loggertemperatur messen
+30:  Internal Temperature (P17)
+ 1: 33       Loc [ LoggTemp       ]
+
+; Batteriespannung messen
+31:  Batt Voltage (P10)
+ 1: 34       Loc [ BattVolt       ]
+
+; Ende Messen Logger
+;---------------------
+
+
+;---------------------
+; Speichern-PB
+
+32:  Data Table (P84)^9037
+ 1: 0.0      Seconds into Interval
+ 2: 0.0      Interval Option
+ 3: 0.0      (0 = auto allocate, -x = redirect to inloc x)
+ 4: P02Dendro10               Table Name
+
+33:  Sample (P70)^5566
+ 1: 1        Reps
+ 2: 35       Loc [ IDStation      ]
+34:  Sample (P70)^22214
+ 1: 1        Reps
+ 2: 36       Loc [ IDProj         ]
+
+35:  Sample (P70)^30188
+ 1: 1        Reps
+ 2: 37       Loc [ Intervall10    ]
+
+36:  Sample (P70)^2208
+ 1: 32       Reps
+ 2: 1        Loc [ Dendro_1       ]
+
+37:  Sample (P70)^13640
+ 1: 1        Reps
+ 2: 33       Loc [ LoggTemp       ]
+
+38:  Sample (P70)^32683
+ 1: 1        Reps
+ 2: 34       Loc [ BattVolt       ]
+
+
+; ----------------------------------
+; Senden an PakBus-Logger
+
+; send Table P02Dendro60 to VOW (PakBus 50)
+39:  PakBus - Send Final Storage Data (P191)
+ 1: 2        ME, 9600 Baud
+ 2: 50       Address
+ 3: 5        Table Number
+
+;=============================================================
+*Table 2 Program
+  02: 0.0000    Execution Interval (seconds)
+
+;=============================================================
+*Table 3 Subroutines
+
+
+; --------------------------------
+; Subroutine 80: Ports-Grundeinstellung
+
+1:  Beginning of Subroutine (P85)
+ 1: 80       Subroutine 80
+
+2:  Do (P86)
+ 1: 11       Set Flag 1 High
+
+3:  Set Port(s) (P20)
+ 1: 8810     C8..C5 = input/input/high/low
+ 2: 888      C4..C1 = low/input/input/input
+
+4:  End (P95)
+; -------------------End Subroutine 80
+
+
+End Program
+
+
+-Input Locations-
+1 Dendro_1       7 1 1
+2 Dendro_2       11 1 1
+3 Dendro_3       11 1 0
+4 Dendro_4       11 1 0
+5 Dendro_5       11 1 0
+6 Dendro_6       11 1 0
+7 Dendro_7       11 1 0
+8 Dendro_8       11 1 0
+9 Dendro_9       11 1 0
+10 Dendro_10      11 1 0
+11 Dendro_11      11 1 0
+12 Dendro_12      11 1 0
+13 Dendro_13      11 1 0
+14 Dendro_14      11 1 0
+15 Dendro_15      11 1 0
+16 Dendro_16      11 1 0
+17 Dendro_17      11 1 0
+18 Dendro_18      11 1 0
+19 Dendro_19      11 1 0
+20 Dendro_20      11 1 0
+21 Dendro_21      11 2 2
+22 Dendro_22      11 2 2
+23 Dendro_23      11 1 0
+24 Dendro_24      11 1 0
+25 Dendro_25      11 1 0
+26 Dendro_26      11 1 0
+27 Dendro_27      11 1 0
+28 Dendro_28      11 1 0
+29 Dendro_29      11 1 0
+30 Dendro_30      11 1 0
+31 Dendro_31      11 1 0
+32 Dendro_32      19 1 0
+33 LoggTemp       1 0 1
+34 BattVolt       1 1 1
+35 IDStation      1 1 1
+36 IDProj         1 1 1
+37 Intervall10    1 1 1
+38 ______________ 0 0 0
+39 ______________ 0 0 0
+40 ______________ 0 0 0
+41 DendHV_1       6 0 0
+42 DendHV_2       10 0 0
+43 DendHV_3       10 0 0
+44 DendHV_4       10 0 0
+45 DendHV_5       10 0 0
+46 DendHV_6       10 0 0
+47 DendHV_7       10 0 0
+48 DendHV_8       10 0 0
+49 DendHV_9       10 0 0
+50 DendHV_10      10 0 0
+51 DendHV_11      10 0 0
+52 DendHV_12      10 0 0
+53 DendHV_13      10 0 0
+54 DendHV_14      10 0 0
+55 DendHV_15      10 0 0
+56 DendHV_16      10 0 0
+57 DendHV_17      10 0 0
+58 DendHV_18      10 0 0
+59 DendHV_19      10 0 0
+60 DendHV_20      10 0 0
+61 DendHV_21      11 1 1
+62 DendHV_22      11 1 1
+63 DendHV_23      11 0 0
+64 DendHV_24      11 0 0
+65 DendHV_25      11 0 0
+66 DendHV_26      11 0 0
+67 DendHV_27      11 0 0
+68 DendHV_28      11 0 0
+69 DendHV_29      11 0 0
+70 DendHV_30      11 0 0
+71 DendHV_31      11 0 0
+72 DendHV_32      11 0 0
+73 DendHV_33      10 0 0
+74 DendHV_34      10 0 0
+75 DendHV_35      10 0 0
+76 DendHV_36      18 0 0
+77 ______________ 0 0 0
+78 ______________ 0 0 0
+79 ______________ 0 0 0
+80 ______________ 0 0 0
+81 ______________ 0 0 0
+82 ______________ 0 0 0
+83 ______________ 0 0 0
+84 ______________ 0 0 0
+85 ______________ 0 0 0
+86 ______________ 0 0 0
+87 ______________ 0 0 0
+88 ______________ 0 0 0
+89 ______________ 0 0 0
+90 ______________ 0 0 0
+91 ______________ 0 0 0
+92 ______________ 0 0 0
+93 ______________ 0 0 0
+94 ______________ 0 0 0
+95 ______________ 0 0 0
+96 ______________ 0 0 0
+97 ______________ 0 0 0
+98 ______________ 0 0 0
+99 ______________ 0 0 0
+100 ______________ 0 0 0
+101 ______________ 0 0 0
+102 ______________ 0 0 0
+103 ______________ 0 0 0
+104 ______________ 0 0 0
+105 ______________ 0 0 0
+106 ______________ 0 0 0
+107 ______________ 0 0 0
+108 ______________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X RS-232 Setting-
+-1
+-PakBus-
+1
+1
+0
+0
+0
+1
+0
+0
+0
+0
+1
+1
+0
+DR=0
+0
+0
+0
+0
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+-DLD File Labels-
+-1
+-Final Storage Labels-
+0,TMSTAMP,9037
+0,RECNBR
+1,IDStation~35,5566
+2,IDProj~36,22214
+3,Intervall10~37,30188
+4,Dendro_1~1,2208
+4,Dendro_2~2
+4,Dendro_3~3
+4,Dendro_4~4
+4,Dendro_5~5
+4,Dendro_6~6
+4,Dendro_7~7
+4,Dendro_8~8
+4,Dendro_9~9
+4,Dendro_10~10
+4,Dendro_11~11
+4,Dendro_12~12
+4,Dendro_13~13
+4,Dendro_14~14
+4,Dendro_15~15
+4,Dendro_16~16
+4,Dendro_17~17
+4,Dendro_18~18
+4,Dendro_19~19
+4,Dendro_20~20
+4,Dendro_21~21
+4,Dendro_22~22
+4,Dendro_23~23
+4,Dendro_24~24
+4,Dendro_25~25
+4,Dendro_26~26
+4,Dendro_27~27
+4,Dendro_28~28
+4,Dendro_29~29
+4,Dendro_30~30
+4,Dendro_31~31
+4,Dendro_32~32
+5,LoggTemp~33,13640
+6,BattVolt~34,32683

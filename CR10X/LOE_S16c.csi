@@ -1,0 +1,104 @@
+;{CR10X-TD}
+;
+
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+
+1:  Batt Voltage (P10)
+ 1: 1        Loc [ BattV          ]
+
+2:  Internal Temperature (P17)
+ 1: 2        Loc [ PTemp          ]
+
+3:  Data Table (P84)^1979
+ 1: 0        Seconds into Interval
+ 2: 600      Seconds Interval
+ 3: 0.0      (0 = auto allocate, -x = redirect to inloc x)
+ 4:                           Table Name
+
+4:  Minimum (P74)^13650
+ 1: 1        Reps
+ 2: 00       Time Option
+ 3: 1        Loc [ BattV          ]
+
+5:  Average (P71)^30641
+ 1: 1        Reps
+ 2: 1        Loc [ BattV          ]
+
+*Table 2 Program
+  02: 60        Execution Interval (seconds)
+
+*Table 3 Subroutines
+
+End Program
+
+-Input Locations-
+1 BattV          1 2 1
+2 PTemp          1 0 1
+3 ______________ 1 0 0
+4 ______________ 0 0 0
+5 ______________ 0 0 0
+6 ______________ 0 0 0
+7 ______________ 0 0 0
+8 ______________ 0 0 0
+9 ______________ 0 0 0
+10 ______________ 0 0 0
+11 ______________ 0 0 0
+12 ______________ 0 0 0
+13 ______________ 0 0 0
+14 ______________ 0 0 0
+15 ______________ 0 0 0
+16 ______________ 0 0 0
+17 ______________ 0 0 0
+18 ______________ 0 0 0
+19 ______________ 0 0 0
+20 ______________ 0 0 0
+21 ______________ 0 0 0
+22 ______________ 0 0 0
+23 ______________ 0 0 0
+24 ______________ 0 0 0
+25 ______________ 0 0 0
+26 ______________ 0 0 0
+27 ______________ 0 0 0
+28 ______________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X RS-232 Setting-
+-1
+-PakBus-
+1
+1
+0
+0
+0
+1
+0
+0
+0
+0
+1
+1
+0
+DR=0
+0
+0
+0
+0
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+-DLD File Labels-
+-1
+-Final Storage Labels-
+0,TMSTAMP,1979
+0,RECNBR
+1,BattV_MIN~1,13650
+2,BattV_AVG~1,30641

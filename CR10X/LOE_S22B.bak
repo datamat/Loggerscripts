@@ -1,0 +1,129 @@
+;{CR10X-TD}
+
+*Table 1 Program
+  01: 10        Execution Interval (seconds)
+
+1:  Batt Voltage (P10)
+ 1: 1        Loc [ BattV          ] 
+
+2:  Internal Temperature (P17)
+ 1: 2        Loc [ PTemp          ]
+
+3:  Data Table (P84)^15522
+ 1: 0.0      Seconds into Interval
+ 2: 60       Seconds Interval
+ 3: 0.0      (0 = auto allocate, -x = redirect to inloc x)
+ 4: Main                      Table Name
+
+4:  Thermocouple Temp (DIFF) (P14)
+ 1: 1        Reps
+ 2: 1        2.5 mV Slow Range
+ 3: 1        DIFF Channel
+ 4: 1        Type T (Copper-Constantan)
+ 5: 1        Ref Temp (Deg. C) Loc [ BattV          ]
+ 6: 3        Loc [ TCTemp         ]
+ 7: 1.0      Multiplier
+ 8: 0.0      Offset
+
+5:  Minimum (P74)^29680
+ 1: 1        Reps
+ 2: 00       Time Option
+ 3: 1        Loc [ BattV          ]
+
+6:  Average (P71)^31309
+ 1: 1        Reps
+ 2: 2        Loc [ PTemp          ]
+
+7:  Average (P71)^11268
+ 1: 1        Reps
+ 2: 3        Loc [ TCTemp         ]
+
+*Table 2 Program
+  02: 0.0000    Execution Interval (seconds)
+
+*Table 3 Subroutines
+
+1:  Beginning of Subroutine (P85)
+ 1: 98       Subroutine 98
+
+     2:  SDI-12 Sensor (P106)
+      1: 0000     SDI-12 Address
+      2: 0003     Time/Values
+      3: 1        Loc [ BattV          ]
+
+3:  End (P95)
+
+End Program
+
+
+-Input Locations-
+1 BattV          1 3 1
+2 PTemp          1 1 1
+3 TCTemp         1 1 1
+4 ______________ 1 0 0
+5 ______________ 1 0 0
+6 ______________ 1 0 0
+7 ______________ 1 0 0
+8 ______________ 1 0 0
+9 ______________ 1 0 0
+10 ______________ 1 0 0
+11 ______________ 1 0 0
+12 ______________ 1 0 0
+13 ______________ 1 0 0
+14 ______________ 0 0 0
+15 ______________ 0 0 0
+16 ______________ 0 0 0
+17 ______________ 0 0 0
+18 ______________ 0 0 0
+19 ______________ 0 0 0
+20 ______________ 0 0 0
+21 ______________ 0 0 0
+22 ______________ 0 0 0
+23 ______________ 0 0 0
+24 ______________ 0 0 0
+25 ______________ 0 0 0
+26 ______________ 0 0 0
+27 ______________ 0 0 0
+28 ______________ 0 0 0
+-Program Security-
+0000
+0000
+0000
+-Mode 4-
+-CR10X ID-
+0
+-CR10X Power Up-
+3
+-CR10X RS-232 Setting-
+-1
+-PakBus-
+1
+1
+0
+0
+0
+1
+0
+0
+0
+0
+1
+1
+0
+DR=0
+0
+0
+0
+0
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+.endAddrSwath
+-DLD File Labels-
+-1
+-Final Storage Labels-
+0,TMSTAMP,15522
+0,RECNBR
+1,BattV_MIN~1,29680
+2,TCTemp_AVG~3,11268
+3,PTemp_AVG~2,31309

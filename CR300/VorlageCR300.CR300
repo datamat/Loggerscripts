@@ -1,0 +1,51 @@
+'CR300 Series
+'Created by Short Cut (4.3)
+
+'Declare Variables and Units
+Public BattV
+Public PTemp_C
+Public SDI12(9)
+
+Alias SDI12(1)=Res1
+Alias SDI12(2)=Res2
+Alias SDI12(3)=Res3
+Alias SDI12(4)=Res4
+Alias SDI12(5)=Res5
+Alias SDI12(6)=Res6
+Alias SDI12(7)=Res7
+Alias SDI12(8)=Res8
+Alias SDI12(9)=Res9
+
+Units BattV=Volts
+Units PTemp_C=Deg C
+Units Res1=unit
+Units Res2=unit
+Units Res3=unit
+Units Res4=unit
+Units Res5=unit
+Units Res6=unit
+Units Res7=unit
+Units Res8=unit
+Units Res9=unit
+
+'Define Data Tables
+DataTable(Table2,True,-1)
+	DataInterval(0,1440,Min,10)
+	Minimum(1,BattV,FP2,False,False)
+EndTable
+
+'Main Program
+BeginProg
+	'Main Scan
+	Scan(10,Sec,1,0)
+		'Default CR300 Datalogger Battery Voltage measurement 'BattV'
+		Battery(BattV)
+		'Default CR300 Datalogger Processor Temperature measurement 'PTemp_C'
+		PanelTemp(PTemp_C,50)
+		SDI12Recorder(SDI12(),C1,"0","M!",1,0,-1)
+		'Reset all Generic SDI-12 Sensor measurements if NAN is returned to SDI12(1)
+		If SDI12(1)=NAN Then Move(SDI12(),9,NAN,1)
+		'Call Data Tables and Store Data
+		CallTable Table2
+	NextScan
+EndProg

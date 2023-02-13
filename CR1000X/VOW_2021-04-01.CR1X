@@ -1,0 +1,417 @@
+'**********************************************************************
+'* Langfristige Waldoekosystem-Forschung LWF / WSL, Bodenstation      *
+'* Bodenwasserstation: Vordemwald
+'* - Variante: Tensiomark und EC-5 ohne Multiplexer
+'**********************************************************************
+' Station:                WSL LWF-Station Vordemwald Bodenwasser
+' Telefonnummer:          LAN zur LWF-Meteostation Bestand
+' Inventarnummer/PakBus:  50
+'
+' Angeschlossene Projekte:
+' Projekt 4:  Technische Werte Bodenwasserstation
+' Projekt 30: Matrixpotential TensioMark
+  ' 4 depths, 3 replicates
+  ' G, SW1, C3: SDI12 1-4, C5: SDI12 5-8, C7: SDI12 9-12
+' Projekt 22: Echo EC-5 Soil volumetric water content
+  ' 4 detphs, 3 replicates
+  ' Vx1: 1.1-3, Vx2: 2.1-3, Vx3: 3.1-3, Vx4: 1.4,2.4,3.4
+  ' SE: 1-12, AG
+' Aenderungen 2019-Dec (Peter Waldner, Katrin Meusburger)
+  ' - P22: UINT2 > FP2 fuer FolgeNr 1-30 mit NaN 
+  ' - SenorOff > SenOff (Kompatibilitaet mit Meteo)
+  ' - ftp: sub:  User lwf_gprs > lwfcr1000
+  '              dat > crd, ransf=transf+1, 
+  '        main: call ftp aktivieren, Transf=0
+' Aenderungen Mai 2020 (Katrin Meusburger)
+  ' - DataTable trigger auf True gesetzt
+  ' - Fill Nas auf -1 gesetzt
+  ' - Delay und Aufwrmphase verlaengert von 5 auf 15 sec
+  ' - Basis von 10 auf 10.0
+  ' - TM Average auf sample gesetzt
+' Aenderungen Maerz 2021 (Peter Waldner)
+  ' - Anschluss von VORD-PB (SDI-12)
+'----------------------------------------------------------------------
+'- S T A T I O N   C O N F I G                                        -
+'----------------------------------------------------------------------
+' Stationsnummer Bestanddesstation
+Const StatID = 35 : Const SFull As String = "VOW"
+
+'----------------------------------------------------------------------
+'- V A R I A B L E S    AND   S U B R O U T I N E S 
+'----------------------------------------------------------------------
+'*** Miscellaneous
+Const SenOff = "NAN" : Dim Ofst As Float
+
+' *** FTP streaming
+Const FTPSrvr = "ftp.wsl.ch" 
+Const FTPUser = "lwfcr1000"  '"lwf_gprs"
+Const FTPPass = "01.yto.9ae" '"rpg08.wl"
+Public tstamp As String
+Public tabelle As String
+Public filename As String * 200
+Public FTPSuccess
+Public Transf
+Sub timestamp()
+    tstamp = Public.TimeStamp(1,1)
+    tstamp = Mid(tstamp,7,4)+"-"+Mid(tstamp,1,2)+"-"+Mid(tstamp,4,2)+"-"+ Mid(tstamp,12,2)+"-"+Mid(tstamp,15,2)
+EndSub
+Sub ftp()
+    filename=SFull+"_"+tabelle+"-"+tstamp+".crd"
+    FTPSuccess=FTPClient(FTPSrvr,FTPUser,FTPPass,tabelle,filename,2,0,0,min,-1012)
+    If FTPSuccess = -1 Then Transf = Transf+1
+EndSub  
+
+'----------------------------------------------------------------------
+'- P R O J E C T S                                                    -
+'----------------------------------------------------------------------
+
+'**********************************************************************
+'*** Project 4 Technical Informations Bodenwasserstation (alle 20 Min)
+'Declare Variables and Units
+Public BattV : Units BattV=V
+Public LoggerTemp : Units LoggerTemp = Deg C
+Public LithiumBatt : Units LithiumBatt = V
+
+'Define Data Tables
+DataTable(P4Tech20,True,-1)
+  DataInterval(0,20,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,4,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,20,UINT2) : FieldNames ("Messperiode")
+  ' Technische Werte
+  Sample(1,BattV,FP2,False) ' Messart 291
+  Sample(1,LoggerTemp,FP2,False) ' Messart 292
+  Sample(1,LithiumBatt,FP2,False) ' Messart 346
+EndTable
+
+'Sub Technische Werte Messen
+Sub SubP4
+  If TimeIntoInterval (0,20,Min) Then
+	  'Default CR1000 Datalogger Battery Voltage measurement 
+	  Battery(BattV)
+	  'Default CR1000 Datalogger Wiring Panel Temperature measurement 
+	  PanelTemp(LoggerTemp,_50Hz)
+	  ' Litium Batterie
+    LithiumBatt = Status.LithiumBattery (1,1) 
+  EndIf
+EndSub
+
+'**********************************************************************
+'*** Project 22: Echo EC-5 volumetric soil  water content (SWC)
+Const nEC = 12 : Public EC5act (nEC), ECU (nEC)
+Units EC5act = m3 m-3 : Units ECU = mV : Public i22
+
+DataTable (P22SWC10,True,-1)
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,22,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' FolgeNr bisherige Sensoren
+  Sample (1,SenOff,FP2) : FieldNames("Nr1")
+  Sample (1,SenOff,FP2) : FieldNames("Nr2")
+  Sample (1,SenOff,FP2) : FieldNames("Nr3")
+  Sample (1,SenOff,FP2) : FieldNames("Nr4")
+  Sample (1,SenOff,FP2) : FieldNames("Nr5")
+  Sample (1,SenOff,FP2) : FieldNames("Nr6")
+  Sample (1,SenOff,FP2) : FieldNames("Nr7")
+  Sample (1,SenOff,FP2) : FieldNames("Nr8")
+  Sample (1,SenOff,FP2) : FieldNames("Nr9")
+  Sample (1,SenOff,FP2) : FieldNames("Nr10")
+  Sample (1,SenOff,FP2) : FieldNames("Nr11")
+  Sample (1,SenOff,FP2) : FieldNames("Nr12")
+  Sample (1,SenOff,FP2) : FieldNames("Nr13")
+  Sample (1,SenOff,FP2) : FieldNames("Nr14")
+  Sample (1,SenOff,FP2) : FieldNames("Nr15")
+  Sample (1,SenOff,FP2) : FieldNames("Nr16")
+  Sample (1,SenOff,FP2) : FieldNames("Nr17")
+  Sample (1,SenOff,FP2) : FieldNames("Nr18")
+  Sample (1,SenOff,FP2) : FieldNames("Nr19")
+  Sample (1,SenOff,FP2) : FieldNames("Nr20")
+  Sample (1,SenOff,FP2) : FieldNames("Nr21")
+  Sample (1,SenOff,FP2) : FieldNames("Nr22")
+  Sample (1,SenOff,FP2) : FieldNames("Nr23")
+  Sample (1,SenOff,FP2) : FieldNames("Nr24")
+  Sample (1,SenOff,FP2) : FieldNames("Nr25")
+  Sample (1,SenOff,FP2) : FieldNames("Nr26")
+  Sample (1,SenOff,FP2) : FieldNames("Nr27")
+  Sample (1,SenOff,FP2) : FieldNames("Nr28")
+  Sample (1,SenOff,FP2) : FieldNames("Nr29")
+  Sample (1,SenOff,FP2) : FieldNames("Nr30")
+  ' Soil water data
+  Average (1,EC5act (1),FP2,False) : FieldNames ("EC1_15cm")
+  Average (1,ECU (1),FP2,False) : FieldNames ("EC1_mV_15cm")
+  Average (1,EC5act (2),FP2,False) : FieldNames ("EC1_50cm")
+  Average (1,ECU (2),FP2,False) : FieldNames ("EC1_mV_50cm")
+  Average (1,EC5act (3),FP2,False) : FieldNames ("EC1_80cm")
+  Average (1,ECU (3),FP2,False) : FieldNames ("EC1_mV_80cm")    
+  Average (1,EC5act (4),FP2,False) : FieldNames ("EC1_150cm")
+  Average (1,ECU (4),FP2,False) : FieldNames ("EC1_mV_150cm")
+  Average (1,EC5act (5),FP2,False) : FieldNames ("EC2_15cm") 
+  Average (1,ECU (5),FP2,False) : FieldNames ("EC2_mV_15cm")
+  Average (1,EC5act (6),FP2,False) : FieldNames ("EC2_50cm")
+  Average (1,ECU (6),FP2,False) : FieldNames ("EC2_mV_50cm")
+  Average (1,EC5act (7),FP2,False) : FieldNames ("EC2_80cm")
+  Average (1,ECU (7),FP2,False) : FieldNames ("EC2_mV_80cm") 
+  Average (1,EC5act (8),FP2,False) : FieldNames ("EC2_150cm")
+  Average (1,ECU (8),FP2,False) : FieldNames ("EC2_mV_150cm")
+  Average (1,EC5act (9),FP2,False) : FieldNames ("EC3_15cm")
+  Average (1,ECU (9),FP2,False) : FieldNames ("EC3_mV_15cm")
+  Average (1,EC5act (10),FP2,False) : FieldNames ("EC3_50cm")
+  Average (1,ECU (10),FP2,False) : FieldNames ("EC3_mV_50cm")
+  Average (1,EC5act (11),FP2,False) : FieldNames ("EC3_80cm")
+  Average (1,ECU (11),FP2,False) : FieldNames ("EC3_mV_80cm")  
+  Average (1,EC5act (12),FP2,False) : FieldNames ("EC3_150cm")
+  Average (1,ECU (12),FP2,False) : FieldNames ("EC3_mV_150cm") 
+EndTable
+
+Sub SubP22 ()
+  If TimeIntoInterval (0,10,Min) Then
+      BrHalf (ECU(1),1,mV5000,1,Vx1,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(2),1,mV5000,2,Vx1,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(3),1,mV5000,3,Vx1,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(4),1,mV5000,4,Vx4,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(5),1,mV5000,5,Vx2,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(6),1,mV5000,6,Vx2,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(7),1,mV5000,7,Vx2,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(8),1,mV5000,8,Vx4,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(9),1,mV5000,9,Vx3,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(10),1,mV5000,10,Vx3,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(11),1,mV5000,11,Vx3,1,2500,False,10000,250,2500,0)
+      BrHalf (ECU(12),1,mV5000,12,Vx4,1,2500,False,10000,250,2500,0)
+      
+    ' Umrechung in Bodenwassergehalt (Lineare Kalibration pro Sensor)
+    ' Standardkalibration Y = X*0.00119-0.4 fuer Mineralboeden 
+    ' (p., 17 in Manual, 2006)
+    For i22=1 To nEC
+      EC5act (i22) = (ECU (i22) * 0.00119) - 0.401
+    Next i22
+  EndIf
+EndSub
+'***************************************
+
+
+'**********************************************************************
+'*** Project 30: Matrixpotential TM_SWP2 oder TM_SWP6 Soil Water Potential (SWP)
+Const nTM_SWP = 12 : Public SDI12(2) : Public TM_SWP (nTM_SWP), TM_temp (nTM_SWP)
+Units TM_SWP = hPa : Units TM_temp = Deg C 
+
+DataTable (P30SWP20,True,-1)
+  ' Time Intervall 20 Minuten
+  DataInterval (0,20,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,30,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,20,UINT2) : FieldNames ("Messperiode")
+  ' TM_SWP data
+  Sample (1,TM_SWP (1),IEEE4) : FieldNames ("Bodenwasserpotential_15cm_1") 
+  Sample (1,TM_temp (1),IEEE4) : FieldNames ("Bodentemperatur_15cm_1")
+  Sample (1,TM_SWP (2),IEEE4) : FieldNames ("Bodenwasserpotential_50cm_1")
+  Sample (1,TM_temp (2),IEEE4) : FieldNames ("Bodentemperatur_50cm_1")
+  Sample (1,TM_SWP (3),IEEE4) : FieldNames ("Bodenwasserpotential_80cm_1")
+  Sample (1,TM_temp (3),IEEE4) : FieldNames ("Bodentemperatur_80cm_1")  
+  Sample (1,TM_SWP (4),IEEE4) : FieldNames ("Bodenwasserpotential_150cm_1")
+  Sample (1,TM_temp (4),IEEE4) : FieldNames ("Bodentemperatur_150cm_1")
+  Sample (1,TM_SWP (5),IEEE4) : FieldNames ("Bodenwasserpotential_15cm_2")
+  Sample (1,TM_temp (5),IEEE4) : FieldNames ("Bodentemperatur_15cm_2")
+  Sample (1,TM_SWP (6),IEEE4) : FieldNames ("Bodenwasserpotential_50cm_2")
+  Sample (1,TM_temp (6),IEEE4) : FieldNames ("Bodentemperatur_50cm_2")
+  Sample (1,TM_SWP (7),IEEE4) : FieldNames ("Bodenwasserpotential_80cm_2")
+  Sample (1,TM_temp (7),IEEE4) : FieldNames ("Bodentemperatur_80cm_2")
+  Sample (1,TM_SWP (8),IEEE4) : FieldNames ("Bodenwasserpotential_150cm_2")
+  Sample (1,TM_temp (8),IEEE4) : FieldNames ("Bodentemperatur_150cm_2")
+  Sample (1,TM_SWP (9),IEEE4) : FieldNames ("Bodenwasserpotential_15cm_3")
+  Sample (1,TM_temp (9),IEEE4) : FieldNames ("Bodentemperatur_15cm_3")
+  Sample (1,TM_SWP (10),IEEE4) : FieldNames ("Bodenwasserpotential_50cm_3")
+  Sample (1,TM_temp (10),IEEE4) : FieldNames ("Bodentemperatur_50cm_3")
+  Sample (1,TM_SWP (11),IEEE4) : FieldNames ("Bodenwasserpotential_80cm_3")
+  Sample (1,TM_temp (11),IEEE4) : FieldNames ("Bodentemperatur_80cm_3")
+  Sample (1,TM_SWP (12),IEEE4) : FieldNames ("Bodenwasserpotential_150cm_3")
+  Sample (1,TM_temp (12),IEEE4) : FieldNames ("Bodentemperatur_150cm_3")
+EndTable
+
+' Variante a) Direkt an Ports C1, C3, C5, C7
+Sub SubP30 ()
+  If TimeIntoInterval (0,20,Min) Then
+    ' Einschalten SW1-12V
+    SW12(SW12_1,1)
+    ' Aufwaermzeit Sensoren 5 Sekunden
+    Delay(1,15,Sec)
+      ' Messbefehle
+      ' Pruefen ob WaitonTimout Parameter noetig oder nicht.
+      ' Pruefen ob M! oder C! oder D! verwendet werden sollen.
+      ' Pruefen ob Delays zwischen Sensoren noetig / sinnvoll
+
+      ' C-Port: 4 Sensoren pro Port ab Port 3
+        ' C3,C3,C3,C3,C5 ... C7
+
+      ' C3 - Sensoradressen 1 bis 4
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C3,1,"M!",1,0,-1)
+      TM_SWP (1) =-1*(10.0^(SDI12(2)))
+      TM_temp (1) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C3,2,"M!",1,0,-1)
+      TM_SWP (2) =-1*(10.0^(SDI12(2)))
+      TM_temp (2) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C3,3,"M!",1,0,-1)
+      TM_SWP (3) =-1*(10.0^(SDI12(2)))
+      TM_temp (3) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C3,4,"M!",1,0,-1)
+      TM_SWP (4) =-1*(10.0^(SDI12(2)))
+      TM_temp (4) = SDI12(1)
+
+      ' C5 - Sensoradressen 5 bis 8
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C5,5,"M!",1,0,-1)
+      TM_SWP (5) =-1*(10.0^(SDI12(2)))
+      TM_temp (5) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C5,6,"M!",1,0,-1)
+      TM_SWP (6) =-1*(10.0^(SDI12(2)))
+      TM_temp (6) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C5,7,"M!",1,0,-1)
+      TM_SWP (7) =-1*(10.0^(SDI12(2)))
+      TM_temp (7) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C5,8,"M!",1,0,-1)
+      TM_SWP (8) =-1*(10.0^(SDI12(2)))
+      TM_temp (8) = SDI12(1)
+
+      ' C7 - Sensoradressen 9, A, B, C
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C7,9,"M!",1,0,-1)
+      TM_SWP (9) =-1*(10.0^(SDI12(2)))
+      TM_temp (9) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C7,"A","M!",1,0,-1)
+      TM_SWP (10) =-1*(10.0^(SDI12(2)))
+      TM_temp (10) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C7,"B","M!",1,0,-1)
+      TM_SWP (11) =-1*(10.0^(SDI12(2)))
+      TM_temp (11) = SDI12(1)
+      SDI12(1)=SenOff: SDI12(2)=SenOff: 
+      SDI12Recorder(SDI12(),C7,"C","M!",1,0,-1)
+      TM_SWP (12) =-1*(10.0^(SDI12(2)))
+      TM_temp (12) = SDI12(1)
+
+    ' Ausschalten SW1-12V
+    SW12(SW12_1,0)
+  EndIf
+EndSub
+'*****************************
+
+
+'**********************************************************************
+'*** Project 2: Dendrometer (measured by CR10X-PB Logger VORD)
+' Declare Variable
+
+' Public Dendro(32)
+Public Dendro(34)
+'Public dBattV : Units dBattV=V
+'Public dLoggerTemp : Units dLoggerTemp=Deg C 
+
+' Data retrieved over RS232 Connection in Main
+DataTable (P02Dendro10,True,-1)
+  ' Time Intervall 20 Minuten
+  DataInterval (0,10,Min,0)
+  ' LWF data format
+  Sample (1,StatID,UINT2) : FieldNames ("Stationskennung")
+  Sample (1,02,UINT2) : FieldNames ("ProjektNr")
+  Sample (1,10,UINT2) : FieldNames ("Messperiode")
+  ' Dendrometer 
+  Sample (1,Dendro (1),IEEE4) : FieldNames ("DialdendrometerBaum1376") 
+  Sample (1,Dendro (2),IEEE4) : FieldNames ("BügeldendrometerBaum1394") 
+  Sample (1,Dendro (3),IEEE4) : FieldNames ("DialdendrometerBaum1395") 
+  Sample (1,Dendro (4),IEEE4) : FieldNames ("DialdendrometerBaum1375") 
+  Sample (1,Dendro (5),IEEE4) : FieldNames ("DialdendrometerBaum1301") 
+  Sample (1,Dendro (6),IEEE4) : FieldNames ("DialdendrometerBaum1286") 
+  Sample (1,Dendro (7),IEEE4) : FieldNames ("DialdendrometerBaum1372") 
+  Sample (1,Dendro (8),IEEE4) : FieldNames ("Dendrometerxx1") 
+  Sample (1,Dendro (9),IEEE4) : FieldNames ("Dendrometerxx2") 
+  Sample (1,Dendro (10),IEEE4) : FieldNames ("Dendrometerxx3") 
+  Sample (1,Dendro (11),IEEE4) : FieldNames ("Dialdendrometer1300") 
+  Sample (1,Dendro (12),IEEE4) : FieldNames ("Dialdendrometer1288") 
+  Sample (1,Dendro (13),IEEE4) : FieldNames ("Dialdendrometer1370") 
+  Sample (1,Dendro (14),IEEE4) : FieldNames ("Dialdendrometer1366") 
+  Sample (1,Dendro (15),IEEE4) : FieldNames ("Dendrometerxx4") 
+  Sample (1,Dendro (16),IEEE4) : FieldNames ("Dialdendrometer1303") 
+  Sample (1,Dendro (17),IEEE4) : FieldNames ("Dialdendrometer1302") 
+  Sample (1,Dendro (18),IEEE4) : FieldNames ("Dialdendrometer1371") 
+  Sample (1,Dendro (19),IEEE4) : FieldNames ("Dialdendrometer1365") 
+  Sample (1,Dendro (20),IEEE4) : FieldNames ("Dialdendrometer1398") 
+  Sample (1,Dendro (21),IEEE4) : FieldNames ("Bügeldendrometer5001") 
+  Sample (1,Dendro (22),IEEE4) : FieldNames ("Bügeldendrometer5003") 
+  Sample (1,Dendro (23),IEEE4) : FieldNames ("Bügeldendrometer5005") 
+  Sample (1,Dendro (24),IEEE4) : FieldNames ("Bügeldendrometer5004") 
+  Sample (1,Dendro (25),IEEE4) : FieldNames ("Bügeldendrometer5002") 
+  Sample (1,Dendro (26),IEEE4) : FieldNames ("Bügeldendrometer5006") 
+  Sample (1,Dendro (27),IEEE4) : FieldNames ("Bügeldendrometer1301") 
+  Sample (1,Dendro (28),IEEE4) : FieldNames ("Bügeldendrometer1374") 
+  Sample (1,Dendro (29),IEEE4) : FieldNames ("Bügeldendrometer1300") 
+  Sample (1,Dendro (30),IEEE4) : FieldNames ("Bügeldendrometer1376") 
+  Sample (1,Dendro (31),IEEE4) : FieldNames ("Bügeldendrometer1394") 
+  Sample (1,Dendro (32),IEEE4) : FieldNames ("Bügeldendrometer1370") 
+  ' Sample (1,dBattV,FP2) : FieldNames("Batteriespannung Dendro")
+  ' Sample (1,dLoggerTemp,FP2) : FieldNames("Loggertemperatur Dendro")
+  Sample (1,Dendro (33),FP2) : FieldNames("Batteriespannung Dendro")
+  Sample (1,Dendro (34),FP2) : FieldNames("Loggertemperatur Dendro")
+EndTable
+
+'==================================================================
+'Main Program
+BeginProg
+  ' *** Main Scan
+  Scan(10,Min,1,0)
+   If TimeIntoInterval(0,10,Min)
+   ' Scan(10,3,1,0)
+    ' Zeitstempel fuer ftp-Filename
+    Call timestamp()
+	
+  ' Projekt 4 Technische Daten
+    Call SubP4()
+    CallTable P4Tech20
+		
+  ' Projekt 22 EC-5 
+    Call SubP22()
+    CallTable P22SWC10
+
+  ' Projekt 30 Tensiomark
+    Call SubP30 ()
+    CallTable P30SWP20
+  ' Projekt 02 Dendrometer 
+  ' (Variante PakBus:)
+  '  AcceptDataRecords(2,1+&H8000,P02Dendro10)
+  ' Variante SDI-12 alle 10 Minuten
+     SDI12Recorder (Dendro(),C1,0,"C!",1.0,0)
+     CallTable P02Dendro10
+   EndIf
+  NextScan
+
+  ' *** FTP Streaming und Zeit 
+  SlowSequence
+    Scan(1,Min,0,0)
+       ' *** FTP Streaming
+       tabelle="P4Tech20"
+       Call ftp
+       tabelle="P22SWC10"
+       Call ftp
+       tabelle="P30SWP20"
+       Call ftp
+       ' CR10X-PB Logger VORD
+       tabelle="P02Dendro10"
+       Call ftp
+       ' *** Um 8:00 Zeit ajustieren
+       If TimeIsBetween (480,488,1440,Min) Then
+          Ofst = NetworkTimeProtocol ("0.europe.pool.ntp.org",0,100)
+       EndIf
+    NextScan
+  EndSequence
+EndProg
+'==================================================================
+

@@ -1,0 +1,256 @@
+' WSL automatic measurement station Loetschental LOE_Cam
+' Number/access: 41798017250-2.wsl.ch, 113
+
+' S T A T I O N   C O N F I G
+' ---------------------------------------------------------------
+Const SName As String = "002041"
+Const SFull As String = "LOE_Cam"
+Const StatL As String = SName + "_" + SFull
+Public HasATMOS14 As Boolean = 1
+Public HasCam As Boolean = 1
+
+' D E F I N I T I O N S
+' ---------------------------------------------------------------
+' Modem
+Public DefaultTen As Boolean, MdmWindow As Boolean
+Public IsMdmOn As Boolean : Public MdmStat As String * 40 = "Off"
+Dim Ofst As Float : Public U_24h = 12.0 : Public U_10min = 12.4
+Public Override As Boolean
+
+' FTP connections
+Public Transf As Boolean : Public FTPSuccess
+Const FTPSrv = "ftp.wsl.ch" : Const FTPUsr = "transect"
+Const FTPPw = "ZPVBNl.SEnsDJ" : Const RmtD = "/data/ftp/transect/"
+Dim Tstamp As String : Public Filename As String * 100
+
+' Power and alarming
+Const ToAddr = "matthih@gmail.com"
+Const Subject = "Low power alarm in " + SFull
+Const CRLF = CHR (13)+CHR (10) : Dim Message As String * 250
+Public MailSuc : Public SrvResponse As String * 50
+
+' Camera
+Public CamOn As Boolean : Public CamStat As String * 40 = "Off"
+Public IsDay As Boolean
+
+' FTP connections
+Const FTPCRUsr = "loetschental"
+Const FTPCRPw = "Loetschentalschoenestal"
+
+' Miscellaneous and sensors
+Const SenOff = "NAN" : Public Bt, PTemp : Units Bt = Volts
+Units PTemp = Deg C : Public rTime (9) : Public monthr
+Public LithiumBatt : Units LithiumBatt = V
+
+' S U B R O U T I N E S
+' ---------------------------------------------------------------
+' Turn modem on or off
+Sub SubMdm ()
+  Battery (Bt)
+  DefaultTen = TimeIsBetween (8,3,10,Min)
+  MdmWindow = TimeIsBetween (778,805,1440,Min) '13, i.e 14/15
+  If Override Then
+    If TimeIsBetween (1980,1985,3600,Sec) Then
+      PortSet (6,0) : IsMdmOn = 0 : MdmStat = "Hourly reboot"
+    Else
+      PortSet (6,1) : IsMdmOn = 1 : MdmStat = "Always on"
+    EndIf
+  ElseIf MdmWindow AND Bt >= U_24h Then
+    PortSet (6,1) : IsMdmOn = 1 : MdmStat = "Window"
+  ElseIf DefaultTen AND Bt >= U_10min Then
+    PortSet (6,1) : IsMdmOn = 1 : MdmStat = "Ten min"
+  Else
+    PortSet (6,0) : IsMdmOn = 0 : MdmStat = "Off"
+  EndIf
+EndSub
+
+' Low power mailing
+Sub LowPwrmail ()
+  Battery (Bt)
+  If Bt < 12.4 Then
+    Message = "Hi!" + CRLF + CRLF
+    Message = Message + "This is an automatic message "
+    Message = Message + "from your friendly datalogger named "
+    Message = Message + SFull + ". The battery voltage is "
+    Message = Message + "below 12.4 V, i.e. exactly " + Bt + " V."
+    MailSuc = EmailRelay (ToAddr,Subject,Message,SrvResponse)
+    Erase (Message)
+  EndIf
+EndSub
+
+' Camera taking fantastic pictures
+Sub SubCam ()
+  Battery (Bt) : RealTime (rTime())
+  monthr = rTime (2) : IsDay = 0
+  If TimeIsBetween (459,940,1440,Min) AND monthr = 1 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (422,986,1440,Min) AND monthr = 2 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (370,1027,1440,Min) AND monthr = 3 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (370,1130,1440,Min) AND monthr = 4 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (322,1170,1440,Min) AND monthr = 5 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (302,1198,1440,Min) AND monthr = 6 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (319,1193,1440,Min) AND monthr = 7 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (356,1152,1440,Min) AND monthr = 8 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (396,1093,1440,Min) AND monthr = 9 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (437,1034,1440,Min) AND monthr = 10 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (422,927,1440,Min) AND monthr = 11 Then
+    IsDay = 1
+  ElseIf TimeIsBetween (457,913,1440,Min) AND monthr = 12 Then
+    IsDay = 1
+  EndIf
+  ' If camera has power takes pictures every hour during the day
+  If TimeIsBetween (58,3,60,Min) AND IsDay AND Bt >= 12.6 Then
+    SW12 (1) : CamOn = 1 : CamStat = "Hourly pictures"
+  Else
+    SW12 (0) : CamOn = 0 : CamStat = "Off"
+  EndIf
+EndSub
+
+' Send all files on drive to the WSL
+Sub SubSendToFTP ()
+  Transf = 0 : Tstamp = Public.TimeStamp (1,1)
+  Tstamp = Mid (Tstamp,7,4)+Mid (Tstamp,1,2)+Mid (Tstamp,4,2)+ _
+  Mid (Tstamp,12,2)+Mid (Tstamp,15,2)+Mid (Tstamp,18,2)
+  Filename = RmtD + SFull + "_Main_" + Tstamp + ".crd"
+  FTPSuccess = FTPClient (FTPSrv,FTPUsr,FTPPw, _
+  "Main",Filename,2,0,0,min,-1008)
+  ' NumRecs=0: all data will be send, depending on interval
+  ' Interval=0: all new data will be sent
+  ' Interval<0: always in that interval, e.g. every hr last 3 hrs
+  ' Interval>0: e.g. only send 10 min value every 60 mins
+EndSub
+
+' Correct some data by minimum and maximum limits
+Sub SUBCheckRange (LVal,LMin,LMax)
+  If (LVal >= LMax) OR (LVal <= LMin) Then LVal = SenOff
+EndSub
+
+' Get lithium battery voltage
+Sub SubStatus ()
+  PanelTemp (PTemp,50) : Battery (Bt)
+  LithiumBatt = Status.LithiumBattery (1,1)
+EndSub
+
+' M E A S U R E M E N T S
+' ---------------------------------------------------------------
+' Meteo measured with ATMOS14, SDI-12 C5
+Public ATMOS14 (4)
+Alias ATMOS14 (1) = Vapor_Pressure14 : Units Vapor_Pressure14 = kPa
+Alias ATMOS14 (2) = AirTemp14 : Units AirTemp14 = Deg C
+Alias ATMOS14 (3) = RelHumidity14 : Units RelHumidity14 = %
+Alias ATMOS14 (4) = AtmPressure14 : Units AtmPressure14 = kPa
+
+' Other variables
+Public AirTemp, Vapor_Pressure, RelHumidity, AtmPressure
+Dim SatVPCalc, Ea : Public VPD, Dewp ' VPD and Dewpoint
+Units VPD = kPa : Units Dewp = Deg C
+Units Vapor_Pressure = kPa : Units AirTemp = Deg C
+Units RelHumidity = % : Units AtmPressure = kPa
+
+DataTable (Main,1,-1)
+  DataInterval (0,10,Min,0)
+  Average (1,AirTemp,FP2,0) : FieldNames ("AirTemp_Cam")
+  Average (1,Vapor_Pressure,FP2,0) : FieldNames ("Vapor_Pressure_Cam")
+  Average (1,AtmPressure,FP2,0) : FieldNames ("AtmPressure_Cam")
+  Average (1,RelHumidity,FP2,0) : FieldNames ("RelHumidity_Cam")
+  Minimum (1,Bt,FP2,0,0) : FieldNames ("MinBattVolt_Cam")
+  Average (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp_Cam")
+  Minimum (1,LithiumBatt,FP2,0,0) : FieldNames ("AvgLithiumBatt_Cam")
+EndTable
+
+DataTable (MainRAW,1,10000) ' Something will be the minimum
+  DataInterval (0,1,Min,0) ': CardOut (0,5000000)
+  Sample (1,AirTemp,FP2,0) : FieldNames ("AirTemp_Cam")
+  Sample (1,Vapor_Pressure,FP2,0) : FieldNames ("Vapor_Pressure_Cam")
+  Sample (1,AtmPressure,FP2,0) : FieldNames ("AtmPressure_Cam")
+  Sample (1,RelHumidity,FP2,0) : FieldNames ("RelHumidity_Cam")
+  Minimum (1,Bt,FP2,0,0) : FieldNames ("MinBattVolt_Cam")
+  Sample (1,PTemp,FP2,0) : FieldNames ("AvgPanelTemp_Cam")
+  Minimum (1,LithiumBatt,FP2,0,0) : FieldNames ("AvgLithiumBatt_Cam")
+EndTable
+
+' Standard meteo measurements
+Sub SubMain ()
+  ' ATMOS14 via SDI12 (always on)
+  If TimeIntoInterval (0,60,Sec) Then
+    If HasATMOS14 Then
+      SDI12Recorder (ATMOS14,C1,0,"C!",1,0)
+      Vapor_Pressure = Vapor_Pressure14
+      AirTemp = AirTemp14
+      RelHumidity = RelHumidity14*100
+      AtmPressure = AtmPressure14
+    Else
+      ATMOS14 = SenOff
+      Vapor_Pressure14 = SenOff : AirTemp14 = SenOff
+      RelHumidity14 = SenOff : AtmPressure14 = SenOff
+    EndIf
+  EndIf
+
+  ' Dewpoint and VPD calculation
+  If TimeIntoInterval (0,60,Sec) Then
+    If HasATMOS14 Then
+      DewPoint (Dewp,AirTemp,RelHumidity)
+      Call SUBCheckRange (Dewp,-10,30)
+      SatVP (SatVPCalc,AirTemp)
+      Ea = (RelHumidity/100)*SatVPCalc
+      VPD = SatVPCalc-Ea
+    Else
+      AirTemp = SenOff : RelHumidity = SenOff : Dewp = SenOff
+      Vapor_Pressure = SenOff : VPD = SenOff : AtmPressure = SenOff
+      AirTemp = SenOff : Vapor_Pressure = SenOff
+    EndIf
+  EndIf
+EndSub
+
+' M A I N   P R O G R A M
+' ---------------------------------------------------------------
+SequentialMode ' needed so that Scans run after each other
+
+BeginProg
+  SetStatus ("StationName",StatL)
+  SetStatus ("HTTPEnabled",1) : SetStatus ("FTPEnabled",1)
+  SetStatus ("FTPUsername",FTPCRUsr) : SetStatus ("PingEnabled",1)
+  SetStatus ("TelnetEnabled",1) : SetStatus ("FTPPassword",FTPCRPw)
+
+  ' Before voltage is given to sensors, values bogus
+  ATMOS14 = SenOff
+  AirTemp = SenOff : Vapor_Pressure = SenOff
+  RelHumidity = SenOff : AtmPressure = SenOff : VPD = SenOff
+  Dewp = SenOff : AirTemp14 = SenOff
+  RelHumidity14 = SenOff : AtmPressure14 = SenOff
+
+  ' Main Scan
+  Scan (10,Sec,0,0)
+    Call SubStatus ()
+    Call SubMain ()
+    CallTable Main
+    CallTable MainRAW
+  NextScan
+
+  ' SlowScan 1
+  SlowSequence
+  Scan (1,Min,0,0)
+    Call SubMdm ()
+    Delay (0,1,Sec)
+    If IsMdmOn Then Call SubSendToFTP ()
+    If HasCam Then Call SubCam ()
+  NextScan
+  EndSequence
+
+  ' SlowScan 2
+  SlowSequence
+  Scan (240,Min,0,0)
+    Call LowPwrmail ()
+    Ofst = NetworkTimeProtocol ("0.europe.pool.ntp.org",0,100)
+  NextScan
+  EndSequence
+EndProg

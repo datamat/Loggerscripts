@@ -1,0 +1,72 @@
+'CR1000X Series Datalogger
+'Example datalogger program for Apogee Instruments S2-421/422 series SDI12 PRI sensors (1 upward and downward facing sensor pair)
+'date: December 31, 2020
+'program author: John Huber
+
+'Wiring:
+  'White -> Com C1 (Upward) and Com C3 (Downward) (SDI12 signal wire)
+  'Black -> Ground port (SDI12 ground wire)
+  'Red -> 12 VDC port (Sensor power wire)
+  'Clear -> Ground (Shield)
+
+'Explanation of Constants, Variables, and Aliases Used in Datalogger Program
+  'BattV = datalogger battery voltage
+  'PanelT = datalogger panel temperature
+  'M1Up = Output of the M1! command for the upward facing sensor
+  'M1Dn = Output of the M1! command for the downward facing sensor
+  'LowWaveUp = Calibrated detector reading for the 531 nm detector in upward sensor
+  'LowWaveDn = Calibrated detector reading for the 531 nm detector in downward sensor
+  'HighWaveUp = Calibrated detector reading for the 570 nm detector in upward sensor
+  'HighWaveDn = Calibrated detector reading for the 570 nm detector in downward sensor
+  'LowReflect = Reflectance at 531 nm
+  'HighReflect = Reflectance at 570 nm
+  'PRI = PRI Reading
+'Note that all calibration multipliers are sensor-specific, as well as detector specific; those listed below are examples and must be changed based on the specific sensor being used.
+
+'Declare Public Variables
+  Public BattV, PanelT
+  Public M1Up(2), M1Dn(2), LowReflect, HighReflect, PRI
+
+Alias M1Up(1) = LowWaveUp
+Alias M1Up(2) = HighWaveUp
+Alias M1Dn(1) = LowWaveDn
+Alias M1Dn(2) = HighWaveDn
+
+Units LowWaveUp = Watts/m2
+Units HighWaveUp = Watts/m2
+Units LowWaveDn = Watts/m2
+Units HighWaveDn = Watts/m2
+
+'Define Data Tables
+DataTable (PRITable,1,-1)
+	DataInterval (0,1,Min,10)
+	Minimum(1,BattV,IEEE4,0,False)
+	Sample(1,PanelT,IEEE4)
+  Average(1,PRI,IEEE4,False)
+  Average(1,LowReflect,IEEE4,False)
+  Average(1,HighReflect,IEEE4,False)
+EndTable
+
+'Main Program
+BeginProg
+	Scan(1,Sec,0,0)
+		Battery(BattV)
+		PanelTemp(PanelT,_60Hz)		
+		'Upward Facing Sensor
+        'Measure detector signals
+        SDI12Recorder(M1Up(),C1,0,"M0!",1.0,0.0)
+    'Downward Facing Sensor
+        'Measure detector signals
+        SDI12Recorder(M1Dn(),C3,0,"M0!",1.0,0.0)     
+    'Calculate Reflectance Values
+        HighReflect = (HighWaveDn / HighWaveUp)
+        LowReflect = (LowWaveDn / LowWaveUp)
+    'Calculate PRI
+        PRI = (LowReflect - HighReflect) / (LowReflect + HighReflect)
+    'Call Output Tables
+		CallTable PRITable
+	NextScan
+EndProg
+
+
+

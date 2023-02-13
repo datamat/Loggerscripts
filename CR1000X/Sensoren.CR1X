@@ -1,0 +1,43 @@
+'CR1000X Series
+'Created by Short Cut (4.0)
+
+'Declare Variables and Units
+Public BattV
+Public PTemp_C
+Public Pulse
+Public SRADcur, PARcur, DWNDcur
+
+Const MultiSRAD = 100
+Const OffSRAD = 0
+Const MultiPAR = 100
+Const OffPAR = 0
+
+Units BattV=Volts
+Units PTemp_C=Deg C
+Units Pulse=Counts/Hz
+
+'Define Data Tables
+DataTable(Table2,True,-1)
+	DataInterval(0,1440,Min,10)
+	Minimum(1,BattV,FP2,False,False)
+EndTable
+
+'Main Program
+BeginProg
+	'Main Scan
+	Scan(5,Sec,1,0)
+		'Default CR1000X Datalogger Battery Voltage measurement 'BattV'
+		Battery(BattV)
+		'Default CR1000X Datalogger Wiring Panel Temperature measurement 'PTemp_C'
+		PanelTemp(PTemp_C,50)
+		'Generic Pulse measurement 'Pulse'
+		PulseCount(Pulse,1,P1,1,0,1,0)
+		BrHalf (DWNDcur,1,mV5000,2,Vx1,1,2500,0,20000,250,357,0)
+		Delay (0,1,Sec)
+		VoltSe (SRADcur,1,mV200,5,0,10000,250,MultiSRAD,OffSRAD)
+		Delay (0,1,Sec)
+		VoltSe (PARcur,1,mV200,8,0,10000,250,MultiPAR,OffPAR)
+		'Call Data Tables and Store Data
+		CallTable Table2
+	NextScan
+EndProg
